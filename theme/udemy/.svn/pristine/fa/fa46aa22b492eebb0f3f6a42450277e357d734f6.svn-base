@@ -1,0 +1,306 @@
+var M = M || {};
+M.W = M.W || {};
+M.W.course_list = M.W.course_list || {};
+var M_W_course_list = M.W.course_list;
+
+/**
+* course category node
+*
+* @param id
+* @param name
+*/
+M.W.course_list.category = function(id,name){
+
+    /**
+    * category's id
+    *
+    * @type {int}
+    */
+    this.id = id;
+
+    /**
+    * category's name
+    *
+    * @type {string}
+    */
+    this.name = name;
+
+    /**
+    * category's parent
+    *
+    * @type {category}
+    */
+    this.parent = null;
+
+    /**
+    * category's children
+    *
+    * @type {category[]}
+    */
+    this.children=[];
+
+    /**
+    * add child
+    *
+    * @param {category} child
+    * @returns {bool}
+    */
+    this.add_child = function(child){
+        if(!this.has_child(child)){
+            this.children.push(child);
+            child.parent = this;
+        }
+    }
+
+    /**
+    * remove one child
+    *
+    * @param {category} child
+    * @returns {category[]} old children list
+    */
+    this.remove_child = function(child){
+        return this.children.splice(this.get_child_index(child),1);
+    }
+
+    /**
+    * True if has a child
+    *
+    * @param {category} child
+    * @returns {bool}
+    */
+    this.has_child = function(child){
+        return this.get_child_index(child) !== false;
+    }
+
+    /**
+    * where the child in the children list
+    *
+    * @param {category} child
+    * @returns {int}
+    */
+    this.get_child_index = function(child){
+        for (var i = 0; i < this.children.length; i++) {
+            if (this.children[i].id == child.id) {
+                return i;
+            }
+        }
+        return false;
+    }
+
+    /**
+    * @param {string} name
+    * @returns {null|category}
+    */
+    this.get_child_by_name = function(name){
+        for(var i in this.children){
+            if(this.children[i].name == name){
+                return this.children[i];
+            }
+        }
+        return null;
+    }
+
+    /**
+    * @param {category} root
+    * @param {string[]} names
+    * @returns {null|category} this.parent
+    */
+    this.match_parent = function(root, names){
+        var parent = root;
+        if(names.length){
+            for(var i=0; i<names.length ; i++){
+                parent = parent.get_child_by_name($.trim(names[i]));
+                if(!parent){
+                    break;
+                }
+            }
+            if(!parent){
+                parent = root;
+            }
+        }
+        parent.add_child(this);
+        return parent;
+    }
+}
+
+/**
+* create category root
+*
+* @returns {category}
+*/
+M.W.course_list.make_course_category = function (){
+    var category = this.category;
+    var rootname = M.util.get_string('all_a_category','theme_udemy',M.util.get_string('category','core'));
+    var category_root = new category(0,rootname);
+    var options = $('select[name=categoryid] option');
+    if(!options.length){
+        options = $('select[name=categoryidbak] option');
+    }
+    $(options).each(function(i,n){
+        var names = $($(n).text().split('/')).map(function(){
+            return $.trim(this);
+        });
+        var name = names[names.length-1] + '';
+        var id = $(n).val()-0;
+        var node = new category(id, name);
+        names.splice(names.length-1,1);
+        var parent = node.match_parent(category_root, names);
+    });
+    return category_root;
+}
+
+/**
+* find one category with it's parent
+*
+* @param {category} node
+* @param {int} cat_id
+*/
+M.W.course_list.find_course_category = function (node, cat_id){
+    if(node.id == cat_id){
+        return node;
+    }else if(!node.children.length){
+        return null;
+    }else{
+        for(var i in node.children){
+            var cat = M_W_course_list.find_course_category(node.children[i], cat_id);
+            if(cat){
+                return cat;
+            }
+        }
+        return null;
+    }
+}
+
+$(function(){
+
+    Handlebars.registerHelper('down_nav',function(cats){
+        var rec = function(cats){
+            var content = '';
+            if(cats.length){
+                content += '<ul>';
+                for(var i in cats){
+                    var child = cats[i];
+                    content += '<li><a categoryid="'+child.id+'">'+child.name+'</a>'+rec(child.children)+'</li>';
+                }
+                content += '</ul>';
+            }
+            return content;
+        }
+        return rec(cats);
+    });
+
+    M.W.course_list.list = list = {
+        cat_root:M.W.course_list.make_course_category(),
+        nav_li_template:Handlebars.compile($('#discovery-navigation-li').html()),
+        course_li_template : Handlebars.compile($('#discover-courses-list-li').html()),
+        current_cat_id : $.getUrlVar('categoryid')-0,
+        paging:{
+            max:null,
+            min:null,
+            current:null
+        },
+        search:false,
+        courses : {},
+        refresh_course_list:function(refresh){
+            if( !list.current_cat_id){
+                return;
+            }
+
+            var display_course_list = function(i,coursebox){
+                var  course = {};
+                course.name = $(coursebox).find('.info>.name>a').text();
+                course.url = $(coursebox).find('.info>.name>a').attr('href');
+                course.enrols = [];
+                course.enrol_self = false;
+                $(coursebox).find('.enrolmenticons img').each(function(ei,en){
+                    var component = $.getUrlVar('component',$(en).attr('src'));
+                    course.enrols.push(component);
+                    if(component === 'enrol_self'){
+                        course.enrol_self = true;
+                    }
+                });
+                course.summary = $(coursebox).find('.content>.summary');
+                course.cover = $(coursebox).find('.content>.courseimage>img').attr('src');
+                course.teachers = [];
+                $(coursebox).find('.content>.teachers>li').each(function(ti,tn){
+                    course.teachers.push({text:$(tn).text(),url:$(tn).find('a').attr('href')});
+                });
+                $('.discover-courses-list').prepend(list.course_li_template(course));
+                list.courses[$.getUrlVar('id',course.url)] = course;
+            };
+
+            $('.discover-courses-list').html('');
+            if(!list.search){
+                var current_cat = M.W.course_list.find_course_category(list.cat_root, list.current_cat_id);
+
+                //navigation
+                if($('.discovery-navigation>li').length>1){
+                    var n_l = $('.discovery-navigation>li').length;
+                    $('.discovery-navigation>li').each(function(i,n){
+                        if(i<n_l-1){
+                            $(n).remove();
+                        }
+                    });
+                }
+                var current_li = list.nav_li_template(current_cat);
+                $('.discovery-navigation').prepend($($.trim(current_li)).addClass('on'));
+                //$('.discovery-navigation').prepend(nav_li_template(cat_root));
+                var parent_cat = current_cat;
+                while(parent_cat = parent_cat.parent){
+                    $('.discovery-navigation').prepend(list.nav_li_template(parent_cat));
+                }
+
+                if(!refresh){
+                    $('.coursebox').each(display_course_list);
+                }else{
+                    var params = {categoryid:list.current_cat_id,browse:'courses',page:list.paging.current};
+                    $.get(M.cfg.wwwroot+'/course/index.php',params,function(data){
+                        $(data).find('.coursebox').each(display_course_list);
+                    })
+                }
+            }else{
+                var search_url = M.cfg.wwwroot+ '/course/search.php';
+                var params = {search:list.current_cat_id,page_num:(list.paging.current)};
+                $.get(search_url,params,function(data){
+                    $(data).find('.coursebox').each(display_course_list);
+                });
+            }
+        },
+        parse_paging:function(paging_html){
+            list.paging.current = $(paging_html).find('a.current').html()-1;
+            if($(paging_html).find('.last').length){
+                list.paging.max = $.getUrlVar('page',$(paging_html).find('.last').attr('href'));
+            }else if($(paging_html).find('.next').length){
+                var tmpl = $('a').length;
+                list.paging.max = $.getUrlVar('page',$($(paging_html).find('a').get(tmpl-2)).attr('href'));
+            }else{
+                list.paging.max = list.paging.current;
+            }
+            if($(paging_html).find('.first').length){
+                list.paging.min = $.getUrlVar('page',$(paging_html).find('.first').attr('href'));
+            }else if($(paging_html).find('.previous').length){
+                list.paging.min = $.getUrlVar('page',$($(paging_html).find('a').get(1)).attr('href'));
+            }else{
+                list.paging.min = list.paging.current;
+            }
+        },
+        init:function(){
+            $(document).on('click','.course-nav-btn.prev,.course-nav-btn.next',function(e){
+                var is_prev = $(e.currentTarget).hasClass('prev');
+                if((is_prev && list.paging.current == list.paging.min) ||
+                    (!is_prev && list.paging.current == list.paging.max)){
+                    return;
+                }
+                if(is_prev){
+                    list.paging.current--;
+                }else{
+                    list.paging.current++;
+                }
+                refresh_course_list(list.current_cat_id, list.paging.current);
+            });
+
+            list.refresh_course_list(list.current_cat_id);
+        }
+    }
+    list.init();
+});

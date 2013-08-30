@@ -1,0 +1,664 @@
+<?php
+namespace wmios\survey;
+use \MoodleQuickForm,\moodle_url,\stdClass;
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/survey_client.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/fpdf/fpdf.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/pchart/pData.class.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/pchart/pChart.class.php');
+
+
+class activity_employengage extends activity{
+
+    protected $_instance = null;
+
+    public static function process_update_form(MoodleQuickForm $mform,activity_wrapper $activity_wrapper = null)
+    {
+        if(!$activity_wrapper || $activity_wrapper->is_new())
+        {
+            $filepickeroptions = array('accepted_types' => '.csv','return_types'=>FILE_INTERNAL);
+            $mform->addElement('filepicker','userfile',get_string('userfile',SURVEYACTIVITYBASE_PLUGIN_NAME), null,$filepickeroptions);
+
+        }
+    }
+
+    public static function get_add_instance_default_data(){
+        return array();
+    }
+
+    /**
+    * @return activity_employengage_instance
+    * 
+    */
+    public function get_instance()
+    {
+        if($this->_instance == null)
+        {
+            $this->_instance = activity_employengage_instance::instance_from_id($this->_wrapper->instance_id);
+        } 
+        return $this->_instance;
+    }
+
+    public static function add_instance(stdClass $general, stdClass $special, moodleform_activity $mform)
+    {
+        global $DB, $CFG;
+        $users = self::process_survey_users_from_userfile($mform, true);
+
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+
+        $surveyclient = new \survey_client($url,$username,$password);
+        $file = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/file/limesurvey_survey.lss';
+        $type = 'lss';
+        $name = 'mytests';
+
+        $new_survey_id = $surveyclient->copy_survey($file,$type,$name);
+        if($new_survey_id)
+        {
+            if($surveyclient->init_tokens($new_survey_id))
+            {
+                $arr = array();
+                $us = array();
+                foreach($users as $d)
+                {
+                    $arr['email'] = $d['email'];
+                    $arr['firstname'] = $d['firstname'];
+                    $arr['lastname'] = $d['lastname'];
+                    $arr['token'] = $d['token'];
+
+                    $us[] = $arr;
+                }
+                if($cheng=$surveyclient->add_usersurvey($new_survey_id,$us))
+                {
+
+                    foreach($us as $data)
+                    {
+                        $data['surveyid'] = $new_survey_id;
+                        $userinstance = new activity_employengage_users_instance($data);
+
+                        $bool=$userinstance->save();
+                        if(!$bool)
+                        {
+                            throw new \moodle_exception("wrong");
+                        }
+                    }
+                }
+                else
+                {
+                    throw new \moodle_exception("wrong");
+                }
+            }
+            else
+            {
+                throw new \moodle_exception("wrong");
+
+            }
+
+            $data = array('survey_id'=>$new_survey_id);
+            $instance = new activity_employengage_instance($data);
+            $instance->save();
+            return $instance->id;
+
+        }
+        else
+        {
+            throw new \moodle_exception("wrong");
+
+        }
+
+    }
+
+    public function update_instance(stdClass $general, stdClass $special, moodleform_activity $mform){
+        if($this->_wrapper->is_new())
+        {
+            $users = self::process_survey_users_from_userfile($mform, false);
+            if($users)
+            {
+                //push users to survey server.
+            }
+            //post the date time ,survey name, survey intro,users to server.
+            //get the result ,return the result,true or false.
+            //throw exception
+        }
+        return true;
+    }
+
+    protected static function process_survey_users_from_userfile(moodleform_activity $mform, $force = false)
+    {
+        $users = array();
+
+        $userfile = $mform->get_file_content('userfile');
+        if(!strlen($userfile))
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 1');
+            }else{
+                return $users;
+            }
+        }
+
+        $lines = explode("\n",$userfile);
+        if(count($lines)<2)
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 2');
+            }else{
+                return $users;
+            }
+        }
+        $ks = explode(',',trim($lines[0],"\r\n, "));
+        for($i=1;$i<count($lines);$i++)
+        {
+            if($lines[$i] == "")continue;
+            $user = array();
+            $vs = explode(',', trim($lines[$i],"\r"));
+            foreach($vs as $k=> $v)
+            {
+                $user[trim($ks[$k],"'\n\" ")] = trim($v,"'\n\" ");
+            }
+            $users[] = $user;
+        }
+        return $users;
+    }
+    public function survey_reports($userfile, $force = false)
+    {
+
+        $users = array();
+
+        // $userfile = $mform->get_file_content('userfile');
+
+        if(!strlen($userfile))
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 1');
+            }else{
+                return $users;
+            }
+        }
+
+        $lines = explode("\n",$userfile);
+        if(count($lines)<2)
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 2');
+            }else{
+                return $users;
+            }
+        }
+        $ks = explode(',',trim($lines[0],"\r\n, "));
+        for($i=1;$i<count($lines);$i++)
+        {
+            if($lines[$i] == "")continue;
+            $user = array();
+            $vs = explode(',', trim($lines[$i],"\r"));
+            foreach($vs as $k=> $v)
+            {
+                $user[trim($ks[$k],"'\n\" ")] = trim($v,"'\n\" ");
+            }
+            $users[] = $user;
+        }
+        return $users;
+
+    }
+
+    public static function delete_instance($id){
+        return true;
+    }
+
+    public function get_update_instance_data(){
+        return array('dd'=>time());
+    }
+
+    public function get_view_url(){
+        return new moodle_url('/mod/surveyactivitybase/activity/employengage/detail.php',array('id'=>$this->_wrapper->id,'cmid'=>$this->_wrapper->cmid));
+    }
+
+    /**
+    *
+    * True if this type has a global report.
+    *
+    * @return bool
+    *
+    */
+    public function has_global_report()
+    {
+        return true;
+    }
+
+    public function start()
+    {
+        //start survey
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+        $surveyclient= new \survey_client($url,$username,$password);
+
+        $surveyid = $this->get_instance()->survey_id;
+        $surveyclient->active_survey($surveyid);
+        $active=$surveyclient->active_survey($surveyid);
+
+        if($active)
+        {
+            $access=$surveyclient->invite_users($surveyid);
+
+            if(!$access)
+            {
+                throw new \moodle_exception('no send');   
+
+            }
+        }
+
+    }
+
+
+    public function stop()
+    {
+        //stop survey
+        return true;
+    }
+
+
+    public function get_global_report_view_url()
+    {
+
+
+    }
+
+
+    public function get_global_report_download_url()
+    {
+
+
+
+    }
+
+    /**
+    * 调查报告的信息存到数据库
+    * 
+    * @param mixed $data
+    * @return static
+    */
+    public function activity_instance_updates($data)
+    {
+        $str = $data['操作代码'];
+        $query = "token ='".$str."'";
+        $rowobj = activity_employengage_users_instance::instance_from_select($query);
+
+        unset($data['id']);
+        return $rowobj->setFields($data)->save();
+    }
+
+    /**
+    * 调查报告的计算分数
+    *@param mixed $arr
+    * return array[][]
+    */
+    public function reports_results($arr)
+    {
+        $summary = array();
+        $sum = array();
+        $statics = array();
+        $avg = array();
+        $count = count($arr);
+        foreach($arr as $d)
+        {
+            foreach($d as $k=>$v)
+            {
+                if(!isset($sum[$k]))
+                {
+                    $sum[$k] = 0;    
+                }
+                if(preg_match('/^q\d*/',$k,$matches))
+                {
+                    foreach($matches as $key)
+                    {
+                        switch($d[$key])
+                        {
+                            case 1:$v = "5"; break;
+                            case 2:$v = "4"; break;
+                            case 3:$v = "3"; break;
+                            case 4:$v = "2"; break;
+                            case 5:$v = "1"; break;
+
+                        }
+
+                    }
+
+                }
+                $sum[$k] += $v;
+            }
+            $newk = sprintf('%.1f',$d['averages']);
+
+            if(!isset($statics[$newk]))
+            {
+                $statics[$newk] = 0;
+            }
+
+            $statics[$newk]++;
+        }
+        foreach($sum as $keys=>$vs)
+        {
+            $avg[$keys] = $vs/$count;
+        }
+
+        if(count($avg)>0)
+        {
+            $summary['avg'] = $avg;
+        }
+        if(count($statics)>0)
+        {
+            $summary['statics'] = $statics;
+        }
+
+        return $summary;
+    }
+
+    /**
+    * 按条件查询调查报告
+    * 
+    * @param mixed $str
+    */
+    public function reports($str=null)
+    {
+        $rows = array();
+        $query = "surveyid ='".$this->get_instance()->survey_id."' ";
+        if($str)
+        {
+            $query.=' and '.$str;
+        }
+        $rowarr = activity_employengage_users_instance::instances_from_select($query);
+        if($rowarr)
+        {
+            foreach($rowarr as $dataobj)
+            {
+                $rows[] = $dataobj->getFields();
+            } 
+
+        } 
+        return $rows;
+
+    }
+
+    /**
+    * 获取性别为男或女
+    * return array()
+    */
+    public function get_genders()
+    {
+        $rows = array();
+        global $DB;
+        $records = $DB->get_records_sql('select DISTINCT gender from {surveyactivity_employ_users} where `surveyid`='.$this->get_instance()->survey_id);
+
+        foreach($records as $k =>$v)
+        {
+            $rows[]=$k;
+        }
+        return $rows;
+        
+    }
+   
+    /**
+    * 部门查询
+    * 
+    * @param mixed $records array()
+    */
+    public function check_department($records)
+    {
+        foreach($records as $record)
+        {
+            foreach(array('one','two','three','four','five','six','seven','eight','nine','ten') as $i)
+            {
+                $k = 'dplevel_'.$i;
+                if(empty($record[$k]))
+                {
+                    break;
+                }
+                $cmd = '$dim2s';
+                foreach(array('one','two','three','four','five','six','seven','eight','nine','ten') as $j)
+                {              
+                    $cmd .= '[\''.$record['dplevel_'.$j].'\']';
+                    if($i == $j)
+                    {
+                        break;
+                    }
+                }
+                eval(
+                    'if(!isset('.$cmd.'))
+                    {
+                    '.$cmd.'=array();
+                    }'
+                );
+
+            }
+        }
+        return $dim2s;
+    }
+
+    /**
+    * 地区查询
+    * 
+    * @param mixed $records array()
+    */
+    public function check_provinces($records)
+    {  
+        foreach($records as $record)
+        {
+            $city[] = $record['city'];         
+
+            foreach($city as $v)
+            {
+                $k = $record['provinces'];
+                if(empty($k))
+                {
+                    break;
+                }
+                if($v == $record['city'])
+                {
+                    $rows[$k][$v] = array();
+                }
+
+            }
+        }
+        return $rows;
+    }
+
+    /**
+    * 生成bar图表
+    * 
+    * @param mixed $arrbar array()
+    * @param mixed $param url get参数
+    */
+    public function check_chartbar($arrbar,$param,$param2)
+    {
+        global $CFG;
+        // Dataset definition 
+        $DataSet = new \pData;
+        //图表数据
+        foreach($arrbar as $k=>$v)
+        {
+            $DataSet->AddPoint(array($v),"Serie1");
+            $DataSet->AddPoint(array($k),"Serie2");
+            
+        }
+
+        //取到人数最大值
+        /*
+        $max=0;
+        $arrs = array_values($arrbar);
+        foreach($arrs as $arr)
+        {
+            $max = max($max,$arr);
+        }
+        */
+        $DataSet->AddSerie();
+        $DataSet->SetAbsciseLabelSerie("Serie2");//设置X轴的值
+        //数据图例
+        //$DataSet->SetSerieName("人数","Serie1");
+        //$DataSet->SetSerieName("IBM","Serie2");
+        //$DataSet->SetSerieName("Google","Serie3");
+        //X轴
+        $DataSet->SetXAxisUnit("分");  
+        //Y轴
+       // $DataSet->SetYAxisUnit("人");
+        //$DataSet->SetYAxisFormat("metric");
+        $DataSet->SetYAxisName("人数");
+        // Initialise the graph
+        $Test = new \pChart(700,230);
+        //设置图表尺寸、样式
+        $Test->setFontProperties("Fonts/simhei.ttf",8);
+        $Test->setGraphArea(50,30,680,200);
+        //$Test->setFixedScale(0,$max);//设置Y轴人数数值  pchartclass/$Divisions分段 
+        $Test->drawFilledRoundedRectangle(7,7,693,223,5,240,240,240);
+        $Test->drawRoundedRectangle(5,5,695,225,5,230,230,230);
+        $Test->drawGraphArea(255,255,255,TRUE);
+        //X轴、Y轴字体的颜色
+        $Test->drawScale($DataSet->GetData(),$DataSet->GetDataDescription(),SCALE_NORMAL,150,150,150,TRUE,0,2,TRUE);
+        $Test->drawGrid(4,TRUE,230,230,230,50);
+        // Draw the 0 line
+        $Test->setFontProperties("Fonts/simhei.ttf",6);
+        $Test->drawTreshold(0,143,55,72,TRUE,TRUE);
+        // Draw the bar graph
+        //柱状图要使用drawBarGraph()
+        $Test->drawBarGraph($DataSet->GetData(),$DataSet->GetDataDescription(),TRUE,80);
+        $Test->setColorPalette(0,133,133,133);//人数颜色
+        // Finish the graph
+        //制作图例、标题、字体等属性
+        $Test->setFontProperties("Fonts/simhei.ttf",10);
+        //$Test->drawLegend(596,150,$DataSet->GetDataDescription(),255,255,255);
+
+        //$Test->drawTitle(50,22,"Example",50,50,50,585);
+        
+        //写值
+        $Test->writeValues($DataSet->GetData(),$DataSet->GetDataDescription(),array("Serie1"));
+
+        //生成图表
+        $urls = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/';
+        if(!is_dir($urls))
+        {
+            mkdir($urls);     
+        } 
+        /*
+        $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param."bar.png"; 
+        $Test->Render($imageFile); */
+        
+        if($param2 !==null)
+        {
+            if(is_array($param2))
+            {
+                if(count($param2)==1)
+                {
+                     $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2[0]."bar.png"; 
+                }else
+                {
+                     $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2[0].$param2[1]."bar.png";  
+                }
+              
+               $imageFile = iconv('UTF-8','GB2312',$imageFile);
+            }else
+            {
+                $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2."bar.png";
+                $imageFile = iconv('UTF-8','GB2312',$imageFile);
+            }  
+        }
+        
+        if(!file_exists($imageFile))
+        {
+           $Test->Render($imageFile); 
+        }
+        
+    }
+
+    /**
+    * 生成radar图
+    * 
+    * @param mixed $namearr
+    * @param mixed $arr
+    * @param mixed $param
+    */
+    public function check_chartradar($namearr,$arr,$param,$param2)
+    {
+        global $CFG;
+        $DataSet = new \pData;
+        foreach($namearr as $name)
+        {
+            $DataSet->AddPoint($name,"Label");
+        }  
+
+        foreach($arr as $data)
+        {
+            $DataSet->AddPoint($data,"Serie1");
+        }
+        // $DataSet->AddPoint(array(2,3,5,2,4),"Serie2");
+        $DataSet->AddSerie("Serie1");
+        //$DataSet->AddSerie("Serie2");
+        $DataSet->SetAbsciseLabelSerie("Label");
+        //$DataSet->SetSerieName("Reference","Serie1");右上角两个标签
+        //$DataSet->SetSerieName("Tested computer","Serie2");
+
+        // Initialise the graph
+        $Test = new \pChart(400,400);
+
+        $Test->setFontProperties("Fonts/simhei.ttf",8);
+        $Test->drawFilledRoundedRectangle(7,7,393,393,5,240,240,240);
+        $Test->drawRoundedRectangle(5,5,395,395,5,230,230,230);
+        $Test->setGraphArea(30,30,370,370);
+        $Test->drawFilledRoundedRectangle(30,30,370,370,5,255,255,255);
+        $Test->drawRoundedRectangle(30,30,370,370,5,220,220,220);
+
+        // Draw the radar graph
+        //要使用drawRadarAxis()生成雷达效果
+        $Test->drawRadarAxis($DataSet->GetData(),$DataSet->GetDataDescription(),TRUE,20,120,120,120,230);
+        $Test->drawFilledRadar($DataSet->GetData(),$DataSet->GetDataDescription(),50,20);
+
+        // Finish the graph
+        //$Test->drawLegend(15,15,$DataSet->GetDataDescription(),255,255,255);图标
+        $Test->setFontProperties("Fonts/tahoma.ttf",10);
+        //$Test->drawTitle(0,22,"biaoti",50,50,50,400);标题
+        
+       //生成图表
+                //生成图表
+        $urls = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/';
+        if(!is_dir($urls))
+        {
+            mkdir($urls);     
+        } 
+        /*
+        $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param."radar.png";
+        $Test->Render($imageFile); */
+               
+        if($param2 !==null)
+        {
+            if(is_array($param2))
+            {
+               if(count($param2)==1)
+               {
+                  $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2[0]."radar.png"; 
+               }else
+               {
+                $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2[0].$param2[1]."radar.png"; 
+               }
+               $imageFile = iconv('UTF-8','GB2312',$imageFile);
+            }else
+            {
+                $imageFile = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$this->get_instance()->survey_id.$param.$param2."radar.png";
+                $imageFile = iconv('UTF-8','GB2312',$imageFile);
+            }  
+        }
+        
+        if(!file_exists($imageFile))
+        {
+           $Test->Render($imageFile); 
+        }
+        
+        
+       
+    }
+}

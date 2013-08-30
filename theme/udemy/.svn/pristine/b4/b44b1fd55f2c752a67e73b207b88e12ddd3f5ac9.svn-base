@@ -1,0 +1,18 @@
+/*   course/view.php   */
+
+
+.path-course-view .mod-choice-content {
+
+    background: #fff;
+    padding: 15px;
+    width:100%;
+    
+    overflow: auto;
+
+}
+
+
+
+
+
+

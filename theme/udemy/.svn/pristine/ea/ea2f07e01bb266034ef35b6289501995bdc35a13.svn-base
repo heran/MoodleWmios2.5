@@ -1,0 +1,3 @@
+<?php
+include_once($CFG->dirroot . "/local/wmios/lib.php");
+include_once($CFG->dirroot . "/theme/udemy/locallib.php");

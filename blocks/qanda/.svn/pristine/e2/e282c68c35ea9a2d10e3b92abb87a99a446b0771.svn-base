@@ -1,0 +1,46 @@
+<?php
+
+class backup_qanda_block_structure_step extends backup_block_structure_step {
+
+    protected function define_structure() {
+        global $DB;
+        
+        //We don't like in mod page.
+        //Only when backup a course, we need back the special quesiton data.
+        //When no user info,we need not backup.
+        
+        /** @var backup_qanda_block_task */
+        $task = $this->get_task();
+        if(!empty($moduleid) || !$task->get_plan_setting_value('users')){
+            return parent::define_structure();
+        }
+
+        //The questions belong to one course.        
+        $questions = new backup_nested_element('questions');
+        $question = new backup_nested_element('question', array('id'), array(
+            'cmid', 'position', 'userid', 'title', 'content', 'modifiedtime'
+            ));
+        $answers = new backup_nested_element('answers');
+        $answer = new backup_nested_element('answer', array('id'), array('userid', 'answer', 'modifiedtime'));
+        $follows = new backup_nested_element('follows');
+        $follow = new backup_nested_element('follow', array('id'), array('userid', 'modifiedtime'));
+        
+        $questions->add_child($question);
+        
+        $question->add_child($answers);
+        $answers->add_child($answer);
+        
+        $question->add_child($follows);
+        $follows->add_child($follow);
+        
+        $question->set_source_table('qanda', array('courseid' => backup::VAR_COURSEID));
+        $answer->set_source_table('qanda_answer', array('qandaid' => '../../id'));
+        $follow->set_source_table('qanda_follow', array('qandaid' => '../../id'));
+        
+        $question->annotate_ids('user', 'userid');
+        $answer->annotate_ids('user', 'userid');
+        $follow->annotate_ids('user', 'userid');
+        
+        return $this->prepare_block_structure($questions);
+    }
+}

@@ -1,0 +1,10 @@
+.block {
+    border: none;
+}
+.mform fieldset.hidden{
+    display: block;
+    visibility: visible;
+}
+.goto-and-play-mod{
+    cursor: pointer;
+}

@@ -1,0 +1,13 @@
+<?php
+require_once($CFG->dirroot . '/course/renderer.php');
+class theme_udemy_core_course_renderer extends core_course_renderer{
+
+    /**
+    * @inheritdoc
+    *
+    * @param int|stdClass|coursecat $category
+    */
+    public function course_category($category){
+        return parent::course_category($category);
+    }
+}

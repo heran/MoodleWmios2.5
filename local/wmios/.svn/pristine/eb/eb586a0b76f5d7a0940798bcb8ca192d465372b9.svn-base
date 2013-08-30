@@ -1,0 +1,35 @@
+<?php
+
+
+/**
+ * Delete one Note
+ * Require params are: note_id courseid
+ *
+ * @package    local
+ * @subpackage wmios
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+ 
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+global $USER,$COURSE,$DB;
+require_login();
+$note_id = required_param('note_id',PARAM_INT);
+$note = wmios_note::note_for_id($note_id);
+$courseid = required_param('courseid',PARAM_INT);
+require_capability('local/wmios:notes_update_note',context_course::instance($courseid));
+
+
+$result = 0;
+if($note->userid == $USER->id){
+    if( wmios_note::delete($note_id)){
+        $result = 1;
+    }   
+}
+
+$wt = optional_param('wt','json',PARAM_ALPHANUMEXT);
+switch($wt){
+    case 'json':
+    echo json_encode(array('status'=>$result,'note_id'=>$note_id));
+    break;
+}

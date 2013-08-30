@@ -1,0 +1,21 @@
+<?php
+$handlers = array (
+    'user_enrolled' => array (
+        'handlerfile'      => '/mod/dekiwiki/locallib.php',
+        'handlerfunction'  => array('dekiwiki_instance',),
+        'schedule'         => 'instant',
+        'internal'         => 1,
+    ),
+    'user_enrol_modified' => array (
+        'handlerfile'      => '/mod/dekiwiki/locallib.php',
+        'handlerfunction'  => 'chat_user_logout',
+        'schedule'         => 'instant',
+        'internal'         => 1,
+    ),
+    'user_unenrolled' => array (
+        'handlerfile'      => '/mod/dekiwiki/locallib.php',
+        'handlerfunction'  => 'chat_user_logout',
+        'schedule'         => 'instant',
+        'internal'         => 1,
+    ),
+);

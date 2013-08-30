@@ -1,0 +1,62 @@
+<?php
+/**
+ * Get question's answer list
+ *
+ * @package    local
+ * @subpackage wmios
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+ 
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+global $USER,$COURSE,$DB,$PAGE;
+require_login();
+$qandaid = optional_param('qandaid',0,PARAM_ACTION);
+$id = optional_param('id',0,PARAM_INT);
+$courseid = optional_param('courseid',0,PARAM_INT);
+if(!$courseid){
+    print_error(500);
+}
+if(!$id && !$qandaid){
+    print_error(500);
+}
+require_capability('local/wmios:qanda_list_qanda',context_course::instance($courseid));
+
+$userid = $USER->id;
+$answers = array();
+if($id){
+    $answers[] = wmios_qanda_answer::instance_for_id($id);
+}else{
+    $answers = wmios_qanda_answer::instances_for_qandaid($qandaid,null,true);
+}
+
+$userids = array();
+foreach($answers as $answer){  
+    if(!in_array($answer->userid,$userids)){
+        $userids[] = $answer->userid;
+    }
+}
+
+$question = wmios_qanda::instance_for_id($qandaid);
+$userids[] = $question->userid;
+
+$users = array();
+if($userids){
+    $PAGE->set_context(context_system::instance());
+    $users = $DB->get_records_select('user','id in ('.implode(',',$userids).')',null,null,'id,username,firstname,lastname');
+    foreach($users as $user){
+        $userpicture = new user_picture($user);
+        $user->userpicture = $userpicture->get_url($PAGE, null)->out();
+        $user->fullname = fullname($user,true);
+    }
+}
+
+$quser = $users[$question->userid];
+$quser->who_asks = get_string('who_asks','local_wmios',$quser->fullname);
+
+$wt = optional_param('wt','json',PARAM_ALPHANUMEXT);
+switch($wt){
+    case 'json':
+    echo json_encode(array('status'=>1,'list'=>$answers,'users'=>$users,'question'=>$question,'quser'=>$quser));
+    break;
+}

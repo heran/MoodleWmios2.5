@@ -1,0 +1,48 @@
+
+$(document).on('click','.my-courses-nav .gray-nav li',function(){
+    $('.my-courses-nav .gray-nav li').removeClass('current');
+    $(this).addClass('current');   
+
+    var type = $(this).attr('type');
+    $('#my-courses #list ul').hide();
+    $('#my-courses #list ul[type="'+type+'"]').show();
+    return false; 
+
+});
+
+/**************************************************************/
+/*
+$(function(){
+    var inprohtml = $('#my-courses #list ul:eq(0)').html();
+    var completedhtml = $('#my-courses #list ul:eq(1)').html();
+    var nostarthtml= $('#my-courses #list ul:eq(2)').html();
+
+    if(inprohtml !=''){
+
+        $('.my-courses-nav .gray-nav li:eq(0)').click();
+
+    }
+
+    if(completedhtml !=''){
+
+        $('.my-courses-nav .gray-nav li:eq(1)').click();
+    }
+
+    if(nostarthtml !=''){
+
+        $('.my-courses-nav .gray-nav li:eq(2)').click();
+    } 
+
+});
+*/
+$(function(){
+    var ul=$('#my-courses #list ul');
+    for(var i=0;i<ul.length;i++){
+        var html=$('#my-courses #list ul:eq('+i+')').html();
+        if(html != ''){
+            
+            $('.my-courses-nav .gray-nav li:eq('+i+')').click();
+        }
+    }
+
+});

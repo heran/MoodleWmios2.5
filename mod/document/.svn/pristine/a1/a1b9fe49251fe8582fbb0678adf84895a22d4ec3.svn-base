@@ -1,0 +1,24 @@
+{include 'base_header.tpl'}
+<div class="document-upload-wrapper left">
+    <h2 class="title">{get_string('upload_document','document')}</h2>
+    <div class="upload-add-main">
+        <div class="upload-file-info">
+            <p>{get_string('document_upload_success','document')}{$de->file_name}</p>
+            <p class="size">文件大小：{sprintf('%d',$de->file_size/1024)}kb</p>
+            <p class="action">
+                <a href="">{get_string('cancel_upload','document')}</a>&nbsp;&nbsp;<a href="">{get_string('download','document')}</a>
+            </p>
+        </div>
+    </div>
+    <div class="upload-add-step2">
+        <h3 class="header">填写文档信息</h3>
+        {$eform->display()}
+        <script type="text/javascript">
+        {foreach $base->get_document_fields_by_type(document_field_type::TYPE_SELECT_SINGLE) as $field_type}
+            editAttrChange('{$field_type->name}',$.parseJSON('{json_encode($field_type->dict->toArray())}'));
+        {/foreach}
+        </script>
+    </div>
+
+</div>
+{include 'base_footer.tpl'}

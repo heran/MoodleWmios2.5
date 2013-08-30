@@ -1,0 +1,27 @@
+<?php
+use wmios\survey as survey;
+
+class surveyactivity_employengage_renderer extends survey\plugin_renderer_base{
+
+    public function render_activity_details($arr,$strs,$totalpage)
+    {
+        global $CFG;
+        $smarty = $this->_smarty;
+        $smarty->assign('data',$strs);        
+        $smarty->assign('rows',$arr);
+        $smarty->assign('totalpage',$totalpage);
+        return $smarty->fetch('details.tpl');
+    }
+ 
+    public function render_activity_reports($strs)
+    {
+        global $CFG;
+        $smarty = $this->_smarty;
+        
+        $smarty->assign('data',$strs);
+        $smarty->assign('reportradar_url',new moodle_url('/mod/surveyactivitybase/activity/employengage/radar.png'));
+        $smarty->assign('reportbar_url',new moodle_url('/mod/surveyactivitybase/activity/employengage/bar.png'));
+       // $smarty->assign('reportdownload_url',new moodle_url('/mod/surveyactivitybase/activity/employengage/activityreport.php'));
+        return $smarty->fetch('reports.tpl');
+    }
+}

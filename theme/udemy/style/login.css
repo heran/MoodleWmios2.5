@@ -1,0 +1,15 @@
+#page-login-change_password{
+}
+#page-login-change_password div[role=main]{
+    background: #fbfbfb;
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    margin-top: 20px;
+    overflow: hidden;
+    background-color: #fbfbfb;
+    padding-bottom: 20px;
+}
+#page-login-change_password div[role=main] .mform fieldset{
+    border: none;
+}

@@ -1,0 +1,79 @@
+/**/
+
+.path-course-view .contents{
+    height:100%;
+    background:#fff;
+
+}
+
+
+.path-course-view .contents .mod-book-content{
+    padding-left: 300px;
+    width: 100%;
+}
+
+.path-course-view .contents .mod-book-content .navtop,.navbottom{
+      text-align: right;
+    
+}
+
+.path-course-view .contents .block-book-content{
+
+    float: left;
+    padding:15px;
+    width:300px;
+    overflow: auto;
+    height: 100%;
+}
+
+.path-course-view .contents .mod-book-content .generalbox{
+    border:0px;
+}
+
+.path-course-view .contents .mod-book-content  hr{
+
+    background-image:url([[pix:theme|gauze]]);
+    height: .75em;
+    border: none;
+    margin: .75em 0;
+}
+
+.path-course-view .contents .block-book-content li {
+    padding-left: 20px;
+    line-height: 15px;
+    list-style-type: none;
+
+    text-shadow: 0 1px 0 #ffffff;
+}
+
+.path-course-view .contents .block-book-content li a{
+
+    color:#4d4d4d;
+}
+
+
+.path-course-view .contents .mod-book-content .bookcontent{
+
+    border: 1px solid #CCC;
+    border-radius: 6px;
+    height: 500px;
+    background:#f8f8ff;
+    overflow:scroll;
+}
+
+.path-course-view .contents .mod-book-content .bookcontent .nav{
+    background: #333;
+    border: 1px solid #111;
+    padding: 8px 15px;
+    font-size: 16px;
+    color: white;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.5);
+    letter-spacing: 0;
+    border-radius: 5px 5px 0 0;
+    font-weight: normal;
+    margin-bottom: 0;
+    overflow: hidden;
+    height:45px;
+    line-height: 26px;
+}
+

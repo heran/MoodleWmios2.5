@@ -1,0 +1,121 @@
+$(function(){
+    function category(id,name){
+        
+        /**
+        * category's id
+        * 
+        * @type int
+        */
+        this.id = id;
+        
+        /**
+        * category's name
+        * 
+        * @type string
+        */
+        this.name = name;
+        
+        /**
+        * category's parent
+        * 
+        * @type category
+        */
+        this.parent = null;
+        
+        /**
+        * category's children
+        * 
+        * @type category[]
+        */
+        this.children=[];
+        
+        /**
+        * add child
+        * 
+        * @param category child
+        */
+        this.add_child = function(child){
+            if(!this.has_child(child)){
+                this.children.push(child);
+                child.parent = this;
+            }
+        }
+        
+        /**
+        * remove one child
+        * 
+        * @param category child
+        */
+        this.remove_child = function(child){
+            return this.children.splice(this.find_child_index(child),1);
+        }
+        
+        /**
+        * True if has a child
+        * 
+        * @param category child
+        */
+        this.has_child = function(child){
+            return this.find_child_index(child) !== false;
+        }
+        
+        /**
+        * where the child in the children list
+        * 
+        * @param category child
+        */
+        this.find_child_index = function(child){
+            for (var i = 0; i < this.children.length; i++) {  
+                if (this.children[i].id == child.id) {  
+                    return i;  
+                }  
+            }
+            return false;
+        }
+        
+        this.get_child_by_name = function(name){
+            for(i in this.children){
+                if(i.name = name){
+                    return i;
+                }
+            }
+            return null;
+        }
+    }    
+    var match_category_parent = function(root, names){
+        for(var i=0; i<names.length ; i++){
+            root = root.get_child_by_name($.trim(names[i]));
+            if(!root){
+                break;
+            }
+        }
+        return root;
+    }
+    //category list
+    (function(){
+
+        var category_list = [];
+        var used = [];
+        var first = true;
+        /**
+        * @type category
+        * 
+        */
+        var category_root = null;
+        $('input[name=categoryid]').each(function(i,n){
+            var names = $(n).text().split('/');
+            name = names[names.length-1] + '';
+            id = $(n).val()-0;
+            var node = new category(id, name);
+            if(first){
+                first = false;
+                category_root = node;
+            }else{
+                var parent = match_category_parent(category_root,names.splice(names.length-1,1));
+                if(parent){
+                    parent.add_child(node);
+                }
+            }
+        });
+    })();
+});

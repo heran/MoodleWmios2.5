@@ -1,0 +1,70 @@
+<?php
+
+/**
+ * Get question list
+ *
+ * @package    local
+ * @subpackage wmios
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+global $USER,$COURSE,$DB;
+require_login();
+$cmid = optional_param('cmid',0,PARAM_ACTION);
+$position = optional_param('position',0,PARAM_INT);
+$id = optional_param('id',0,PARAM_INT);
+$courseid = optional_param('courseid',0,PARAM_INT);
+if(!$courseid && !$cmid){
+    print_error(500);
+}
+if(!$courseid){
+    $mod = get_coursemodule_from_id(null,$cmid);
+    $COURSE = $DB->get_record('course', array('id'=>$mod->course), '*', MUST_EXIST);
+    $courseid = $COURSE->id;
+}else{
+    $mod = null;
+}
+require_capability('local/wmios:qanda_list_qanda',context_course::instance($courseid));
+
+$userid = $USER->id;
+$questions = array();
+if($id){
+    $questions[] = wmios_qanda::instance_for_id($id);
+}elseif(!$cmid && $courseid){
+    $questions = wmios_qanda::instances_for_courseid($courseid,true);
+}else{
+    $questions = wmios_qanda::instances_for_cmid_range($cmid,$position,$position);
+}
+
+$cms = array();
+if($mod){
+   $cms[$mod->id] = $mod; 
+}
+$userids = array();
+foreach($questions as $question){
+    if($question->cmid){
+        if(!isset($cms[$question->cmid])){
+            $cms[$question->cmid] = get_coursemodule_from_id(null,$question->cmid);
+        }
+        $question->set_cm($cms[$question->cmid]);
+    }
+    if(!in_array($question->userid,$userids)){
+        $userids[] = $question->userid; 
+    }
+}
+$users = array();
+if($userids){
+    $users = $DB->get_records_select('user','id in ('.implode(',',$userids).')',null,null,'id,username,firstname,lastname');
+}
+foreach($users as $user){
+    $user->fullname = fullname($user,true);
+}
+
+$wt = optional_param('wt','json',PARAM_ALPHANUMEXT);
+switch($wt){
+    case 'json':
+    echo json_encode(array('status'=>1,'list'=>$questions,'cms'=>$cms,'users'=>$users));
+    break;
+}

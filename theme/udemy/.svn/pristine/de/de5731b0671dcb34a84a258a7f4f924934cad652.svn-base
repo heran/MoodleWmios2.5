@@ -1,0 +1,3 @@
+$(function(){
+    $('.path-user .mform input[type=submit]').addClass('btn btn-success');
+});

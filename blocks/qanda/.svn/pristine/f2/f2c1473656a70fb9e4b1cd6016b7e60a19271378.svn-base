@@ -1,0 +1,23 @@
+<?php
+
+class block_qanda_renderer extends plugin_renderer_base {
+    
+    /**
+    * hook for theme_udemy
+    * 
+    */
+    public function before_print_header($block){
+        global $PAGE;        
+        $PAGE->requires->js(new moodle_url('/blocks/qanda/js/view.js'),true);
+        $PAGE->requires->js(new moodle_url('/local/wmios/js/redactor/redactor.js'),true);
+        $PAGE->requires->css(new moodle_url('/local/wmios/js/redactor/redactor.css'),true);
+    }
+    
+    /**
+    * Block main content
+    * 
+    */
+    public function render_qanda_box(){
+        return '';
+    }
+}

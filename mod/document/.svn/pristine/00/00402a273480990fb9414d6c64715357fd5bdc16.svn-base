@@ -1,0 +1,1 @@
+<iframe src="http://localhost:8081/{$de->get_preview_url(swf)}"></iframe>

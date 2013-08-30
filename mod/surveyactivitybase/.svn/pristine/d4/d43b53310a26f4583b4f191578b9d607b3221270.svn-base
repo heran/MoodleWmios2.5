@@ -1,0 +1,17 @@
+<?php
+use wmios\survey as survey;
+define('FPDF_FONTPATH','font/'); 
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+/** @var survey\activity_wrapper*/
+$wrapper = survey\activity_wrapper::instance_from_id(required_param('id',PARAM_INT));
+
+$pdf=new FPDF('P', 'mm', 'A4'); //创建新的FPDF对象，竖向放纸，单位为毫米，纸张大小A4 
+$pdf->Open(); //开始创建PDF 
+$pdf->AddPage(); //增加一页 
+$pdf->SetFont('Courier','I',20); //设置字体样式 
+$pdf->Image('radar.png',50,20,100,80);
+$pdf->Image('example12.png',30,120,150,80); //增加一张图片，文件名为sight.jpg 
+$pdf->Output("a.pdf","D"); //输出PDF到浏览器 
+

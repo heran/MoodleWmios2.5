@@ -1,0 +1,56 @@
+// 利用插件 AJAX 把投票的页面内容显示在 course/view.php
+
+var M = M || {};
+M.W = M.W || {};
+M.W.modview = M.W.modview || {};
+M.W.modview.modhandler = M.W.modview.modhandler || {};
+
+M.W.modview.modhandler.choice =choice_mod_view = {
+    support:{goto_and_play:false,get_now_position:false,resume_mod:false},
+    load_modview:function(cmid,content_box,intro_box,callback){
+
+        $.get(M.cfg.wwwroot+'/mod/choice/view.php',{id:cmid},function(data){
+
+            data = $(data); 
+
+            var content=$(data).find('div[role=main]').html();
+            var html='<div class="mod-choice-content">'+content+'</div>';
+
+            $(content_box).html(html);
+
+            $('.mod-choice-content>h2').removeClass('main');
+
+            if(typeof callback != 'undefined'){
+                callback(cmid);
+            }
+        });
+
+        //利用ajax刷新保存投票选项
+        $(document).on('submit','.mod-choice-content form',function(e){
+
+            var url=$('.mod-choice-content form').attr('action');
+
+            $.post(url,$('.mod-choice-content form').serialize(),function(data){
+
+                data = $(data); 
+
+                var content=$(data).find('div[role=main]').html();
+                var html='<div class="mod-choice-content">'+content+'</div>';
+
+                $(content_box).html(html);
+                $('.mod-choice-content>h2').removeClass('main');
+
+                if(typeof callback != 'undefined'){
+                    callback(cmid);
+                } 
+
+            }); 
+
+            e.preventDefault();
+
+        });
+    }
+
+
+
+}

@@ -1,0 +1,44 @@
+#page-enrol-index div[role=main] {
+    background: #fbfbfb;
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    background-color: #fbfbfb;
+    padding-bottom: 20px;
+}
+#page-enrol-index div[role=main]>h2.main:first-of-type {
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+}
+#page-enrol-index div[role=main]>.box.generalbox.info {
+    display: none;
+}
+#page-enrol-index div[role=main] .mform {
+    padding: 10px;
+}
+#page-enrol-index div[role=main] .mform fieldset legend{
+    margin: 0;
+}
+#page-enrol-index div[role=main]>.box.generalbox {
+    border: none;
+}
+#page-enrol-index div[role=main]>#notice{
+    margin: 20px;
+}
+#page-enrol-index div[role=main]>.continuebutton{
+    margin: 20px;
+}

@@ -1,0 +1,1233 @@
+<?php
+//wmios is mine.
+namespace wmios\survey;
+
+//use for upgrade
+require_once ($CFG->dirroot.'/lib/upgradelib.php');
+
+
+/**
+* It's very like the \plugin_manager
+*/
+class plugin_manager {
+
+    /** the plugin uses neither database nor capabilities, no versions */
+    const PLUGIN_STATUS_NODB        = 'nodb';
+    /** the plugin is up-to-date */
+    const PLUGIN_STATUS_UPTODATE    = 'uptodate';
+    /** the plugin is about to be installed */
+    const PLUGIN_STATUS_NEW         = 'new';
+    /** the plugin is about to be upgraded */
+    const PLUGIN_STATUS_UPGRADE     = 'upgrade';
+    /** the standard plugin is about to be deleted */
+    const PLUGIN_STATUS_DELETE     = 'delete';
+    /** the version at the disk is lower than the one already installed */
+    const PLUGIN_STATUS_DOWNGRADE   = 'downgrade';
+    /** the plugin is installed but missing from disk */
+    const PLUGIN_STATUS_MISSING     = 'missing';
+
+    /** @var plugin_manager holds the singleton instance */
+    protected static $singletoninstance;
+    /** @var array of raw plugins information */
+    protected $pluginsinfo = null;
+
+    /**
+    * Defines a white list of all plugins shipped in the standard Moodle distribution
+    *
+    * @param string $type
+    * @return false|array array of standard plugins or false if the type is unknown
+    */
+    public static function standard_plugins_list($type) {
+        static $standard_plugins = array(
+            'activity'=>array('exam')
+        );
+
+        if (isset($standard_plugins[$type])) {
+            return $standard_plugins[$type];
+        } else {
+            return false;
+        }
+    }
+
+
+
+    /**
+    * Direct initiation not allowed, use the factory method {@link self::instance()}
+    */
+    protected function __construct() {
+    }
+
+    /**
+    * Sorry, this is singleton
+    */
+    protected function __clone() {
+    }
+
+
+
+    /**
+    * Factory method for this class
+    *
+    * @return plugin_manager the singleton instance
+    */
+    public static function instance() {
+        if (is_null(self::$singletoninstance)) {
+            self::$singletoninstance = new self();
+        }
+        return self::$singletoninstance;
+    }
+
+    /**
+    * Lists all plugin types
+    * @param bool $fullpaths false means relative paths from dirroot
+    * @return array Array of strings - name=>location
+    */
+    public function get_plugin_types($fullpaths=true) {
+        global $CFG;
+
+        static $info     = null;
+        static $fullinfo = null;
+
+        if (!$info) {
+            $local_dir_root = $CFG->dirroot.'/mod/surveyactivity';
+            $info = array(
+                'activity'      =>  'activity'
+            );
+
+            $fullinfo = array();
+            foreach ($info as $type => $dir) {
+                $fullinfo[$type] = $local_dir_root.'/'.$dir;
+            }
+        }
+
+        return ($fullpaths ? $fullinfo : $info);
+    }
+
+    /**
+    * @param string $plugintype type of plugin
+    * @return array name=>fulllocation pairs of plugins of given type
+    */
+    public function get_plugin_list($plugintype) {
+        global $CFG;
+
+        $ignored = array('CVS', '_vti_cnf', 'simpletest', 'db', 'yui', 'tests');
+
+
+        if ($plugintype === '') {
+            $plugintype = 'activity';
+        }
+
+        $fulldirs = array();
+        $types = $this->get_plugin_types(true);
+        if (!array_key_exists($plugintype, $types)) {
+            return array();
+        }
+        $fulldir = $types[$plugintype];
+        if (!file_exists($fulldir)) {
+            return array();
+        }
+        $fulldirs[] = $fulldir;
+
+        $result = array();
+
+        foreach ($fulldirs as $fulldir) {
+            if (!is_dir($fulldir)) {
+                continue;
+            }
+            $items = new \DirectoryIterator($fulldir);
+            foreach ($items as $item) {
+                if ($item->isDot() or !$item->isDir()) {
+                    continue;
+                }
+                $pluginname = $item->getFilename();
+                if (in_array($pluginname, $ignored)) {
+                    continue;
+                }
+                $pluginname = \clean_param($pluginname, PARAM_PLUGIN);
+                if (empty($pluginname)) {
+                    // better ignore plugins with problematic names here
+                    continue;
+                }
+                $result[$pluginname] = $fulldir.'/'.$pluginname;
+                unset($item);
+            }
+            unset($items);
+        }
+
+        //Sort ?
+        ksort($result);
+        return $result;
+    }
+
+    /**
+    * Determine if survey plugin installation requires update
+    *
+    * Checks version numbers of main code and all modules to see
+    * if there are any mismatches
+    *
+    * @global moodle_database $DB
+    * @return bool
+    */
+    public function need_upgrading() {
+        global $DB, $OUTPUT;
+
+        //check activity
+        $plugins = $this->get_plugins();
+        $activities = $plugins['activity'];
+        $installed = $DB->get_records('surveyactivity_activity', array(), '', 'name, version');
+        foreach ($activities as $activity => $plugininfo) {
+
+            /**
+            *
+            * @var plugininfo_base
+            */
+            $plugininfo;
+
+            $plugin = $plugininfo->get_disk_version();
+            if (!isset($plugin->version)) {
+                continue;
+            }
+            if (empty($installed[$activity])) {
+                return true;
+            } else if ($plugin->version > $installed[$activity]->version) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+    * Normalize the component name using the "frankenstyle" names.
+    * @param string $component
+    * @return array $type+$plugin elements
+    */
+    public function normalize_component($component) {
+        $tmp = explode('_', $component, 2);
+        $type = $tmp[0];
+        $plugin = isset($tmp[1])?$tmp[1]:null;
+        return array($type, $plugin);
+    }
+
+    /**
+    * Reset any caches
+    * @param bool $phpunitreset
+    */
+    public static function reset_caches($phpunitreset = false) {
+        if ($phpunitreset) {
+            self::$singletoninstance = null;
+        }
+    }
+
+    /**
+    * Returns a tree of known plugins and information about them
+    *
+    * @param bool $disablecache force reload, cache can be used otherwise
+    * @return array 2D array. The first keys are plugin type names (e.g. qtype);
+    *      the second keys are the plugin local name (e.g. multichoice); and
+    *      the values are the corresponding objects extending {@link plugininfo_base}
+    */
+    public function get_plugins($disablecache=false) {
+        global $CFG;
+
+        if ($disablecache or is_null($this->pluginsinfo)) {
+
+            $this->pluginsinfo = array();
+            $plugintypes = $this->get_plugin_types();
+            $plugintypes = $this->reorder_plugin_types($plugintypes);
+            foreach ($plugintypes as $plugintype => $plugintyperootdir) {
+                if (in_array($plugintype, array('base', 'general'))) {
+                    throw new coding_exception('Illegal usage of reserved word for plugin type');
+                }
+                $plugintypeclass = __NAMESPACE__.'\plugininfo_' . $plugintype;
+                if (!class_exists($plugintypeclass)) {
+                    $plugintypeclass = __NAMESPACE__.'\plugininfo_general';
+                }
+                if (!in_array(__NAMESPACE__.'\plugininfo_base', class_parents($plugintypeclass))) {
+                    throw new \coding_exception('Class ' . $plugintypeclass . ' must extend plugininfo_base');
+                }
+                $plugins = call_user_func(array($plugintypeclass, 'get_plugins'), $plugintype, $plugintyperootdir, $plugintypeclass);
+                $this->pluginsinfo[$plugintype] = $plugins;
+            }
+        }
+
+        return $this->pluginsinfo;
+    }
+
+    /**
+    * Returns a localized name of a given plugin
+    *
+    * @param string $plugin name of the plugin, eg mod_workshop or auth_ldap
+    * @return string
+    */
+    public function plugin_name($plugin) {
+        list($type, $name) = $this->normalize_component($plugin);
+        return $this->pluginsinfo[$type][$name]->displayname;
+    }
+
+    /**
+    * @param string $component frankenstyle component name.
+    * @return plugininfo_base|null the corresponding plugin information.
+    */
+    public function get_plugin_info($component) {
+        list($type, $name) = $this->normalize_component($component);
+        $plugins = $this->get_plugins();
+        return isset($plugins[$type][$name]) ? $plugins[$type][$name] : null;
+    }
+
+    /**
+    * Checks all dependencies for all installed plugins
+    *
+    * This is used by install and upgrade. The array passed by reference as the second
+    * argument is populated with the list of plugins that have failed dependencies (note that
+    * a single plugin can appear multiple times in the $failedplugins).
+    *
+    * @param int $surveyversion the version from mod/surveyactivity/version.php.
+    * @param array $failedplugins to return the list of plugins with non-satisfied dependencies
+    * @return bool true if all the dependencies are satisfied for all plugins.
+    */
+    public function all_plugins_ok($survey_version, &$failedplugins = array()) {
+
+        $return = true;
+        foreach ($this->get_plugins() as $type => $plugins) {
+
+            foreach ($plugins as $plugin) {
+
+                /** @var plugininfo_base $plugin*/
+                if (!$plugin->is_core_dependency_satisfied($survey_version)) {
+                    $return = false;
+                    $failedplugins[] = $plugin->component;
+                }
+            }
+        }
+
+        return $return;
+    }
+
+    /**
+    * Reorders plugin types into a sequence to be displayed
+    *
+    * For technical reasons, plugin types returned by {@link get_plugin_types()} are
+    * in a certain order that does not need to fit the expected order for the display.
+    * Particularly, activity modules should be displayed first as they represent the
+    * real heart of Moodle. They should be followed by other plugin types that are
+    * used to build the courses (as that is what one expects from LMS). After that,
+    * other supportive plugin types follow.
+    *
+    * @param array $types associative array
+    * @return array same array with altered order of items
+    */
+    protected function reorder_plugin_types(array $types) {
+        $fix = array(
+            'activity'        => $types['activity'],
+        );
+        foreach ($types as $type => $path) {
+            if (!isset($fix[$type])) {
+                $fix[$type] = $path;
+            }
+        }
+        return $fix;
+    }
+
+    public function upgrade_plugins($verbose){
+        global $CFG,$DB;
+
+        raise_memory_limit(MEMORY_EXTRA);
+
+        $survey_version = \plugin_manager::instance()-> get_plugin_info('surveyactivity',true)->versiondb;
+
+        // upgrade all plugins types
+        try {
+            // Disable the use of cache stores here. We will reset the factory after we've performed the installation.
+            // This ensures that we don't permanently cache anything during installation.
+            \cache_factory::disable_stores();
+
+            foreach ($this->get_plugins() as $type=>$plugs) {
+
+
+                foreach ($plugs as $plug=>$plugininfo) {
+                    /**
+                    *
+                    * @var plugininfo_base
+                    */
+                    $plugininfo;
+
+                    // Reset time so that it works when installing a large number of plugins
+                    set_time_limit(600);
+                    $component = clean_param($type.'_'.$plug, PARAM_COMPONENT); // standardised plugin name
+
+                    // check plugin dir is valid name
+                    if (empty($component)) {
+                        throw new \plugin_defective_exception($type.'_'.$plug, 'Invalid plugin directory name.');
+                    }
+
+                    $plugin = $plugininfo->get_disk_version();
+                    if($plugin === null){
+                        continue;
+                    }
+
+                    // if plugin tells us it's full name we may check the location
+                    if (isset($plugin->component)) {
+                        if ($plugin->component !== $component) {
+                            throw new \plugin_defective_exception($component, 'Plugin installed in wrong folder.');
+                        }
+                    }
+
+                    if (empty($plugin->version)) {
+                        throw new \plugin_defective_exception($component, 'Missing version value in version.php');
+                    }
+
+                    $plugin->name     = $plug;
+                    $plugin->fullname = $component;
+
+
+                    if ( !$plugininfo->is_core_dependency_satisfied($survey_version)) {
+                        throw new \upgrade_requires_exception($component, $plugin->version, $survey_version, $plugin->requires);
+                    }
+
+                    if ( !$plugininfo->is_interface_satisfied()) {
+                        throw new \upgrade_requires_exception($component, $plugin->version, $survey_version, $plugin->requires);
+                    }
+
+                    // try to recover from interrupted install.php if needed
+                    if ($plugininfo->is_installrunning() ) {
+                        $installer_path = $plugininfo->full_path('db/install.php');
+                        if (file_exists($installer_path)) {
+                            require_once($installer_path);
+                            $install_classname = $plugininfo->get_namespace().'\\'.$plugin->fullname.'_installer';
+                            if(class_exists($install_classname)){
+
+                                /**
+                                * @var \wmios\survey\plugin_installer
+                                */
+                                $installer = new $install_classname();
+                                if(is_a($installer,__NAMESPACE__.'\plugin_installer')){
+                                    $this->print_start_recovery($component, $verbose);
+                                    $installer->install_recovery();
+                                    $plugininfo->update_installrunning(false);
+                                    $this->print_end_recovery($component, $verbose);
+                                }
+                            }
+
+
+                        }
+                    }
+
+                    $installedversion = $plugininfo->versiondb;
+                    if (empty($installedversion)) { // new installation
+                        $this->print_start_install($component, $verbose);
+
+                        /// Install tables if defined
+                        $install_xml = $plugininfo->full_path('/db/install.xml');
+                        if (file_exists($install_xml)) {
+                            if(!$plugininfo->install_xml_is_valid($install_xml)){
+                                throw new \Exception('install xml is not valid');
+                            }
+                            $DB->get_manager()->install_from_xmldb_file($install_xml);
+                        }
+
+                        /// store version
+                        $plugininfo->set_db_version($plugin->version);
+
+                        /// execute post install file
+                        $installer_path = $plugininfo->full_path('db/install.php');
+                        if (file_exists($installer_path)) {
+                            require_once($installer_path);
+                            $install_classname = $plugininfo->get_namespace().'\\'.$plugin->fullname.'_installer';
+                            if(class_exists($install_classname)){
+                                /**
+                                * @var plugin_installer
+                                */
+                                $installer = new $install_classname();
+                                if(is_a($installer,'plugin_installer')){
+                                    $plugininfo->update_installrunning(true);
+                                    $installer->install();
+                                    $plugininfo->update_installrunning(false);
+                                }
+                            }
+                        }
+
+                        purge_all_caches();
+                        $this->print_end_install($component, $verbose);
+
+                    } else if ($installedversion < $plugin->version) { // upgrade
+                        /// Run the upgrade function for the plugin.
+                        $this->print_start_upgrade($component, $verbose);
+
+                        $result = true;
+                        $upgrader_path = $plugininfo->full_path('db/upgrade.php');
+                        if (file_exists( $upgrader_path) ){
+                            require_once($upgrader_path);  // defines upgrading function
+                            $upgrader_classname = $plugininfo->get_namespace().'\\'.$plugin->fullname.'_upgrader';
+
+                            /**
+                            *
+                            * @var plugin_upgrader
+                            */
+                            $upgrader = new $upgrader_classname();
+                            if(is_a($upgrader,__NAMESPACE__.'\plugin_upgrader')){
+                                $result = $upgrader->upgrade($installedversion);
+                            }
+                        }
+
+                        if(!$result){
+                            throw new \upgrade_exception($plugin->fullname, $plugin->version);
+                        }
+
+                        $plugininfo->set_db_version($plugin->version);
+
+                        purge_all_caches();
+                        $this->print_end_upgrade($component, $verbose);
+
+                    } else if ($installedversion > $plugin->version) {
+                        throw new \downgrade_exception($component, $installedversion, $plugin->version);
+                    }
+                }
+            }
+            // Update cache definitions. Involves scanning each plugin for any changes.
+            \cache_helper::update_definitions();
+            // Reset the cache system to a normal state.
+            \cache_factory::reset();
+        } catch (Exception $ex) {
+            \upgrade_handle_exception($ex);
+        }
+    }
+
+    /**
+    * before recovery
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_start_recovery($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->heading($component);
+        }
+    }
+
+    /**
+    * after recovery
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_end_recovery($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->notification(get_string('success'), 'notifysuccess');
+            if (!CLI_SCRIPT) {
+                echo '<hr />';
+            }
+        }
+    }
+
+    /**
+    * before install, used for upgrade
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_start_install($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->heading($component);
+        }
+    }
+
+    /**
+    * after install, used for upgrade
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_end_install($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->notification(get_string('success'), 'notifysuccess');
+            if (!CLI_SCRIPT) {
+                echo '<hr />';
+            }
+        }
+    }
+
+    /**
+    * before upgrade, used for upgrade
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_start_upgrade($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->heading($component);
+        }
+    }
+
+    /**
+    * after upgrade, used for upgrade
+    *
+    * @param \String $component
+    * @param bool $verbose
+    */
+    public function print_end_upgrade($component, $verbose){
+        global $OUTPUT;
+        if($verbose){
+            echo $OUTPUT->notification(get_string('success'), 'notifysuccess');
+            if (!CLI_SCRIPT) {
+                echo '<hr />';
+            }
+        }
+    }
+
+}
+
+/**
+* Factory class producing required subclasses of {@link plugininfo_base}
+*/
+class plugininfo_default_factory {
+
+    /**
+    * Makes a new instance of the plugininfo class
+    *
+    * @param string $type the plugin type, eg. 'mod'
+    * @param string $typerootdir full path to the location of all the plugins of this type
+    * @param string $name the plugin name, eg. 'workshop'
+    * @param string $namerootdir full path to the location of the plugin
+    * @param string $typeclass the name of class that holds the info about the plugin
+    * @return plugininfo_base the instance of $typeclass
+    */
+    public static function make($type, $typerootdir, $name, $namerootdir, $typeclass) {
+        $plugin              = new $typeclass();
+        $plugin->type        = $type;
+        $plugin->typerootdir = $typerootdir;
+        $plugin->name        = $name;
+        $plugin->rootdir     = $namerootdir;
+
+        $plugin->init_display_name();
+        $plugin->load_disk_version();
+        $plugin->load_db_version();
+        $plugin->load_required_main_version();
+
+        return $plugin;
+    }
+}
+
+
+/**
+* Base class providing access to the information about a plugin
+*
+* @property-read string $component the component name, type_name
+*/
+abstract class plugininfo_base {
+
+    /** @var string the plugintype name, eg. mod, auth or workshopform */
+    public $type;
+
+    /** @var string full path to the location of all the plugins of this type */
+    public $typerootdir;
+
+    /** @var string the plugin name, eg. assignment, ldap */
+    public $name;
+
+    /** @var string the localized plugin name */
+    public $displayname;
+
+    /** @var string the plugin source, one of plugin_manager::PLUGIN_SOURCE_xxx constants */
+    public $source;
+
+    /** @var fullpath to the location of this plugin */
+    public $rootdir;
+
+    /** @var int|string the version of the plugin's source code */
+    public $versiondisk;
+
+    /** @var int|string the version of the installed plugin */
+    public $versiondb;
+
+    /** @var int|float|string required version of Moodle core  */
+    public $versionrequires;
+
+    /** @var array other plugins that this one depends on, lazy-loaded by {@link get_other_required_plugins()} */
+    public $dependencies;
+
+    /** @var int number of instances of the plugin - not supported yet */
+    public $instances;
+
+    /** @var int order of the plugin among other plugins of the same type - not supported yet */
+    public $sortorder;
+
+    /** @var array|null array of {@link available_update_info} for this plugin */
+    public $availableupdates;
+
+    /**
+    * PHP code namespace
+    *
+    * @var \String
+    */
+    public $namespace;
+
+    /**
+    * $plugin in version.php
+    *
+    * @var \stdClass
+    */
+    public $disk_version;
+
+    /**
+    * Gathers and returns the information about all plugins of the given type
+    *
+    * @param string $type the name of the plugintype, eg. mod, auth or workshopform
+    * @param string $typerootdir full path to the location of the plugin dir
+    * @param string $typeclass the name of the actually called class
+    * @return array of plugintype classes, indexed by the plugin name
+    */
+    public static function get_plugins($type, $typerootdir, $typeclass) {
+
+        // get the information about plugins at the disk
+        $plugins = plugin_manager::instance()-> get_plugin_list($type);
+        $ondisk = array();
+        foreach ($plugins as $pluginname => $pluginrootdir) {
+            $ondisk[$pluginname] = plugininfo_default_factory::make($type, $typerootdir,
+                $pluginname, $pluginrootdir, $typeclass);
+        }
+        return $ondisk;
+    }
+
+    /**
+    * Sets {@link $displayname} property to a localized name of the plugin
+    */
+    public function init_display_name() {
+        if (!get_survey_string_manager()->string_exists('pluginname', $this->component)) {
+            $this->displayname = '[pluginname,' . $this->component . ']';
+        } else {
+            $this->displayname = get_string('pluginname', 'mod_surveyactivity_'.$this->component);
+        }
+    }
+
+    /**
+    * Magic method getter, redirects to read only values.
+    *
+    * @param string $name
+    * @return mixed
+    */
+    public function __get($name) {
+        switch ($name) {
+            case 'component': return $this->type . '_' . $this->name;
+
+            default:
+                debugging('Invalid plugin property accessed! '.$name);
+                return null;
+        }
+    }
+
+    /**
+    * Return the full path name of a file within the plugin.
+    *
+    * No check is made to see if the file exists.
+    *
+    * @param string $relativepath e.g. 'version.php'.
+    * @return string e.g. $CFG->dirroot . '/mod/quiz/version.php'.
+    */
+    public function full_path($relativepath) {
+        if (empty($this->rootdir)) {
+            return '';
+        }
+        return $this->rootdir . '/' . $relativepath;
+    }
+
+    /**
+    * Load the data from version.php.
+    *
+    * @return stdClass the object called $plugin defined in version.php
+    */
+    protected function load_version_php() {
+        $versionfile = $this->full_path('version.php');
+
+        $plugin = new \stdClass();
+        if (is_readable($versionfile)) {
+            include($versionfile);
+        }
+        return $plugin;
+    }
+
+    /**
+    * Sets {@link $versiondisk} property to a numerical value representing the
+    * version of the plugin's source code.
+    *
+    * If the value is null after calling this method, either the plugin
+    * does not use versioning (typically does not have any database
+    * data) or is missing from disk.
+    */
+    public function load_disk_version() {
+        $this->get_disk_version();
+    }
+
+    /**
+    * return $plugin in version.php
+    *
+    * @return \stdClass
+    *
+    */
+    public function get_disk_version(){
+        if(!$this->disk_version){
+            $plugin = $this->load_version_php();
+            if (isset($plugin->version)) {
+                $this->versiondisk = $plugin->version;
+            }
+            if(isset($plugin->namespace)){
+                $this->namespace = $plugin->namespace;
+            }else{
+                $this->namespace = __NAMESPACE__;
+            }
+            $this->disk_version = $plugin;
+        }
+        return $this->disk_version;
+    }
+
+    /**
+    * php code namespace
+    * the namespace in version.php
+    *
+    * @return \String
+    *
+    */
+    public function get_namespace(){
+        $this->load_disk_version();
+        return $this->namespace;
+    }
+
+    abstract public function get_interface_class();
+
+    /**
+    * Sets {@link $versionrequires} property to a numerical value representing
+    * the version of Moodle core that this plugin requires.
+    * this versionrequires means survey version
+    */
+    public function load_required_main_version() {
+        $plugin = $this->load_version_php();
+        if (isset($plugin->survey_requires)) {
+            $this->versionrequires = $plugin->survey_requires;
+        }
+    }
+
+    /**
+    * Initialise {@link $dependencies} to the list of other plugins (in any)
+    * that this one requires to be installed.
+    */
+    protected function load_other_required_plugins() {
+        $plugin = $this->load_version_php();
+        if (!empty($plugin->dependencies)) {
+            $this->dependencies = $plugin->dependencies;
+        } else {
+            $this->dependencies = array(); // By default, no dependencies.
+        }
+    }
+
+    /**
+    * Get the list of other plugins that this plugin requires to be installed.
+    *
+    * @return array with keys the frankenstyle plugin name, and values either
+    *      a version string (like '2011101700') or the constant ANY_VERSION.
+    */
+    public function get_other_required_plugins() {
+        if (is_null($this->dependencies)) {
+            $this->load_other_required_plugins();
+        }
+        return $this->dependencies;
+    }
+
+    /**
+    * Sets {@link $versiondb} property to a numerical value representing the
+    * currently installed version of the plugin.
+    *
+    * If the value is null after calling this method, either the plugin
+    * does not use versioning (typically does not have any database
+    * data) or has not been installed yet.
+    */
+    abstract public function load_db_version();
+
+    /**
+    * Version in system database
+    *
+    */
+    public function get_db_version(){
+        /*if($this->versiondb === null){
+        $this->load_db_version();
+        }*/
+        return $this->versiondb;
+    }
+
+    /**
+    * store version into db
+    *
+    * @param int $version
+    */
+    abstract public function set_db_version($version);
+
+    /**
+    * Delete version in db.
+    *
+    */
+    abstract public function delete_db_version();
+
+    /**
+    * update flag after exec install.xml
+    *
+    * @param bool $runing
+    */
+    abstract public function update_installrunning($runing = true);
+
+    /**
+    * True install is ongoing
+    * @return bool
+    */
+    abstract public function is_installrunning();
+
+    /**
+    * Returns true if the the given mod/surveyactivity version is enough to run this plugin
+    *
+    * @param string|int|double $surveyversion
+    * @return bool
+    */
+    public function is_core_dependency_satisfied($surveyversion) {
+
+        if (empty($this->versionrequires)) {
+            return true;
+
+        } else {
+            return (double)$this->versionrequires <= (double)$surveyversion;
+        }
+    }
+
+    /**
+    * A plugin must statisfy some interface.
+    * @return bool
+    *
+    */
+    abstract public function is_interface_satisfied();
+
+    /**
+    * Returns the install status of the plugin
+    *
+    * @return \String one of plugin_manager::PLUGIN_STATUS_xxx constants
+    */
+    public function get_status($display = false) {
+        if (is_null($this->versiondb) and is_null($this->versiondisk)) {
+            $status =  plugin_manager::PLUGIN_STATUS_NODB;
+
+        } else if (is_null($this->versiondb) and !is_null($this->versiondisk)) {
+            $status = plugin_manager::PLUGIN_STATUS_NEW;
+
+        } else if (!is_null($this->versiondb) and is_null($this->versiondisk)) {
+            if (plugin_manager::is_deleted_standard_plugin($this->type, $this->name)) {
+                $status = plugin_manager::PLUGIN_STATUS_DELETE;
+            } else {
+                $status = plugin_manager::PLUGIN_STATUS_MISSING;
+            }
+
+        } else if ((string)$this->versiondb === (string)$this->versiondisk) {
+            $status = plugin_manager::PLUGIN_STATUS_UPTODATE;
+
+        } else if ($this->versiondb < $this->versiondisk) {
+            $status = plugin_manager::PLUGIN_STATUS_UPGRADE;
+
+        } else if ($this->versiondb > $this->versiondisk) {
+            $status = plugin_manager::PLUGIN_STATUS_DOWNGRADE;
+
+        } else {
+            // $version = pi(); and similar funny jokes - hopefully Donald E. Knuth will never contribute to Moodle ;-)
+            throw new coding_exception('Unable to determine plugin state, check the plugin versions');
+        }
+        if($display){
+            $status = get_string('plugin_status_'.$status,SURVEY_ACTIVITY_BASE_PLUGIN_NAME);
+        }
+        return $status;
+    }
+
+    /**
+    * display install status
+    * @return \String
+    *
+    */
+    public function get_status_display(){
+        return $this->get_status(true);
+    }
+
+    /**
+    * a string: plugin depend on the survey version 2000100
+    *
+    * @return \String
+    *
+    */
+    public function get_depend_survey_version(){
+        return get_string('depend_survey_version', SURVEY_ACTIVITY_BASE_PLUGIN_NAME,$this->versionrequires);
+    }
+
+    /**
+    * @return bool
+    *
+    */
+    public function is_uptodate(){
+        return $this->get_status() == plugin_manager::PLUGIN_STATUS_UPTODATE;
+    }
+
+    /**
+    * Returns the information about plugin availability
+    *
+    * True means that the plugin is enabled. False means that the plugin is
+    * disabled. Null means that the information is not available, or the
+    * plugin does not support configurable availability or the availability
+    * can not be changed.
+    *
+    * @return null|bool
+    */
+    public function is_enabled() {
+        return null;
+    }
+
+    /**
+    * Returns relative directory of the plugin with heading '/'
+    *
+    * @return string
+    */
+    public function get_dir() {
+        global $CFG;
+
+        return substr($this->rootdir, strlen($CFG->dirroot));
+    }
+
+    /**
+    * True if the plugin is devloped by wmios
+    */
+    public function is_standard() {
+
+        $standard = plugin_manager::standard_plugins_list($this->type);
+
+        $is_standard = false;
+        if ($standard !== false) {
+            if(in_array($this->name,$standard)){
+                $is_standard = true;
+            }
+        }
+        return $is_standard;
+    }
+
+    /**
+    * a plugin must has some table
+    *
+    * @param \String $install_xml the full file name of install.xml
+    * @return bool
+    */
+    public function install_xml_is_valid($install_xml){
+        return true;
+    }
+
+}
+
+
+/**
+* General class for all plugin types that do not have their own class
+*/
+class plugininfo_general extends plugininfo_base {
+    public function load_db_version(){
+
+    }
+    public function set_db_version($version){
+
+    }
+
+    public function delete_db_version(){
+
+    }
+
+    public function update_installrunning($runing = true){
+
+    }
+
+    public function is_installrunning(){
+
+    }
+    public function is_interface_satisfied(){
+
+    }
+
+    public function get_interface_class(){
+
+    }
+}
+
+/**
+* plugininfo for activity
+* As a activity plugin,It
+*   1.optional:Has a class which parent class is \wmios\survye\plugin_installer.
+*       And in install.php which in activity_dir/db/
+*   2.optional:Has a class which parent class is \wmios\survye\plugin_upgrader.
+*       And in upgrade.php which in activity_dir/db/
+*   3.Must:Has a class which parent class is \wmios\survye\activity
+*       And in activity_{activty name}.php in activity_dir.
+*   4.Must:Has version.php which has a obj $plugin.And must be this format:
+*       $plugin->version = 2013050201; plugin version
+*       $plugin->survey_requires = 2013050100; survey version
+*       $plugin->component = 'activity_exam'; optional
+*       $plugin->namespace = 'wmios\survey'; optional,empty means  \wmios\survey
+*   5.Has activity_dir/lang/en/mod_surveyactivity_activity_{activty name}.php for translation
+*   6.optional:
+*       activity_dir/db/install.xml
+*       activity_dir/db/install.php
+*       activity_dir/db/upgrade.php
+*/
+class plugininfo_activity extends plugininfo_base{
+
+    public $type = 'activity';
+
+
+    public function __construct($name = null){
+        if($name){
+            $activities = plugin_manager::instance()->get_plugin_list('activity');
+            if(!key_exists($name,$activities)){
+                throw new \Exception('no activity');
+            }
+            $plugin_activity = plugin_manager::instance()->get_plugin_types();
+            $this->typerootdir = $plugin_activity['activity'];
+            $this->name        = $name;
+            $this->rootdir     = $activities[$name];
+            $this->init_display_name();
+            $this->load_disk_version();
+            $this->load_db_version();
+            $this->load_required_main_version();
+        }
+    }
+
+    public function load_db_version() {
+        global $DB;
+        $installedversion = $DB->get_field('surveyactivity_activity','version',array('name'=>$this->name));
+        if($installedversion){
+            $this->versiondb = $installedversion;
+        }
+    }
+
+    public function set_db_version($version){
+        global $DB;
+
+        $installedversion = $this->get_db_version();
+        if(!$installedversion){
+            $result = $DB->insert_record('surveyactivity_activity',(object)array('name'=>$this->name,'version'=>$version,'modifiedtime'=>time()));
+        }else if ($installedversion >= $version) {
+            // Something really wrong is going on in the upgrade script
+            throw new \downgrade_exception($component, $installedversion, $version);
+        }else{
+
+            $result = $DB->set_field('surveyactivity_activity','version',$version,array('name'=>$this->name)) &&
+            $DB->set_field('surveyactivity_activity','modifiedtime',time(),array('name'=>$this->name));
+        }
+        if($result){
+            $this->versiondb = $version;
+        }
+        return (bool)$result;
+    }
+
+    public function delete_db_version(){
+        global $DB;
+        $this->versiondb = null;
+        return $DB->delete_records('surveyactivity_activity',array('name'=>$this->name));
+    }
+
+    public function update_installrunning($runing = true){
+        global $DB;
+        return $DB->set_field('surveyactivity_activity','enable',$runing ? -1 : 1,array('name'=>$plugin));
+
+    }
+
+    public function is_installrunning(){
+        global $DB;
+        $field = $DB->get_field('surveyactivity_activity','enable',array('name'=>$this->name));
+        return $field < 0 ? true :false;
+    }
+
+    public function is_enabled(){
+        global $DB;
+        $enable = $DB->get_field('surveyactivity_activity','enable',array('name'=>$plugin));
+        return $enable > 0;
+    }
+
+    public function is_interface_satisfied(){
+        global $CFG;
+        $class_name = $this->get_interface_class();
+        return $class_name  && class_exists($class_name) && in_array(__NAMESPACE__.'\activity',class_parents($class_name));
+    }
+
+    public function get_interface_class(){
+        global $CFG;
+        $class_path = $this->full_path("activity_{$this->name}.php");
+        if(!file_exists($class_path)){
+            return false;
+        }
+        require_once($this->typerootdir.'/activity.class.php');
+        require_once($class_path);
+        $class_name = $this->get_namespace().'\activity_'.$this->name;
+        return $class_name;
+    }
+
+    public function install_xml_is_valid($install_xml){
+
+        $xmldb_file = new \xmldb_file($install_xml);
+
+        if (!$xmldb_file->fileExists()) {
+            return false;
+        }
+
+        $loaded = $xmldb_file->loadXMLStructure();
+        if (!$loaded || !$xmldb_file->isLoaded()) {
+            return false;
+        }
+
+        $structure = $xmldb_file->getStructure();
+        $table = $structure->getTable('survey_activity_'.$this->name);
+        if(!$table){
+            return false;
+        }
+        return $table->getField('id') !== null;
+
+    }
+
+
+
+}
+
+/**
+* For install a plugin
+*/
+abstract class plugin_installer{
+
+    /**
+    * when recovery
+    *
+    */
+    public function install_recovery(){
+
+    }
+
+    /**
+    * when install
+    *
+    */
+    public function install(){
+
+    }
+}
+
+/**
+* for upgrade a plugin
+*/
+abstract class plugin_upgrader{
+
+    /**
+    * when upgrade
+    *
+    * @param int $installedversion there's a old version in db.
+    */
+    public function upgrade($installedversion){
+        return true;
+    }
+}

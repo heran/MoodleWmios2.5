@@ -1,0 +1,103 @@
+.block_search_forums .content {
+    display:inline-block;
+    padding-top:10px;
+    height:50px;
+    position:relative;
+
+}
+
+.block_search_forums  #searchform_search{
+    padding:5px 30px 3px 10px;
+    width:310px;
+    border-radius:3px;
+
+
+
+}
+
+.block_search_forums  #searchform_button{
+    background:transparent;
+    border:0;
+    color:#777;
+    font-size:16px;
+    position:absolute;
+    top:50%;
+    margin-left: -30px;
+    margin-top:-11px!important;
+
+}
+
+
+
+.block_search_forums .content {
+    font-size:12px;
+    color:#646464;
+    padding:0px;
+
+}
+
+
+.block_search_forums .icon-search{
+    display:inline-block;
+
+    vertical-align:text-top;
+
+
+    background-position:14px 14px;
+    background-repeat:no-repeat;
+    margin-top:1px;
+}
+
+
+.block_search_forums .icon-search:before {
+    content: "\f002";
+}
+
+
+
+.block_search_forums .searchform{
+    position:relative;
+    margin-top:3px;
+    margin-left:-18px; 
+
+}
+
+.block_search_forums [class^="icon-"], [class*=" icon-"] {
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: inherit;
+    -webkit-font-smoothing: antialiased;
+    display: inline;
+    width: auto;
+    height: auto;
+    line-height: normal;
+    vertical-align: baseline;
+    background-image: none;
+    background-position: 0% 0%;
+    background-repeat: repeat;
+    margin-top: 0;
+}
+/*
+.block_search_forums .ud-courseannouncement a{
+    color:#555;
+
+}
+
+.block_search_forums .ud-courseannouncement button~a {
+    margin-left:10px;
+}
+ */
+ .block_search_forums .block-header a{
+    color:#555;
+
+}
+
+.block_search_forums .block-header button~a {
+    margin-left:10px;
+}
+
+.block_search_forums.block .content{
+
+    display:none;
+}

@@ -1,0 +1,16 @@
+M.mod_multimedia = M.mod_multimedia || {};
+
+M.mod_multimedia.init_filepicker = function(Y,elementname){
+    Y.use('event,node,gallery-base64',function(){
+        Y.one('#id_'+elementname).on('change',function(e){//filepicker-filename
+            var client_id = Y.one(e.target).ancestor('.ffilepicker')
+                .one('.filepicker-filelist').get('id').replace('file_info_','');
+            var client = M.core_filepicker.instances[client_id];
+            var conent_node = Y.one(e.target).ancestor('.ffilepicker').one(' .filepicker-filename>a');
+            Y.one(conent_node).wrap('<p></p>');
+            var content = Y.Base64.decode(Y.one(conent_node).ancestor('p').getHTML());
+            Y.one(conent_node).unwrap ();
+            Y.one(e.target).ancestor('form').append('<input type="hidden" name="multimedia_content" value="'+content+'"');
+        })
+    });
+};

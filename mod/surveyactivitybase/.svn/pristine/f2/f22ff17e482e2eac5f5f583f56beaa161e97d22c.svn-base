@@ -1,0 +1,225 @@
+<?php
+use wmios\survey as survey;
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+define('FPDF_FONTPATH','font/');
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = optional_param('id',0, PARAM_INT);
+}
+if($cmid)
+{
+    $cm = get_coursemodule_from_id('surveyactivitybase', $cmid);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+    $sa_base = survey\activity_base::instance_from_id($cm->instance);
+}else
+{
+    $base_id = required_param('base_id',PARAM_INT);
+    $sa_base = document_base::instance_from_id($base_id);
+    $cm = get_coursemodule_from_instance('surveyactivitybase', $base_id, $sa_base->course_id, false, MUST_EXIST);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+}
+$course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+require_course_login($course, true, $cm);
+$sa_base->set_course($course);
+$sa_base->set_cm($cm);
+$sa_base->set_context($cm_context);
+survey\tool::set_surveyactivity_base($sa_base);
+
+$wrapper = survey\activity_wrapper::instance_from_id(required_param('id',PARAM_INT));
+
+//调查ID
+$surveyid = $wrapper->get_activity_instance() ->get_instance()->survey_id;
+
+$rows = $wrapper->get_activity_instance()->activity_reportsinfo($surveyid);
+
+if(!$rows)
+{
+    throw new \moodle_exception('database is wrong');
+}
+
+//全部的调查结果
+$results = $wrapper->get_activity_instance()->reports_results($rows);
+
+$radar = array();
+foreach($results as $datas)
+{
+    foreach($datas as $k=>$v)
+    {
+        switch($k)
+        {
+            case 'requirements':
+            case 'management':                
+            case 'ownership':                
+            case 'operation':                 
+            case 'development':               
+            case 'yvalues':   $radar[] = $v;break;
+        }
+    }
+
+}
+
+//instance的属性
+$strs = new \stdClass();
+$strs->startime = $wrapper->starttime;
+$strs->endtime = $wrapper->endtime;
+$strs->name = $wrapper->name;
+$strs->des = $wrapper->desription;
+$strs->status = $wrapper->status;
+
+/**
+* 生成柱形图的方法  
+* @param mixed $a
+* @param mixed $b
+*/
+function chartbar($arrbar)
+{
+    
+    // Dataset definition 
+    $DataSet = new pData;
+    //图表数据
+    foreach($arrbar as $k=>$v)
+    {
+        $DataSet->AddPoint(array($v),"Serie1");
+        $DataSet->AddPoint(array($k),"Serie2");
+    }
+
+    $DataSet->AddSerie();
+    $DataSet->SetAbsciseLabelSerie("Serie2");//设置X轴的值
+    //数据图例
+    //$DataSet->SetSerieName("人数","Serie1");
+    //$DataSet->SetSerieName("IBM","Serie2");
+    //$DataSet->SetSerieName("Google","Serie3");
+
+    //X轴
+    $DataSet->SetXAxisUnit("分");  
+    //Y轴
+    //$DataSet->SetYAxisUnit("人");
+
+    // Initialise the graph
+    $Test = new pChart(700,230);
+    
+    //设置图表尺寸、样式
+    $Test->setFontProperties("Fonts/simhei.ttf",8);
+    $Test->setGraphArea(50,30,680,200);
+    $Test->drawFilledRoundedRectangle(7,7,693,223,5,240,240,240);
+    $Test->drawRoundedRectangle(5,5,695,225,5,230,230,230);
+    $Test->drawGraphArea(255,255,255,TRUE);
+    //X轴、Y轴字体的颜色
+    $Test->drawScale($DataSet->GetData(),$DataSet->GetDataDescription(),SCALE_NORMAL,150,150,150,TRUE,0,2,TRUE);
+    $Test->drawGrid(4,TRUE,230,230,230,50);
+
+    // Draw the 0 line
+    $Test->setFontProperties("Fonts/simhei.ttf",6);
+    $Test->drawTreshold(0,143,55,72,TRUE,TRUE);
+
+    // Draw the bar graph
+    //柱状图要使用drawBarGraph()
+    $Test->drawBarGraph($DataSet->GetData(),$DataSet->GetDataDescription(),TRUE,80);
+
+
+    // Finish the graph
+    //制作图例、标题、字体等属性
+    $Test->setFontProperties("Fonts/simhei.ttf",10);
+    //$Test->drawLegend(596,150,$DataSet->GetDataDescription(),255,255,255);
+
+    //$Test->drawTitle(50,22,"Example",50,50,50,585);
+
+    //写值
+    $Test->writeValues($DataSet->GetData(),$DataSet->GetDataDescription(),array("Serie1"));
+
+
+    //生成图表
+    $imageFile = "bar.png";
+    $Test->Render($imageFile);    
+
+}
+
+/**
+
+* 生成雷达图的方法
+* @param mixed $arr,$namearr array()
+* 
+*/
+function chartradar($namearr,$arr)
+{
+   
+    $DataSet = new pData;
+    foreach($namearr as $name)
+    {
+        $DataSet->AddPoint($name,"Label");
+    }  
+
+    foreach($arr as $data)
+    {
+        $DataSet->AddPoint($data,"Serie1");
+    }
+
+    // $DataSet->AddPoint(array(2,3,5,2,4),"Serie2");
+    $DataSet->AddSerie("Serie1");
+    //$DataSet->AddSerie("Serie2");
+    $DataSet->SetAbsciseLabelSerie("Label");
+
+
+    //$DataSet->SetSerieName("Reference","Serie1");右上角两个标签
+    //$DataSet->SetSerieName("Tested computer","Serie2");
+
+    // Initialise the graph
+    $Test = new pChart(400,400);
+    
+    $Test->setFontProperties("Fonts/simhei.ttf",8);
+    $Test->drawFilledRoundedRectangle(7,7,393,393,5,240,240,240);
+    $Test->drawRoundedRectangle(5,5,395,395,5,230,230,230);
+    $Test->setGraphArea(30,30,370,370);
+    $Test->drawFilledRoundedRectangle(30,30,370,370,5,255,255,255);
+    $Test->drawRoundedRectangle(30,30,370,370,5,220,220,220);
+
+    // Draw the radar graph
+    //要使用drawRadarAxis()生成雷达效果
+    $Test->drawRadarAxis($DataSet->GetData(),$DataSet->GetDataDescription(),TRUE,20,120,120,120,230);
+    $Test->drawFilledRadar($DataSet->GetData(),$DataSet->GetDataDescription(),50,20);
+
+    // Finish the graph
+    //$Test->drawLegend(15,15,$DataSet->GetDataDescription(),255,255,255);图标
+    $Test->setFontProperties("Fonts/tahoma.ttf",10);
+    //$Test->drawTitle(0,22,"biaoti",50,50,50,400);标题
+
+    $imageFile = "radar.png";
+    $Test->Render($imageFile);
+}
+
+
+//生成雷达图
+$namearr = array("基本要求","基本管理","组织运作","员工归属","员工发展","愿景和价值观");
+chartradar($namearr,$radar);
+
+//生成柱形图
+chartbar($results['statics']);
+
+//生成PDF报告
+if(isset($_GET['p']))
+{
+    $pdf=new FPDF('P', 'mm', 'A4'); //创建新的FPDF对象，竖向放纸，单位为毫米，纸张大小A4 
+    $pdf->Open(); //开始创建PDF 
+    $pdf->AddPage(); //增加一页 
+    $pdf->SetFont('Courier','I',20); //设置字体样式 
+    $pdf->Image('radar.png',50,20,100,80);
+    $pdf->Image('bar.png',30,120,150,80); //增加一张图片，文件名为sight.jpg 
+
+    $suinum=rand(100000,999999); 
+    $pdf->Output("$suinum.pdf","D"); //下载报告
+    
+}
+
+
+
+$renderer = $PAGE->get_renderer('surveyactivity_employengage');
+
+echo $renderer->header();
+
+echo $renderer->render_activity_reports($strs);
+
+echo $renderer->footer();

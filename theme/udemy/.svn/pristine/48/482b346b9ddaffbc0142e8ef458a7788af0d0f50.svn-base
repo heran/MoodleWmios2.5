@@ -1,0 +1,47 @@
+// JavaScript Document
+		window.addEvent('domready', function(){
+			var box = new multiBox('mb', {
+				overlay: new overlay()
+			});
+		}); 
+	
+function checkform() {
+	var i,temp;
+	var reg1 = /^(\d{18,18}|\d{15,15}|\d{17,17}x)$/;
+	var reg2 = /^(\+\d{2,3}\-)?\d{11}$/;
+	flag=true;
+	if (document.myform.b1.value=='')
+	{flag=false;
+	document.getElementById('msg1').style.display = 'block';
+	document.myform.b1.focus();
+	return flag}
+	else {
+		document.getElementById('msg1').style.display = 'none';
+	}
+	if (!reg1.test(document.myform.b2.value))
+	{flag=false;
+	document.getElementById('msg2').style.display = 'block';
+	document.myform.b2.focus();
+	return flag}
+	else {
+		document.getElementById('msg2').style.display = 'none';	
+	}
+	if (!reg2.test(document.myform.b3.value))
+	{flag=false;
+	document.getElementById('msg3').style.display = 'block';
+	document.myform.b3.focus();
+	return flag}
+	else {
+		document.getElementById('msg3').style.display = 'none';
+	}
+	if (document.myform.b4.value=='')
+	{flag=false;
+	document.getElementById('msg4').style.display = 'block';
+	document.myform.b4.focus();
+	return flag}
+	else {
+		document.getElementById('msg4').style.display = 'none';
+	}	
+	alert(flag);
+	return flag;
+}

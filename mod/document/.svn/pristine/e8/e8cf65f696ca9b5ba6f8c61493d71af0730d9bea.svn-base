@@ -1,0 +1,2 @@
+{include 'view_header.tpl'}
+{include 'view_footer.tpl'}

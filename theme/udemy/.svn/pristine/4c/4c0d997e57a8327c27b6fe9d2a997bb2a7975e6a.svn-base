@@ -1,0 +1,37 @@
+<?php
+require_once($CFG->dirroot . '/course/renderer.php');
+class theme_udemy_core_course_renderer extends core_course_renderer{
+
+    /**
+    * smarty class
+    *
+    * @var Smarty
+    */
+    protected $_smarty = null;
+
+    /**
+    * @return Smarty
+    *
+    */
+    public function get_smarty() {
+        if($this->_smarty === null){
+            $this->_smarty = get_smarty('core_course',null,$this->page);
+        }
+        return $this->_smarty;
+    }
+
+    /**
+    * @inheritdoc
+    *
+    * @param int|stdClass|coursecat $category
+    */
+    public function course_category($category){
+        $content = parent::course_category($category);
+        if(optional_param('browse',null,PARAM_ALPHA)){
+            $this->page->requires->jquery_plugin('handlebars','theme_udemy');
+            $smarty = $this->get_smarty();
+            $content .= $smarty->fetch('course_category.tpl');
+        }
+        return $content;
+    }
+}

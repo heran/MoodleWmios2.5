@@ -1,0 +1,72 @@
+<?php
+use wmios\survey as survey;
+
+require_once(dirname(__FILE__).'/../../config.php');
+require_login();
+require_capability('mod/surveyactivity:update_activity',context_system::instance());
+
+require_once($CFG->dirroot.'/mod/surveyactivity/lib.php');
+
+$id = optional_param('id', 0, PARAM_INT); //mod_surveyactivity table's id
+$confirm = optional_param('confirm', 0, PARAM_BOOL);
+
+
+$PAGE->set_context(context_system::instance());
+
+
+$activity_wrapper = survey\activity_wrapper::instance_for_id($id);
+
+if(!$activity_wrapper){
+    print_error('Delete Survey Need valid $id');
+}
+
+if($activity_wrapper->creator_id != $USER->id && !has_capability('mod/surveyactivity:manage_system',$context_system)){
+    print_error('only creator and admin can delete this activity');
+}
+
+
+
+
+if (!$confirm or !confirm_sesskey()) {
+
+
+
+    $formcontinue = new single_button(
+        new moodle_url('/mod/surveyactivity/activity_delete.php',
+            array('confirm'=>1, 'id'=>$id, 'sesskey'=>sesskey())),
+        get_string('yes'));
+    $formcancel = new single_button(
+        new moodle_url('/mod/surveyactivity/'),
+        get_string('no'),
+        'get');
+
+    $strdeletecheck = get_string('deletecheck', '', $activity_wrapper->name);
+    $strdeletecheckfull = get_string('deletecheckfull', '', $activity_wrapper->name);
+
+
+    $PAGE->set_pagelayout('mod_surveyactivity');
+    $PAGE->set_title($strdeletecheck);
+    $PAGE->set_heading($strdeletecheck);
+    $PAGE->navbar->add($strdeletecheck);
+
+    /**
+    * @var \mod_surveyactivity_core_renderer
+    */
+    $renderer = survey\get_renderer('mod_surveyactivity_core');
+
+
+    echo $renderer->header();
+    echo $renderer->box_start('noticebox');
+    echo $renderer->confirm($strdeletecheckfull, $formcontinue, $formcancel);
+    echo $renderer->box_end();
+    echo $renderer->footer();
+
+}else{
+    if(!survey\activity_wrapper::delete($id)){
+        throw new Exception('Delete Survey Activity Error');
+    }
+    redirect(new moodle_url('/mod/surveyactivity/'));
+}
+
+
+

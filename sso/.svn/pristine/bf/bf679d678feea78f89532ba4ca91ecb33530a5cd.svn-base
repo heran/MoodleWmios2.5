@@ -1,0 +1,22 @@
+<?php
+
+if(!isset($_GET['a']))
+{
+    header('Location:http://create.wmios.com');
+}
+
+require_once (dirname(__FILE__).'/../local/wmios/vendor/dreamplug/http_plug.php');
+
+require_once (dirname(__FILE__).'/../local/wmios/vendor/dreamplug/dream_plug.php');
+
+$plug = new DreamPlug("http://{$_GET['a']}@create.wmios.com/@api/deki");
+// setup the deki api location
+$result['status'] = 200;
+$result = $plug-> At('users', 'authenticate')->With('apikey','wmg3q3maBNApvkO6UjEQswFvW4GfK8ZF')->With('authprovider',1)->Post();
+if($result['status'] == 200)
+{
+    echo '200&authtoken='.$result['body'].'';
+
+} else{
+    print_r($result);
+}

@@ -1,0 +1,40 @@
+{if not $slice}
+{include 'view_header.tpl'}
+{/if}
+{if count($des)}
+<div class="document-entity-list-wrapper">
+    <p>
+        <span>{get_string('name')}</span>
+        <span>{get_string('username')}</span>
+        <span>{get_string('time')}</span>
+        <span>{get_string('document_entity_permission','document')}</span>
+        <span>{get_string('action')}</span>
+    </p>
+    <ul>
+    {foreach $des as $de}
+    <li>
+        <span>{$de->title}</span>
+        <span>{$de->user_name}</span>
+        <span>{date('Y-m-d',$de->create_time)}</span>
+        <span>{get_string("document_entity_permission_`$de->permission`",'local_wmios')}</span>
+        <span>
+            <a href="{$url_mod_document}/view.php?base_id={$base->id}&key={$de->key}" target="_blank">{get_string('view')}</a>
+            {if $user_me}
+            <a href="">{get_string('delete')}</a>
+            <a href="">{get_string('edit')}</a>
+            {/if}
+            {if $de->can_be_download_by_current_user()}
+            <a href="">{get_string('download')}</a>
+            {/if}
+        </span>
+    </li>
+    {/foreach}
+    </ul>
+    <div class="p">
+    {$pagingbar}
+    </div>
+</div>
+{/if}
+{if not $slice}
+{include 'view_footer.tpl'}
+{/if}

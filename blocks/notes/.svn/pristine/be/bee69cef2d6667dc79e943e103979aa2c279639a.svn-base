@@ -1,0 +1,65 @@
+<?php
+
+require_once($CFG->dirroot . '/blocks/notes/backup/moodle2/restore_notes_stepslib.php'); 
+
+class restore_notes_block_task extends restore_default_block_task {
+
+    protected function define_my_settings() {
+    }
+
+    protected function define_my_steps() {
+        $this->add_step(new restore_notes_block_structure_step('notes_structure', 'notes.xml'));
+    }
+    
+    /**
+    * Get the plan's setting.
+    * 
+    * @param string $name
+    */
+    public function get_plan_setting_value($name){
+        try{
+            return $this->plan->get_setting($name)->get_value();
+        }catch(Exception $e){
+            return false;
+        }
+    }
+    
+    /**
+    * When a note is about one course module,we need replace the cmid.
+    * 
+    */
+    public function after_restore() {
+        global $DB;
+        
+        //It's the new course's id.
+        $courseid = $this->get_courseid();
+        $notes = $DB->get_records('notes',array('courseid'=>$courseid));
+        
+        //replace the cmid
+        foreach($notes as $note){
+            if(!$note->cmid){
+                continue;
+            }
+            $mapping = restore_dbops::get_backup_ids_record(
+                $this->get_restoreid(),
+                'course_module',
+                $note->cmid);
+            $note->cmid = $mapping->newitemid;
+            $DB->update_record('notes',$note);
+        }
+        
+        $completions = $DB->get_records('course_modules_comple_ratio',array('courseid'=>$courseid));
+        foreach($completions as $completion){
+            
+            $mapping = restore_dbops::get_backup_ids_record(
+                $this->get_restoreid(),
+                'course_module',
+                $completion->cmid);
+            $completion->cmid = $mapping->newitemid;
+            $DB->update_record('course_modules_comple_ratio',$completion);
+        }
+        
+    }
+    
+}
+

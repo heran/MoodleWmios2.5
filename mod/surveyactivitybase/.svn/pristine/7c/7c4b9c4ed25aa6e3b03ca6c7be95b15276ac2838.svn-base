@@ -1,0 +1,170 @@
+<?php
+namespace wmios\survey;
+use \MoodleQuickForm,\moodle_url,\stdClass;
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/survey_client.php');
+require_once(dirname(__FILE__).'/locallib.php');
+
+
+class activity_employengage extends activity{
+
+    protected $_instance = null;
+
+    public static function process_update_form(MoodleQuickForm $mform,activity_wrapper $activity_wrapper = null)
+    {
+        if(!$activity_wrapper || $activity_wrapper->is_new())
+        {
+            $filepickeroptions = array('accepted_types' => '.csv','return_types'=>FILE_INTERNAL);
+            $mform->addElement('filepicker','userfile',get_string('userfile',SURVEYACTIVITYBASE_PLUGIN_NAME), null,$filepickeroptions);
+
+        }
+    }
+
+    public static function get_add_instance_default_data(){
+        return array();
+    }
+
+    /**
+    * @return activity_employengage_instance
+    * 
+    */
+    public function get_instance()
+    {
+        if($this->_instance == null)
+        {
+            $this->_instance = activity_employengage_instance::instance_from_id($this->_wrapper->instance_id);
+        } 
+        return $this->_instance;
+    }
+
+    public static function add_instance(stdClass $general, stdClass $special, moodleform_activity $mform)
+    {
+        global $DB, $CFG;
+        $users = self::process_survey_users_from_userfile($mform, true);
+
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+
+        $test = new \survey_client($url,$username,$password);
+        $file = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/file/limesurvey.lss';
+        $type = 'lss';
+        $name = 'mytests';
+
+        $new_survey_id = $test->copy_survey($file,$type,$name);
+
+        if($test->init_tokens($new_survey_id)){
+
+            $email = $users[0]['email'];
+            $lastname = $users[0]['lastname'];
+            $firstname = $users[0]['firstname'];
+            $userinfo = array(array("email"=>$email,"lastname"=>$lastname,"firstname"=>$firstname));
+            $test->add_usersurvey($new_survey_id,$userinfo);
+
+        }
+
+        $data = array('survey_id'=>$new_survey_id);
+        $instance = new activity_employengage_instance($data);
+        $instance->save();
+        return $instance->id;
+    }
+
+    public function update_instance(stdClass $general, stdClass $special, moodleform_activity $mform){
+        if($this->_wrapper->is_new())
+        {
+            $users = self::process_survey_users_from_userfile($mform, false);
+            if($users)
+            {
+                //push users to survey server.
+            }
+            //post the date time ,survey name, survey intro,users to server.
+            //get the result ,return the result,true or false.
+            //throw exception
+        }
+        return true;
+    }
+
+    protected static function process_survey_users_from_userfile(moodleform_activity $mform, $force = false)
+    {
+        $users = array();
+
+        $userfile = $mform->get_file_content('userfile');
+        if(!strlen($userfile))
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 1');
+            }else{
+                return $users;
+            }
+        }
+
+        $lines = explode("\n",$userfile);
+        if(count($lines)<2)
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 2');
+            }else{
+                return $users;
+            }
+        }
+        $ks = explode(',',trim($lines[0],"\r, "));
+        for($i=1;$i<count($lines);$i++)
+        {
+            if($lines[$i] == "")continue;
+            $user = array();
+            $vs = explode(',', trim($lines[$i],"\r"));
+            foreach($vs as $k=> $v)
+            {
+                $user[trim($ks[$k],"' ")] = trim($v,"' ");
+            }
+            $users[] = $user;
+        }
+        return $users;
+    }
+
+    public static function delete_instance($id){
+        return true;
+    }
+
+    public function get_update_instance_data(){
+        return array('dd'=>time());
+    }
+
+    public function get_view_url(){
+        return new moodle_url('/mod/surveyactivity/activity/simple/view.php',array('id'=>$this->_wrapper->id));
+    }
+
+    /**
+    *
+    * True if this type has a global report.
+    *
+    * @return bool
+    *
+    */
+    public function has_global_report()
+    {
+        return true;
+    }
+
+    public function start()
+    {
+        //start survey
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+        $test = new \survey_client($url,$username,$password);
+
+        $surveyid = $this->get_instance()->survey_id;
+        $test->invite_users($surveyid);
+
+    }
+
+    public function stop()
+    {
+        //stop survey
+        return true;
+    }
+}

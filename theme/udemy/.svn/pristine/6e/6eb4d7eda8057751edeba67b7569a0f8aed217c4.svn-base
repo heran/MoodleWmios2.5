@@ -1,0 +1,41 @@
+/*   course/view.php   */
+
+
+.path-course-view .mod-page-hcontent {
+
+    background: #fff;
+    padding: 15px;
+    width:100%;
+    
+
+}
+
+.path-course-view #course-taking-page.wrapper .main ul#timeline>li .asset-container{
+    background:#fff;
+}
+
+
+.path-course-view .mod-page-hcontent .intro{
+    overflow: auto;
+    background: #eee;
+    margin: 15px;
+    padding: 5px;
+    border: dashed 1px #aaa;
+}
+
+.path-course-view .mod-page-hcontent .content{
+    overflow: auto;
+    
+}
+
+.path-course-view .mod-page-hcontent .pageheading{
+
+    text-align: center;
+}
+
+.path-course-view .mod-page-hcontent .htime{
+    color:#999;
+    font-style: italic;
+    text-align: left;
+}
+

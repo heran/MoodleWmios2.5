@@ -1,0 +1,124 @@
+<?php
+namespace wmios\survey;
+use \MoodleQuickForm,\moodle_url,\stdClass;
+
+define('SURVEYACTIVITY_EMPLOYENGAGE_PLUGIN_NAME','surveyactivity_employengage');
+
+
+/**
+* @property int $id
+* @property int $base_id
+* @property int $survey_id
+*/
+class activity_employengage_instance extends \wmios_common_object
+{
+    protected static $_table = 'surveyactivity_employengage';
+
+    /** @var activity_wrapper*/
+    protected $_wrapper = null;
+
+    protected $_fields =array(
+        'id'=>0,
+        'base_id'=>0,
+        'survey_id'=>0
+    );
+
+    /**
+    * put your comment there...
+    *
+    * @param activity_wrapper $wrapper
+    * @return activity_employengage_instance
+    */
+    public function set_wrapper(activity_wrapper $wrapper)
+    {
+        if($this->id == $wrapper->instance_id)
+        {
+            $this->_wrapper = $wrapper;
+        }
+        return $this;
+    }
+
+    /**
+    * @return activity_wrapper
+    *
+    */
+    public function get_wrapper()
+    {
+        if($this->_wrapper == null)
+        {
+            $this->_wrapper == activity_wrapper::instance_for_activity_and_instance('employengage',$this->id);
+        }
+        return $this->_wrapper;
+    }
+
+}
+/**
+* 
+*/
+class activity_employengage_users_instance extends \wmios_common_object
+{
+
+    protected static $_table = 'surveyactivity_employ_users';
+
+    protected $_fields =array('id'=>0, 
+        'surveyid'=>0,
+        'firstname'=>'',
+        'lastname'=>'',
+        'email'=>'',
+        'dplevel_one'=>'', 
+        'dplevel_two'=>'', 
+        'dplevel_three'=>'',
+        'dplevel_four'=>'',
+        'dplevel_five'=>'',
+        'dplevel_six'=>'',
+        'dplevel_seven'=>'',
+        'dplevel_eight'=>'',
+        'dplevel_nine'=>'',
+        'dplevel_ten'=>'',
+        'position'=>'',
+        'age'=>0,
+        'provinces'=>'',
+        'city'=>'',
+        'gender'=>'',
+        'token'=>'',
+        'dplevel_one'=>'',
+        'dplevel_two'=>'',
+        'dplevel_three'=>'',
+        'dplevel_four'=>'',
+        'dplevel_five'=>'',
+        'dplevel_six'=>'',
+        'dplevel_seven'=>'',
+        'dplevel_eight'=>'',
+        'dplevel_nine'=>'',
+        'dplevel_ten'=>'',
+        'requirements'=>'',
+        'management'=>'',
+        'ownership'=>'',
+        'operation'=>'',
+        'development'=>'',
+        'yvalues'=>'',
+        'averages'=>'',
+        'q1'=>'',
+        'q2'=>'',
+        'q3'=>'',
+        'q4'=>'',
+        'q5'=>'',
+        'q6'=>'',
+        'q7'=>'',
+        'q8'=>'',
+        'q9'=>'',
+        'q10'=>'',
+        'q11'=>'',
+        'q12'=>'',
+        'q13'=>'',
+        'q14'=>'',
+        'q15'=>'',
+        'q16'=>'',
+        'q17'=>'',
+        'q18'=>'', 
+        'status'=>'',      
+    );
+    
+    
+
+}

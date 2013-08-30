@@ -1,0 +1,20 @@
+<?php
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once($CFG->dirroot.'/cohort/lib.php');
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+require_once($CFG->dirroot.'/local/wmios/org_cohort/lib.php');
+require_capability('local/wmios:org_cohort_manage',context_system::instance());
+
+$cohorts = wmios_organization_cohort::instance_from_select("idnumber like 'o_%'");
+
+$table = new html_table();
+
+$table->head(array(get_string('cohort'),get_string('edit')));
+$table->colclasses = array ('leftalign', 'leftalign');
+$table->attributes['class'] = 'admintable generaltable';
+foreach($cohorts as $cohort)
+{
+    $table->data[] = array($cohort->name,'<a href="">edit me </a><a href="">edit course</a><a href="">edit users</a>');
+}
+
+html_writer::table($table);

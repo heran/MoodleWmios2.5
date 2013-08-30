@@ -1,0 +1,165 @@
+<?php
+//wmios is mine.
+namespace wmios\survey;
+
+/**
+* @ignore
+* It's very like \core_string_manager
+* 
+* It located the lang file to {plugin_dir}/lang/en/mod_surveyactivity_{component}.php
+*   mod/surveyactivity/activity/exam/lang/en/mod_surveyactivity_activity_exam.php
+* 
+* 
+*/
+class survey_string_manager extends \core_string_manager{
+    /**
+    * 
+    *  Just supports mod_surveyactivity_activity
+    * 
+    * @inheritdoc
+    */
+    public function load_component_strings($component, $lang, $disablecache=false, $disablelocal=false) {
+        global $CFG;
+
+        list($plugintype, $pluginname) = plugin_manager::instance()->normalize_component($component);
+        if($plugintype != 'activity'){
+            throw new \Exception('Only support string manager: activity');
+        }
+        $component = $plugintype . '_' . $pluginname;
+
+        $cachekey = $lang.'_mod_surveyactivity_'.$component;
+
+        if (!$disablecache and !$disablelocal) {
+            $string = $this->cache->get($cachekey);
+            if ($string) {
+                $this->countdiskcache++;
+                return $string;
+            }
+        }
+
+        // no cache found - let us merge all possible sources of the strings
+        $plugintypes = plugin_manager::instance()->get_plugin_types(true);
+        if ($plugintype === 'activity'){
+            $location = null;
+            if(isset( $plugintypes[$plugintype])){
+                $location = $plugintypes[$plugintype];
+            }else{
+                return array();
+            }
+            $location .= '/'.$pluginname;
+            if ( !is_dir($location)) {
+                return array();
+            }
+
+            $file = 'mod_surveyactivity_'.$plugintype . '_' . $pluginname;
+            // first load English pack
+            if (!file_exists("$location/lang/en/$file.php")) {
+                //English pack does not exist, so do not try to load anything else
+                return array();
+            }
+
+            $string = array();
+            include("$location/lang/en/$file.php");
+            $originalkeys = array_keys($string);
+            $originalkeys = array_flip($originalkeys);
+            // and then corresponding local english if present
+            if (!$disablelocal and file_exists("$this->localroot/en_local/$file.php")) {
+                include("$this->localroot/en_local/$file.php");
+            }
+
+            // now loop through all langs in correct order
+            $deps = $this->get_language_dependencies($lang);
+            foreach ($deps as $dep) {
+                // legacy location - used by contrib only
+                if (file_exists("$location/lang/$dep/$file.php")) {
+                    include("$location/lang/$dep/$file.php");
+                }
+                // the main lang string location
+                if (file_exists("$this->otherroot/$dep/$file.php")) {
+                    include("$this->otherroot/$dep/$file.php");
+                }
+                // local customisations
+                if (!$disablelocal and file_exists("$this->localroot/{$dep}_local/$file.php")) {
+                    include("$this->localroot/{$dep}_local/$file.php");
+                }
+            }
+        }
+
+        // we do not want any extra strings from other languages - everything must be in en lang pack
+        $string = array_intersect_key($string, $originalkeys);
+
+        if (!$disablelocal) {
+            // now we have a list of strings from all possible sources. put it into both in-memory and on-disk
+            // caches so we do not need to do all this merging and dependencies resolving again
+            $this->cache->set($cachekey, $string);
+        }
+        return $string;
+    }
+}
+
+/**
+* @ignore
+* 
+* It locates the manager to \wmios\survey\survey_string_manager
+* 
+* @param mixed $forcereload
+* @return \wmios\survey\survey_string_manager
+*/
+function get_survey_string_manager($forcereload=false) {
+    global $CFG;
+
+    static $singleton = null;
+
+    if ($forcereload) {
+        $singleton = null;
+    }
+    if ($singleton === null) {
+
+        if (empty($CFG->langlist)) {
+            $translist = array();
+        } else {
+            $translist = explode(',', $CFG->langlist);
+        }
+
+        if (empty($CFG->langmenucachefile)) {
+            $langmenucache = $CFG->cachedir . '/languages';
+        } else {
+            $langmenucache = $CFG->langmenucachefile;
+        }
+
+        $singleton = new survey_string_manager($CFG->langotherroot, $CFG->langlocalroot,
+            !empty($CFG->langstringcache), $translist, $langmenucache);
+    }
+
+    return $singleton;
+}
+
+/**
+* When in survey ,You must use this function
+* Or can't find the string
+* 
+* If the $component is begin with 'mod_surveyactivity_' 
+* will locate the file to {plugin_dir}/lang/en/{component}.php
+* 
+* @see \get_string()
+* 
+* @param \String $identifier
+* @param \String $component
+* @param mixed $a
+* @param bool $lazyload
+* @return \String
+*/
+function get_string($identifier, $component = '', $a = NULL, $lazyload = false) {
+    if(strstr($component,'mod_surveyactivity_') !== false){
+
+        $result = get_survey_string_manager()->get_string($identifier, str_ireplace('mod_surveyactivity_','',$component), $a);
+
+        // Debugging feature lets you display string identifier and component
+        if (isset($CFG->debugstringids) && $CFG->debugstringids && optional_param('strings', 0, PARAM_INT)) {
+            $result .= ' {' . $identifier . '/' . $component . '}';
+        }
+        return $result;
+    }else{
+        return \get_string($identifier, $component, $a, $lazyload);
+    }
+}

@@ -1,0 +1,5 @@
+<?php
+use wmios\survey as survey;
+
+class mod_surveyactivity_activity_employengage_renderer extends survey\plugin_renderer_base{
+}

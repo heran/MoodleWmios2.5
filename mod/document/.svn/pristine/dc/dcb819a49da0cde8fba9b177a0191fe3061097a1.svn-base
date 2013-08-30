@@ -1,0 +1,24 @@
+<?php
+
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+$cmid = required_param('cmid',PARAM_INT);
+$cm_context = context_module::instance_by_id($cmid);
+
+require_capability('mod/document:upload', $cm_context);
+$document_base = document_base::instance_from_id($cm_context->instanceid);
+
+switch(required_param('action',PARAM_ACTION))
+{
+    case 'new':
+    {
+
+    }
+    break;
+    case 'info':
+    {
+
+    }
+    break;
+
+}

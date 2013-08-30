@@ -1,0 +1,4 @@
+<?php
+header("Contet-type:text/html;charset=utf-8");  
+require_once dirname ( __FILE__ ) . '/survey_client.php';
+

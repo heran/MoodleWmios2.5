@@ -1,0 +1,149 @@
+<div class="diaocha">
+    <p class="top_btn"><a href="#">返回列表</a></p>
+    <h3>{$data->name}调查标题调查标题</h3>
+    <div class="dc_brief"><p>{$data->des}调查内容</p><p><span><b>开始日期</b>：<i>{date('Y年m月d日',$data->startime)}</i></span><span><b>结束日期</b>：<i>{date('Y年m月d日',$data->endtime)}</i></span><span><b>报表状态</b>：<i>{if $data->status eq 0}未结束 {elseif $data->status eq 1}已结束{/if}</i></span></p></div>
+    
+    <div class="search_nr">
+      <div class="search_wd">
+          <dl>
+          <dt>报告纬度：</dt>
+          <dd><a class="weidu_cur">全部</a></dd>
+          <dd><a >性别</a></dd>
+          <dd><a >年龄</a></dd>
+          <dd><a >地区</a></dd>
+          <dd><a >部门</a></dd>
+          <div style=" clear:both"></div>
+          </dl>
+      </div>
+
+      
+      <!--全部-->
+      <div class="diaocha_qb diaocha0">
+         <!-- <div class="dc_nr_bt"><a href="#" class="bt_cur">全部</a><div style="clear:both"></div></div>-->
+        
+        <div class="dc_nr_tb">
+            <a href="?cmid=34&id=26&p=1" class="xiazai">下载报告</a>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="{$reportradar_url}" width="400" height="400"/></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="{$reportbar_url}" width="700" height="230"/></p>
+        </div>
+      </div>
+      
+      <!--男女-->
+      <div class="diaocha_qb diaocha1" style=" display:none">
+          <div class="dc_nr_bt">
+            <a  class="bt_cur">男</a>
+            <a >女</a>
+            <div style="clear:both"></div>
+          </div>
+        
+        <div class="dc_nr_tb">
+            <a href="#" class="xiazai">下载报告</a>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--年龄-->
+      <div class="diaocha_qb diaocha2" style=" display:none">
+          <div class="dc_nr_bt"><a href="#" class="bt_cur">1-10岁</a><a href="#">11-20岁</a><a href="#">21-30岁</a><a href="#">31-40岁</a><a href="#">41-50岁</a><a href="#">51-60岁</a><a href="#">61-70岁</a><a href="#">71-80岁</a><a href="#">81-90岁</a><a href="#">91-100岁</a><div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+            <a href="#" class="xiazai">下载报告</a>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--地区-->
+      <div class="diaocha_qb diaocha3" style="display:none">
+          <div class="dc_nr_bt">
+            <ul>
+                <li><a href="#" class="bt_cur">北京</a>
+                    <ul><li><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a></li></ul>
+                </li>
+                <li><a href="#">上海</a>
+                    <ul><li><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a></li></ul>
+                </li>
+                <li><a href="#">天津</a></li>
+                <li><a href="#">重庆</a></li>
+                <li><a href="#">宁夏</a></li>
+                <li><a href="#">吉林</a></li>
+                <li><a href="#">辽宁</a></li>
+                <li><a href="#">江苏</a></li>
+                <li><a href="#">山东</a></li>
+                <li><a href="#">安徽</a></li>
+                <li><a href="#">河北</a></li>
+                <li><a href="#">河南</a></li>
+                <li><a href="#">湖北</a></li>
+                <li><a href="#">湖南</a></li>
+                <li><a href="#">江西</a></li>
+                <li><a href="#">陕西</a></li>
+                <li><a href="#">山西</a></li>
+                <li><a href="#">四川</a></li>
+                <li><a href="#">青海</a></li>
+                <li><a href="#">海南</a></li>
+                <li><a href="#">广东</a></li>
+                <li><a href="#">贵州</a></li>
+                <li><a href="#">浙江</a></li>
+                <li><a href="#">福建</a></li>
+                <li><a href="#">台湾</a></li>
+                <li><a href="#">甘肃</a></li>
+                <li><a href="#">云南</a></li>
+                <li><a href="#">新疆</a></li>
+                <li><a href="#">西藏</a></li>
+                <li><a href="#">广西</a></li>
+                <li><a href="#">香港</a>
+                    <ul><li><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a></li></ul>
+                </li>
+                <li><a href="#">澳门</a></li>
+                <li><a href="#">内蒙古</a></li>
+                <li><a href="#">黑龙江</a></li>
+            </ul>
+            <div style="clear:both"></div>
+            </div>
+        
+        <div class="dc_nr_tb">
+            <a href="#" class="xiazai">下载报告</a>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--部门-->
+      <div class="diaocha_qb diaocha4" style="display:none">
+          <div class="dc_nr_bt">
+            <form action="" method="get">
+                <select name="">
+                  <option>请选择一级部门</option>
+                </select>
+                <select name="">
+                  <option>请选择二级部门</option>
+                </select>
+                <select name="">
+                  <option>请选择三级部门</option>
+                </select>
+                <select name="">
+                  <option>请选择四级部门</option>
+                </select>
+            </form>
+        <div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+            <a href="#" class="xiazai">下载报告</a>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+    </div>
+</div>

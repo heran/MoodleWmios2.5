@@ -1,0 +1,184 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir.'/conditionlib.php');
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = optional_param('id',0, PARAM_INT);
+}
+/** @var dekiwiki_instance*/
+$dekiwiki = null;
+if($cmid)
+{
+    $cm = get_coursemodule_from_id('dekiwiki', $cmid);
+    $cm_context = context_module::instance($cm->id);
+    $dekiwiki = dekiwiki_instance::instance_from_id($cm->instance);
+    $dekiwiki->set_cm($cm);
+}else
+{
+    $base_id = required_param('base_id',PARAM_INT);
+    $dekiwiki = dekiwiki_instance::instance_from_id($base_id);
+    $cm = get_coursemodule_from_instance('dekiwiki', $base_id, $dekiwiki->course, false, MUST_EXIST);
+    $dekiwiki->set_cm($cm);
+    $cm_context = context_module::instance($cm->id);
+}
+$course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+require_course_login($course, true, $cm);
+$dekiwiki->set_course($course);
+
+if(!has_capability('mod/dekiwiki:view', $cm_context))
+{
+    $dekiwiki->block_login_user();
+}else{
+    $dekiwiki->goto_display();
+
+}
+
+
+$PAGE->set_context($cm_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_cm($cm);
+$PAGE->set_pagelayout('noregion');
+$PAGE->set_title($course->shortname.':'.$document_base->name);
+$PAGE->requires->jquery_plugin('ui');
+
+/** @var mod_document_renderer*/
+$renderer = $PAGE->get_renderer('mod_document');
+
+$url_edit_document_entity = new moodle_url('/mod/document/upload.php',array('cmid'=>$cm->id));
+
+//one document
+$entity_key = optional_param('key','',PARAM_TEXT);
+$searchwords = optional_param('searchwords','',PARAM_TEXT);
+if($searchwords)
+{
+    $in_search = true;
+}else{
+    $in_search = false;
+}
+
+$page         = optional_param('page', 0, PARAM_INT);
+$perpage      = optional_param('perpage', 15, PARAM_INT);
+
+
+if($entity_key)
+{
+    $subsidiary = array();
+    $des = $document_base->get_entities_by_query(
+        array('key'=>required_param('key',PARAM_TEXT),'mlt'=>true), $nothing, $subsidiary);
+    if(count($des)!=1)
+    {
+         print_error('document is not exists');
+    }
+    $de = current($des);
+    if($de->permission < document_entity::DOCUMENT_PERMISSION_PUBLIC_READ && !$de->belong_to($USER->id))
+    {
+        print_error('document is private');
+    }
+
+    $renderer->get_smarty()->assign('base',$document_base);
+    $renderer->get_smarty()->assign('subsidiary',$subsidiary);
+
+    $tmpheaders = apache_request_headers();
+    if(isset($tmpheaders['X-fancyBox']) && $tmpheaders['X-fancyBox'])
+    {
+        $renderer->get_smarty()->assign('slice',1);
+        echo $renderer->render_document_entity($de);
+    }else{
+        $renderer->get_smarty()->assign('slice',0);
+        echo $OUTPUT->header();
+        echo $renderer->render_document_entity($de);
+        echo $OUTPUT->footer();
+    }
+}else{
+    $tmpl = array();
+    $q = array();
+
+    if($in_search)
+    {
+        $q['searchwords'] = $searchwords;
+    }
+    $tmpl['searchwords'] = $searchwords;
+    $renderer->get_smarty()->assign('in_search',$in_search);
+
+    if(!$in_search)
+    {
+        $user_me = optional_param('user_me',1,PARAM_INT);
+        $tmpl['user_me'] = $user_me;
+        if($user_me)
+        {
+            $q['user_id'] = $USER->id;
+        }else{
+            $q['not_user_id'] = $USER->id;
+        }
+
+
+
+        if($user_me)
+        {
+            $permission = optional_param('permission',-5 ,PARAM_INT);
+            if($permission != -5)
+            {
+                if($permission == 0)
+                {
+                    $q['max_permission'] = document_entity::DOCUMENT_PERMISSION_PRIVATE;
+                }else{
+                    $q['min_permission'] = document_entity::DOCUMENT_PERMISSION_PUBLIC_READ;
+                }
+            }
+            $tmpl['permission'] = $permission;
+        }else
+        {
+            $q['min_permission'] = document_entity::DOCUMENT_PERMISSION_PUBLIC_READ;
+
+        }
+    }else{
+    }
+
+
+    $file_extension = optional_param('file_extension','',PARAM_TEXT);
+    if($file_extension)
+    {
+        $q['in_file_extension'] = $file_extension;
+    }
+    $tmpl['file_extension'] = $file_extension;
+
+
+    foreach($document_base->get_document_fields_by_type(document_field_type::TYPE_SELECT_SINGLE) as $field_type)
+    {
+        $p = optional_param($field_type->name, 0 , PARAM_INT);
+        if($p)
+        {
+            $dict = $field_type->dict->find_descendent_by_id($p);
+            if($dict)
+            {
+                $q['left_'.$field_type->name.'_chain'] = $dict->getIdChain(false);
+            }
+            $tmpl[$field_type->name] = $p;
+        }
+        $tmpl[$field_type->name] = $p;
+    }
+
+    $tmpl['thumb'] = optional_param('thumb', 0 ,PARAM_INT);
+
+    $total = 0;
+    $subsidiary = array();
+    $des = $document_base->get_entities_by_query($q, $total,$subsidiary, $page, $perpage);
+
+    $tmpl['page'] = $page;
+    $tmpl['perpage'] = $perpage;
+    $renderer->get_smarty()->assign('subsidiary', $subsidiary);
+
+    if(optional_param('slice',0,PARAM_INT))
+    {
+        echo $renderer->render_document_entity_list($in_search, $document_base, $des, $total, $tmpl,true);
+    }else{
+        echo $OUTPUT->header();
+        echo $renderer->render_document_entity_list($in_search, $document_base, $des, $total, $tmpl);
+        echo $OUTPUT->footer();
+    }
+    //echo $OUTPUT->paging_bar($usercount, $page, $perpage, $baseurl);
+
+}

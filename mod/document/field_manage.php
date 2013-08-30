@@ -1,0 +1,240 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+
+$COURSE = $DB->get_record('course', array('id'=>required_param('course_id',PARAM_INT)), '*', MUST_EXIST);
+
+require_course_login($COURSE);
+$course_context = CONTEXT_COURSE::instance($COURSE->id);
+require_capability('mod/document:field_manage', $course_context);//who can manage field? field bind to course.
+
+$PAGE->set_context($course_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_pagelayout('noregion');
+/** @var mod_document_renderer*/
+$renderer = $PAGE->get_renderer('mod_document');
+
+$field_type_list_url = '/mod/document/field_manage.php?action=field_type&subaction=list&course_id='.$COURSE->id;
+$field_type_edit_url = '/mod/document/field_manage.php?action=field_type&subaction=edit&course_id='.$COURSE->id;
+$field_dict_list_url = '/mod/document/field_manage.php?action=field_dict&subaction=list&course_id='.$COURSE->id;
+$field_dict_edit_url = '/mod/document/field_manage.php?action=field_dict&subaction=edit&course_id='.$COURSE->id;
+switch(required_param('action',PARAM_ACTION))
+{
+    case 'field_type':
+    {
+        switch(required_param('subaction',PARAM_ACTION))
+        {
+            case 'edit':
+            {
+                $mform = new document_form_field_type($FULLME);
+                $cform = new document_form_field_type_copy($FULLME);
+                $type_id = optional_param('type_id',0,PARAM_INT);
+                $field_type = null;
+                if($type_id)
+                {
+                    $field_type = document_field_type::instance_from_id($type_id);
+                    if(!$field_type->is_mine())
+                    {
+                        print_error('must creator can edit this.');
+                    }
+                }
+                if(!$field_type)
+                {
+                    $field_type = new document_field_type(array());
+                }
+
+                if ($mform->is_cancelled()) {
+                    redirect($field_type_list_url,get_string('goto_field_type_list',MOD_DOCUMENT_PLUGIN_NAME));
+                }
+                else if ($data = $mform->get_data())
+                {
+
+
+                    //TODO use transction
+                    //Todo when there's document base use this type can not edit
+                    $field_type->name = $data->name;
+                    $field_type->permission = $data->permission;
+                    $field_type->updatetime = time();
+                    $is_new = false;
+                    if($field_type->id>0)
+                    {
+                        if(!$field_type->save())
+                        {
+                            print_error('edit_field_type_error');
+                        }
+
+                    }else{
+                        $is_new = true;
+                        $field_type->type = $data->type;
+                        $field_type->course_id = $COURSE->id;
+                        $field_type->user_id = $USER->id;
+                        if(!$field_type->save())
+                        {
+                            print_error('add_field_type_error');
+                        }
+                    }
+                    //create dict
+                    if($is_new && $field_type->is_dictionary_type())
+                    {
+                        $field_type_tree = document_field_tree::instance_from_create(
+                            array('content'=>$field_type->name,'pid'=>$field_type->id,'level'=>0,'updatetime'=>time()));
+                        if(!$field_type_tree)
+                        {
+                            document_field_type::delete_instance($field_type);
+                            print_error('Cant not create field_type_tree');
+                        }else{
+                            $field_type->dict_root = $field_type_tree->id;
+                            if(!$field_type->save())
+                            {
+                                print_error('Cant not update field_type_tree dict_root');
+                                document_field_tree::delete_instance($field_type_tree);
+                            }
+                        }
+                    }else if($field_type->is_dictionary_type() && !$is_new)
+                    {
+                        $field_type->dict->content = $field_type->name;
+                        $field_type->dict->save();
+                    }
+
+                    if( $field_type->is_dictionary_type())
+                    {
+                        redirect($field_dict_list_url.'&type_id='.$field_type->id, get_string('goto_edit_field_dictionary',MOD_DOCUMENT_PLUGIN_NAME));
+                    }else{
+                        redirect($field_type_list_url,get_string('goto_field_type_list',MOD_DOCUMENT_PLUGIN_NAME));
+                    }
+
+                }
+                else if($data = $cform->get_data())
+                {
+
+                    $old_field_type = document_field_type::instance_from_id($data->old_type_id);
+                    if(!$old_field_type)
+                    {
+                        print_error('No old type');
+                    }
+                    $new_field_type = document_field_type::copy_new($old_field_type,$COURSE->id);
+                    if(!$new_field_type)
+                    {
+                        print_error('copy type error');
+                    }
+                    redirect($field_type_list_url,get_string('goto_field_type_list',MOD_DOCUMENT_PLUGIN_NAME));
+
+
+                }
+                else
+                {
+                    echo $OUTPUT->header();
+                    $mform->set_data((object)$field_type->getFields());
+                    $mform->display();
+                    $cform->display();
+                    echo $OUTPUT->footer();
+                }
+            }
+            break;
+            case 'list':
+            {
+                $field_types = document_field_type::instances_from_select("course_id='{$COURSE->id}'");
+                echo $OUTPUT->header();
+                echo $renderer->render_field_type_list($field_types,$COURSE);
+                echo $OUTPUT->footer();
+            }
+            break;
+
+        }
+    }
+    break;
+    case 'field_dict':
+    {
+        $type_id = required_param('type_id',PARAM_INT);
+        /** @var document_field_type*/
+        $field_type = document_field_type::instance_from_id($type_id);
+        if(!$field_type->is_dictionary_type())
+        {
+            print_error('this type is not dictionary type');
+        }
+        switch(required_param('subaction',PARAM_ACTION))
+        {
+            case 'edit':
+            {
+
+                if(!$field_type->is_mine())
+                {
+                    print_error('must creator can edit this.');
+                }
+
+                $dict_id = optional_param('dict_id',0,PARAM_INT);
+                $pid = optional_param('pid',0,PARAM_INT);
+                /** @var document_field_tree*/
+                $field_dict_parent = null;
+                if(!$dict_id && !$pid)
+                {
+                    $field_dict_parent =document_field_tree::instance_from_select("pid='{$type_id}' and level = 0");
+                }
+                $field_dict = null;
+                if(!$dict_id)
+                {
+                    $field_dict = new document_field_tree(array());
+                    $field_dict_parent = $field_dict_parent ?: document_field_tree::instance_from_id($pid);
+                    if(!$field_dict_parent)
+                    {
+                        print_error('not parent');
+                    }
+                }else{
+                    /** @var document_field_tree*/
+                    $field_dict = document_field_tree::instance_from_id($dict_id);
+                    if(!$field_dict)
+                    {
+                        print_error('no dict');
+                    }
+                    if($field_dict->level != 0)
+                    {
+                        $field_dict_parent = document_field_tree::instance_from_id($field_dict->pid);
+                    }else{
+                        print_error('can not edit root dict');
+                    }
+                }
+
+                $dict_form = new document_form_field_dict($FULLME);
+
+                if ($dict_form->is_cancelled()) {
+                    redirect($field_type_list_url,get_string('goto_field_type_list',MOD_DOCUMENT_PLUGIN_NAME));
+                }
+                else if ($data = $dict_form->get_data())
+                {
+                    $field_dict->content = $data->content;
+                    $field_dict->sort = $data->sort;
+                    $field_dict->remark = $data->remark;
+                    $field_dict->updatetime = time();
+                    $field_dict->pid = $field_dict_parent->id;
+                    $field_dict->level = $field_dict_parent->level+1;
+                    if(!$field_dict->save())
+                    {
+                        print_error('can not edit field dict');
+                    }
+                    redirect($field_dict_list_url.'&type_id='.$type_id);
+                }
+                else
+                {
+                    echo $OUTPUT->header();
+                    echo 'parent-chain:'.$field_dict_parent->getContentChain(false).'<br />';
+                    echo 'parent-chain:'.$field_dict_parent->getIdChain(false).'<br />';
+                    $dict_form->set_data((object)$field_dict->getFields());
+                    $dict_form->display();
+                    echo $OUTPUT->footer();
+                }
+
+
+            }
+            break;
+            case 'list':
+            {
+                $field_dict_root = document_field_tree::instance_from_select("pid='{$type_id}' and level = 0");
+                echo $OUTPUT->header();
+                echo $renderer->render_field_dict_list($field_dict_root, $field_type);
+                echo $OUTPUT->footer();
+            }
+            break;
+        }
+    }
+    break;
+}

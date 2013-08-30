@@ -1,0 +1,356 @@
+body.home-page #top-section, body.path-local-wmios #top-section {
+    position:relative;
+    height:500px;
+    background: url([[pix:theme|home_bg_new_ipad]]) center -25px no-repeat;
+}
+body.home-page #top-section #video, body.path-local-wmios #top-section #video, body.home-page #top-section #ref, body.path-local-wmios #top-section #ref {
+    height:259px;
+    left:50%;
+    margin:-201px 0 0 -416px;
+    position:absolute;
+    top:50%;
+    width:446px;
+    overflow:hidden;
+}
+body.home-page #top-section #ref, body.path-local-wmios #top-section #ref {
+    background:url("../images/v3/home_video_reflection.png");
+    width:150px;
+    height:241px;
+    margin-left:-120px;
+}
+body.home-page #top-section #auth-popup, body.path-local-wmios #top-section #auth-popup {
+    background:#F8F8FA;
+    left:50%;
+    margin:-100px 0 0 110px;
+    position:absolute;
+    top:50%;
+    width:330px;
+    border:1px solid #a9a9a9;
+    border-radius:5px;
+    padding-bottom:30px;
+    overflow:hidden;
+    box-shadow:0 1px 0 rgba(255, 255, 255, 0.45), inset 0 1px 2px rgba(0, 0, 0, 0.15);
+    -webkit-transition:height 0.2s ease;
+    -moz-transition:height 0.2s ease;
+    -o-transition:height 0.2s ease;
+    transition:height 0.2s ease;
+    -webkit-transition:height 0.2s ease;
+    -moz-transition:height 0.2s ease;
+    -o-transition:height 0.2s ease;
+    transition:height 0.2s ease;
+}
+body.home-page #top-section #auth-popup .auth-top, body.path-local-wmios #top-section #auth-popup .auth-top {
+    background:none;
+    border-bottom:0;
+    padding:15px 15px 0;
+}
+body.home-page #top-section #auth-popup .form-bottom, body.path-local-wmios #top-section #auth-popup .form-bottom {
+    background:none;
+    padding:10px 20px 0;
+}
+body.home-page #top-section #auth-popup .form-bottom>span, body.path-local-wmios #top-section #auth-popup .form-bottom>span {
+    font-size:13px;
+}
+body.home-page #top-section #auth-popup h2:before, body.path-local-wmios #top-section #auth-popup h2:before, body.home-page #top-section #auth-popup h2:after, body.path-local-wmios #top-section #auth-popup h2:after {
+    width:20%;
+}
+body.home-page #top-section #auth-popup .auth-form, body.path-local-wmios #top-section #auth-popup .auth-form {
+    padding:30px 20px 0;
+}
+body.home-page #top-section #auth-popup.on #signup, body.path-local-wmios #top-section #auth-popup.on #signup {
+    position:absolute;
+}
+body.home-page #top-section #auth-popup.on #login, body.path-local-wmios #top-section #auth-popup.on #login {
+    position:relative;
+}
+body.home-page #headings, body.path-local-wmios #headings {
+    left:50%;
+    position:absolute;
+    top:50%;
+    width:340px;
+    margin:-244px 0 0 105px;
+    text-shadow:0 1px #fff;
+    text-align:center;
+}
+body.home-page #headings h2, body.path-local-wmios #headings h2 {
+    font-weight:300;
+    font-size:28px;
+    line-height:60px;
+}
+body.home-page #headings h1, body.path-local-wmios #headings h1 {
+    font-size:30px;
+}
+#auth-popup {
+    width:440px;
+    text-align:center;
+    position:relative;
+    -moz-perspective:51em;
+    -webkit-perspective:51em;
+    -o-perspective:51em;
+    -ms-perspective:51em;
+    perspective:51em;
+    overflow:hidden;
+    height: 216px;
+}
+#auth-popup>div {
+    -moz-transition:-moz-transform 0.2s ease;
+    -webkit-transition:-webkit-transform 0.2s ease;
+    -o-transition:-o-transform 0.2s ease;
+    -ms-transition:-ms-transform 0.2s ease;
+    transition:transform 0.2s ease;
+    width:100%;
+}
+#auth-popup #signup {
+    -moz-transition-delay:0.2s;
+    -webkit-transition-delay:0.2s;
+    -o-transition-delay:0.2s;
+    -ms-transition-delay:0.2s;
+    transition-delay:0.2s;
+    position:relative;
+}
+#auth-popup #login {
+    -moz-transform:rotatey(-90deg);
+    -webkit-transform:rotatey(-90deg);
+    -o-transform:rotatey(-90deg);
+    -ms-transform:rotatey(-90deg);
+    transform:rotatey(-90deg);
+    -webkit-backface-visibility:hidden;
+    -moz-transition-delay:0s;
+    -webkit-transition-delay:0s;
+    -o-transition-delay:0s;
+    -ms-transition-delay:0s;
+    transition-delay:0s;
+    position:absolute;
+    top:0;
+}
+#auth-popup.on #signup {
+    -moz-transform:rotatey(90deg);
+    -webkit-transform:rotatey(90deg);
+    -o-transform:rotatey(90deg);
+    -ms-transform:rotatey(90deg);
+    transform:rotatey(90deg);
+    -webkit-backface-visibility:hidden;
+    -moz-transition-delay:0s;
+    -webkit-transition-delay:0s;
+    -o-transition-delay:0s;
+    -ms-transition-delay:0s;
+    transition-delay:0s;
+}
+#auth-popup.on #login {
+    -moz-transform:rotatey(0deg);
+    -webkit-transform:rotatey(0deg);
+    -o-transform:rotatey(0deg);
+    -ms-transform:rotatey(0deg);
+    transform:rotatey(0deg);
+    -webkit-backface-visibility:hidden;
+    -moz-transition-delay:0.2s;
+    -webkit-transition-delay:0.2s;
+    -o-transition-delay:0.2s;
+    -ms-transition-delay:0.2s;
+    transition-delay:0.2s;
+}
+#auth-popup h1 {
+    background:#d9dde2;
+    background:-moz-linear-gradient(#f3f3f3, #d9dde2);
+    background:-webkit-linear-gradient(#f3f3f3, #d9dde2);
+    background:-o-linear-gradient(#f3f3f3, #d9dde2);
+    background:-ms-linear-gradient(#f3f3f3, #d9dde2);
+    background:linear-gradient(#f3f3f3, #d9dde2);
+    line-height:38px;
+    color:#526075;
+    font-size:16px;
+    padding:0 15px;
+    text-transform:uppercase;
+    border-bottom:1px solid #c5c5c5;
+    border-radius:5px 5px 0 0;
+}
+#auth-popup h2 {
+    color:#555;
+    font-size:14px;
+    font-weight:normal;
+    position:relative;
+}
+#auth-popup h2:before, #auth-popup h2:after {
+    width:28%;
+}
+#auth-popup .auth-top {
+    background:#f2f2f2;
+    background:-moz-linear-gradient(#ffffff, #f2f2f2);
+    background:-webkit-linear-gradient(#ffffff, #f2f2f2);
+    background:-o-linear-gradient(#ffffff, #f2f2f2);
+    background:-ms-linear-gradient(#ffffff, #f2f2f2);
+    background:linear-gradient(#ffffff, #f2f2f2);
+    padding:15px 30px;
+    border-bottom:1px solid #d9d9d9;
+}
+#auth-popup .auth-top .faces {
+    margin-top:5px;
+    max-height:63px;
+    overflow:hidden;
+}
+#auth-popup .agree {
+    margin-top:12px;
+    font-size:10px;
+    color:#777;
+    line-height:1;
+    letter-spacing:-0.3px;
+}
+#auth-popup .agree a {
+    color:#777;
+    text-decoration:underline;
+    font-weight:bold;
+}
+#auth-popup .auth-form {
+    padding:10px 20px;
+}
+#auth-popup .auth-form .or {
+    color:#3c7498;
+    font-weight:bold;
+    font-size:16px;
+    margin-bottom: 20px;
+}
+#auth-popup .auth-form .fields>div {
+    margin-top:10px;
+    position:relative;
+    border:1px solid #c2c2c2;
+    width:100%;
+    background-image:url([[pix:theme|sprites]])!important;
+    border-radius:4px;
+    padding:0 0 0 40px;
+    box-shadow:0 1px 2px #ccc inset;
+}
+#auth-popup .auth-form .fields>div input {
+    border:0;
+    width:100%;
+    background-image:none;
+    border-radius:0;
+    padding:6px 10px 6px 2px;
+    background-color: rgb(248,248,250);
+    color:#29313E;
+}
+#auth-popup .auth-form .fields>div input:-moz-placeholder {
+color:#888;
+}
+#auth-popup .auth-form .fields>div input::-webkit-input-placeholder {
+color:#888;
+}
+#auth-popup .auth-form .fields>div input.error {
+    border-color:#CA4F5B;
+}
+#auth-popup .auth-form .fields>div.fullName input {
+    background-position:-396px -50px;
+}
+#auth-popup .auth-form .fields>div.fullName input:-moz-placeholder {
+background-position:4px -50px;
+}
+#auth-popup .auth-form .fields>div.email {
+    background-position:-396px -47px;
+}
+#auth-popup .auth-form .fields>div.email input:-moz-placeholder {
+background-position:4px -80px;
+}
+#auth-popup .auth-form .fields>div.password {
+    background-position:-396px -110px;
+}
+#auth-popup .auth-form .fields>div.password input:-moz-placeholder {
+background-position:4px -110px;
+}
+#auth-popup .auth-form .fields>div.form-errors {
+    display:none;
+    color:#CA4F5B;
+    text-align:left;
+}
+#auth-popup .auth-form .fields>div span.error-text {
+    display:none;
+    background:#ffffcc;
+    font-size:11px;
+    color:#000;
+    padding:1px 3px 1px 10px;
+    border:1px solid #c8a34a;
+    position:absolute;
+    font-weight:normal;
+    letter-spacing:0;
+    border-radius:3px;
+    margin:5px;
+    right:0;
+    top:0;
+}
+#auth-popup .auth-form .fields>div span.error-text:before {
+    content:'';
+    position:absolute;
+    left:-5px;
+    top:50%;
+    background:#ffffcc;
+    width:10px;
+    height:10px;
+    -moz-transform:rotate(45deg);
+    -webkit-transform:rotate(45deg);
+    -o-transform:rotate(45deg);
+    -ms-transform:rotate(45deg);
+    transform:rotate(45deg);
+    -webkit-backface-visibility:hidden;
+    border-style:solid;
+    border-color:#c8a34a;
+    border-width:0 0 1px 1px;
+    margin-top:-6px;
+}
+#auth-popup .form-bottom {
+    background:#ffffff;
+    background:-moz-linear-gradient(#f2f2f2, #ffffff);
+    background:-webkit-linear-gradient(#f2f2f2, #ffffff);
+    background:-o-linear-gradient(#f2f2f2, #ffffff);
+    background:-ms-linear-gradient(#f2f2f2, #ffffff);
+    background:linear-gradient(#f2f2f2, #ffffff);
+    overflow:hidden;
+    padding:10px 20px;
+    border-radius:0 0 5px 5px;
+}
+#auth-popup .form-bottom .signup-btn, #auth-popup .form-bottom .login-btn {
+    float:right;
+    text-transform:uppercase;
+}
+#auth-popup .form-bottom span {
+    float:left;
+    margin:8px 0 0 0;
+}
+#auth-popup .form-bottom .goto-login-btn, #auth-popup .form-bottom .goto-signup-btn {
+    text-transform:uppercase;
+}
+#auth-popup .form-bottom .forgot {
+    float:left;
+    margin-top:5px;
+    color:#ca4f5b;
+    font-size:12px;
+    text-decoration:underline;
+}
+#auth-popup .timeZone {
+    display:none;
+}
+#login-box-container h3 {
+    font-size:14px;
+}
+#login-box-container #login-form-wrapper {
+    width:330px;
+    padding:10px 0px 0px 15px;
+    float:left;
+    margin:15px 10px 10px 10px;
+}
+#login-box-container #login-form-wrapper h3 {
+    padding-left:0px;
+}
+#ipad-promo {
+    background:url([[pix:theme|sprites]]) -744px -260px;
+    height:200px;
+    left:50%;
+    margin:30px 0 0 -498px;
+    position:absolute;
+    top:50%;
+    width:257px;
+}
+#ipad-promo a {
+    width:94px;
+    height:28px;
+    position:absolute;
+    left:69px;
+    top:172px;
+}

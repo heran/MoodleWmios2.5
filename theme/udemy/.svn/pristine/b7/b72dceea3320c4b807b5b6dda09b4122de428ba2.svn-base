@@ -1,0 +1,396 @@
+// 利用插件 AJAX 把图书的页面内容显示在 course/view.php
+
+var M = M || {};
+M.W = M.W || {};
+M.W.modview = M.W.modview || {};
+M.W.modview.modhandler = M.W.modview.modhandler || {};
+
+M.W.modview.modhandler.book =book_mod_view = {
+    support:{goto_and_play:false,get_now_position:false,resume_mod:false},
+    load_modview:function(cmid,content_box,intro_box,callback){
+
+        var resize=function(){
+            var mh=$('.mod-book-content').height();
+            var nh=$('.mod-book-content .navtop').height();
+            var bh=$('.mod-book-content .navbottom').height();
+            var bch=null;
+            if($('.mod-book-content .bookcontent .nav').length>0){
+                var navh=$('.mod-book-content .bookcontent .nav').height();
+                bch=mh-nh-bh-navh-95;
+
+            }else{
+
+                bch=mh-nh-bh-80;
+
+            }
+            $('.mod-book-content .bookcontent .generalbox').height(bch);
+        }
+
+        var ajaxcontent=function(url){
+            var first_load = true;
+            if($('.block.block_book_toc>.content').length>0){
+                first_load = false;
+            }
+            if(!first_load){
+                //loading 
+                // $('.mod-book-content').html(laodingpicture); 
+
+            }
+
+            $.get(url,{id:cmid},function(data){
+                /*
+                $(content_box).html(<div >menu</div><div>neihsadasdsas</div>);
+                $('.block-book-content').html(blockcontent);
+                $('.mod-book-content').html(modcontent);
+                if(first_load){
+                callback()
+                } */
+                if(first_load){
+
+                    //replace whole content
+                    data = $(data); 
+                    var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+                    var modcontent=$(data).find('div[role=main]').html();
+
+                    var html='<div class="contents">';
+
+                    html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+                    html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+                    html +='</div>';
+
+
+                    $(content_box).html(html);
+
+                    var h2text=$('.mod-book-content .box.generalbox.book_content h2').text();
+
+                    $('.mod-book-content .box.generalbox.book_content h2').remove();
+
+                    $('.mod-book-content .navtop').after('<h2>'+h2text+'</h2>');
+
+                    $('.mod-book-content h2').after("<hr>");
+
+                    $('.mod-book-content .box.generalbox.book_content').wrap('<div class="bookcontent"></div>');
+
+                    if($('.mod-book-content .box.generalbox.book_content h3').length>0){
+
+                        var h3text=$('.mod-book-content .box.generalbox.book_content h3').text();
+
+                        $('.mod-book-content .box.generalbox.book_content h3').remove(); 
+                        $('.mod-book-content .box.generalbox.book_content').before('<div class="nav"></div>');
+
+                        $('.mod-book-content .bookcontent .nav').html(h3text);
+
+                    }
+                    callback(cmid); 
+
+                } else{
+                    //right
+                    show_loading();
+
+                    data = $(data); 
+
+                    var modcontent=$(data).find('div[role=main]').html();
+
+
+                    $('.mod-book-content').html(modcontent);
+
+                    hide_loading();
+
+                }
+
+                resize();
+
+                $(windows).resize(resize);
+            });
+
+            if(!first_load){
+
+            }
+
+        }
+
+        var show_loading = function(){
+            $('.contents div.mod-book-content').addClass('loads');
+        }
+
+        var hide_loading = function(){
+            $('.contents div.mod-book-content').removeClass('loads');
+        }
+
+        var ajaxurl=M.cfg.wwwroot+'/mod/book/view.php';
+
+        ajaxcontent(ajaxurl);
+
+        //回调函数
+        var callb=function(e){
+
+            var url=$(this).attr("href");
+
+            if(url.indexOf('course/view.php')<0){
+
+                ajaxcontent(M.cfg.wwwroot+'/mod/book/'+url);  
+                e.preventDefault();
+            }
+
+        }
+
+        $(document).on('click','.book_toc_numbered ul a,.navtop a ,.navbottom a',callb);
+
+    }
+
+} 
+
+/*
+$.get(M.cfg.wwwroot+'/mod/book/view.php',{id:cmid},function(data){
+
+data = $(data); 
+var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+var modcontent=$(data).find('div[role=main]').html();
+
+var html='<div class="contents">';
+
+html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+html +='</div>';
+
+$(content_box).html(html);
+
+var h2text=$('.mod-book-content .box.generalbox.book_content h2').text();
+
+$('.mod-book-content .box.generalbox.book_content h2').remove();
+
+$('.mod-book-content .navtop').after('<h2>'+h2text+'</h2>');
+
+$('.mod-book-content h2').after("<hr>");
+
+$('.mod-book-content .box.generalbox.book_content').wrap('<div class="bookcontent"></div>');
+
+if($('.mod-book-content .box.generalbox.book_content h3').length>0){
+
+var h3text=$('.mod-book-content .box.generalbox.book_content h3').text();
+
+$('.mod-book-content .box.generalbox.book_content h3').remove(); 
+$('.mod-book-content .box.generalbox.book_content').before('<div class="nav"></div>');
+
+$('.mod-book-content .bookcontent .nav').html(h3text);
+}
+
+var res=function(){
+var mh=$('.mod-book-content').height();
+var nh=$('.mod-book-content .navtop').height();
+var bh=$('.mod-book-content .navbottom').height();
+var span=$('.mod-book-content #maincotent').height();
+var h2=$('.mod-book-content h2').height();
+var hr= $('.mod-book-content hr').height();
+var bch=null;
+if($('.mod-book-content .bookcontent .nav').length>0){
+var navh=$('.mod-book-content .bookcontent .nav').height();
+bch=mh-nh-bh-span-h2-hr-navh-50;
+
+}else{
+
+bch=mh-nh-bh-span-h2-hr-40;
+
+}
+$('.mod-book-content .bookcontent .generalbox').height(bch);
+
+}
+res();
+
+$(window).resize(res);
+
+if(typeof callback != 'undefined'){
+callback(cmid);
+}
+});
+
+
+//小节
+$(document).on('click','.book_toc_numbered li>ul li.clearfix a',jiecallback);
+
+//章节 
+$(document).on('click','.book_toc_numbered ul li.clearfix a',jiecallback);
+
+//图标
+$(document).on('click','.navtop a',tucallback);
+
+//图标下
+$(document).on('click','.navbottom a',tucallback);
+
+//小节、章节 回掉函数
+function jiecallback(e){
+
+var url=$(this).attr("href");
+
+$.get(M.cfg.wwwroot+'/mod/book/'+url,function(data){
+data = $(data); 
+var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+var modcontent=$(data).find('div[role=main]').html();
+
+var html='<div class="contents">';
+
+html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+html +='</div>';
+
+
+$(content_box).html(html);
+
+var h2text=$('.mod-book-content .box.generalbox.book_content h2').text();
+
+$('.mod-book-content .box.generalbox.book_content h2').remove();
+
+$('.mod-book-content .navtop').after('<h2>'+h2text+'</h2>');
+
+$('.mod-book-content h2').after("<hr>");
+
+$('.mod-book-content .box.generalbox.book_content').wrap('<div class="bookcontent"></div>');
+
+if($('.mod-book-content .box.generalbox.book_content h3').length>0){
+
+var h3text=$('.mod-book-content .box.generalbox.book_content h3').text();
+
+$('.mod-book-content .box.generalbox.book_content h3').remove(); 
+$('.mod-book-content .box.generalbox.book_content').before('<div class="nav"></div>');
+
+$('.mod-book-content .bookcontent .nav').html(h3text);
+}
+
+var res=function(){
+var mh=$('.mod-book-content').height();
+var nh=$('.mod-book-content .navtop').height();
+var bh=$('.mod-book-content .navbottom').height();
+var span=$('.mod-book-content #maincotent').height();
+var h2=$('.mod-book-content h2').height();
+var hr= $('.mod-book-content hr').height();
+var bch=null;
+if($('.mod-book-content .bookcontent .nav').length>0){
+var navh=$('.mod-book-content .bookcontent .nav').height();
+bch=mh-nh-bh-span-h2-hr-navh-50;
+
+}else{
+
+bch=mh-nh-bh-span-h2-hr-40;
+
+}
+$('.mod-book-content .bookcontent .generalbox').height(bch);
+
+}
+res();
+
+$(window).resize(res);
+
+if(typeof callback != 'undefined'){
+callback(cmid);
+}
+
+});
+e.preventDefault();
+
+}
+
+//图标、下图标回调函数
+function tucallback(e){
+var url=$(this).attr("href");
+var atitle=$(this).attr("title");
+
+if(atitle !=='退出图书'){
+$.get(M.cfg.wwwroot+'/mod/book/'+url,function(data){
+data = $(data); 
+var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+var modcontent=$(data).find('div[role=main]').html();
+
+var html='<div class="contents">';
+
+html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+html +='</div>';
+
+$(content_box).html(html);
+
+
+var h2text=$('.mod-book-content .box.generalbox.book_content h2').text();
+
+$('.mod-book-content .box.generalbox.book_content h2').remove();
+
+$('.mod-book-content .navtop').after('<h2>'+h2text+'</h2>');
+
+$('.mod-book-content h2').after("<hr>");
+
+$('.mod-book-content .box.generalbox.book_content').wrap('<div class="bookcontent"></div>');
+
+if($('.mod-book-content .box.generalbox.book_content h3').length>0){
+
+var h3text=$('.mod-book-content .box.generalbox.book_content h3').text();
+
+$('.mod-book-content .box.generalbox.book_content h3').remove(); 
+$('.mod-book-content .box.generalbox.book_content').before('<div class="nav"></div>');
+
+$('.mod-book-content .bookcontent .nav').html(h3text);
+}
+
+var res=function(){
+var mh=$('.mod-book-content').height();
+var nh=$('.mod-book-content .navtop').height();
+var bh=$('.mod-book-content .navbottom').height();
+var span=$('.mod-book-content #maincotent').height();
+var h2=$('.mod-book-content h2').height();
+var hr= $('.mod-book-content hr').height();
+var bch=null;
+if($('.mod-book-content .bookcontent .nav').length>0){
+var navh=$('.mod-book-content .bookcontent .nav').height();
+bch=mh-nh-bh-span-h2-hr-navh-50;
+
+}else{
+
+bch=mh-nh-bh-span-h2-hr-40;
+
+}
+$('.mod-book-content .bookcontent .generalbox').height(bch);
+
+}
+res();
+
+$(window).resize(res);
+
+
+if(typeof callback != 'undefined'){
+callback(cmid);
+}
+
+});
+
+e.preventDefault();
+
+}
+
+}
+*/
+
+
+/*
+if(!first_load){
+//loading
+}
+
+
+
+
+
+
+ajaxcontent(M.cfg.wwwroot+'/mod/book/view.php');
+$(dddd);
+*/
+
+
+
+
+

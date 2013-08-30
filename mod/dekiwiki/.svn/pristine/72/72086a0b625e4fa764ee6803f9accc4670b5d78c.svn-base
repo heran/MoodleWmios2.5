@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/page/db" VERSION="20130710" COMMENT="XMLDB file for Page module"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="dekiwiki" COMMENT="Default comment for the table, please edit me">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="course" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="root_page_id" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="the dekiwiki's pages tables's page_id"/>
+        <FIELD NAME="sub_page_id" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="the dekiwiki's pages tables's page_id"/>
+        <FIELD NAME="course_page_id" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="the dekiwiki's pages tables's page_id"/>
+        <FIELD NAME="group_id" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="the dekiwiki's pages tables's page_id"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="255" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="intro" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="introformat" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

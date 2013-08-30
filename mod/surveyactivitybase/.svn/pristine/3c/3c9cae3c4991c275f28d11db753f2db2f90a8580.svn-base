@@ -1,0 +1,91 @@
+<?php
+use wmios\survey as survey;
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+define('FPDF_FONTPATH','font/');
+
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = optional_param('id',0, PARAM_INT);
+}
+if($cmid)
+{
+    $cm = get_coursemodule_from_id('surveyactivitybase', $cmid);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+    $sa_base = survey\activity_base::instance_from_id($cm->instance);
+}else
+{
+    $base_id = required_param('base_id',PARAM_INT);
+    $sa_base = document_base::instance_from_id($base_id);
+    $cm = get_coursemodule_from_instance('surveyactivitybase', $base_id, $sa_base->course_id, false, MUST_EXIST);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+}
+$course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+require_course_login($course, true, $cm);
+$sa_base->set_course($course);
+$sa_base->set_cm($cm);
+$sa_base->set_context($cm_context);
+survey\tool::set_surveyactivity_base($sa_base);
+
+$wrapper = survey\activity_wrapper::instance_from_id(required_param('id',PARAM_INT));
+
+$surveyid = $wrapper->get_activity_instance() ->get_instance()->survey_id;
+
+$dim1 = optional_param('dim1', '', PARAM_ALPHANUM);
+
+$dim2 = optional_param('dim2', '', PARAM_TEXT);
+
+if($dim2 == null)
+{
+    $pdfname = "{$surveyid}{$dim1}.pdf";
+}
+
+if(is_array($dim2))
+{
+    if(count($dim2)==1)
+    {
+        $radar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2[0].'radar.png';
+        $bar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2[0].'bar.png';
+        $radar = iconv('UTF-8','GB2312',$radar);
+        $bar = iconv('UTF-8','GB2312',$bar);
+        $pdfname = "{$surveyid}{$dim1}{$dim2[0]}.pdf";
+    }else
+    {
+        $radar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2[0].$dim2[1].'radar.png';
+        $bar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2[0].$dim2[1].'bar.png';  
+        $radar = iconv('UTF-8','GB2312',$radar);
+        $bar = iconv('UTF-8','GB2312',$bar);
+        $pdfname = "{$surveyid}{$dim1}{$dim2[0]}{$dim2[1]}.pdf";
+    }
+
+
+}else
+{
+    $radar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2.'radar.png';
+    $bar = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/picture/'.$surveyid.$dim1.$dim2.'bar.png';
+    $radar = iconv('UTF-8','GB2312',$radar);
+    $bar = iconv('UTF-8','GB2312',$bar);
+    $pdfname = "{$surveyid}{$dim1}{$dim2}.pdf";
+}  
+
+
+//生成PDF报告
+
+$pdf=new FPDF('P', 'mm', 'A4'); //创建新的FPDF对象，竖向放纸，单位为毫米，纸张大小A4 
+$pdf->Open(); //开始创建PDF 
+$pdf->AddPage(); //增加一页 
+$pdf->SetFont('Courier','I',20); //设置字体样式 
+//$pdf->SetFont('UTF-8','',12);
+$pdf->Image($radar,50,20,100,80);
+$pdf->Image($bar,30,120,150,80); //增加一张图片，文件名为sight.jpg 
+
+
+$pdf->Output($pdfname,"D"); //下载报告
+ 
+
+
+
+

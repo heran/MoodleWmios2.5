@@ -1,0 +1,10 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+
+$course = $DB->get_record('course', array('id'=>required_param('course_id',PARAM_INT)), '*', MUST_EXIST);
+
+require_course_login($course, true, $cm);
+$course_context = CONTEXT_COURSE::instance($course->id);
+require_capability('mod/document:field_manage', $course_context);//who can manage field? field bind to course.
+

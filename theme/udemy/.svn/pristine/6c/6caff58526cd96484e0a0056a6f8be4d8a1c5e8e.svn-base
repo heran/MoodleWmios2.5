@@ -1,0 +1,47 @@
+//path /theme/udemy/javascript/must/block_recent_activity
+
+$(function(){
+
+
+    var text= $(".block_recent_activity.block .activity");
+    //var contenttext=$(".block_calendar_upcoming.block .content");
+    var html='<div id="announcements" class="ud-courseannouncement" data-course-id="6446">'+
+    '<div class="announcements-list">'+
+    '<ul>';
+
+    if(text.length>0){
+        $(".block_recent_activity.block .activity").each(function(i,n){
+            $(n).find('br').remove();
+            var at=$(n).find('a').text();
+            var hreft=$(n).find('a').attr('href');
+            $(n).find('a').remove();
+
+            html += '<li class="announcement-item read" ><article><a href="'+hreft+'">'+$(n).html()+'<span>'+at+'</span>'+'</a></article></li>';
+        } );
+
+    }else{
+
+        $(".block_recent_activity.block .message").each(function(j,m){
+            html += ' <li class="no-announcements zero-case">'+$(m).html()+'</li>';
+        } ); 
+
+    }
+
+    $(".block_recent_activity.block .activityhead").each(function(k,l){
+
+        html+='<li class="load-wrapper" ><span class="more">'+$(l).html()+'</span></li>'; 
+
+    });                 
+
+
+    html += '</ul>  '+
+    '</div>'+
+    '<div class="ajax-loader-stick" style="position: relative; margin: 10px 10px 10px 0px; overflow: hidden; display: none;"></div>'+
+    '</div>';   
+
+    $('.block_recent_activity.block .content').html(html).show(); 
+    
+
+
+});
+

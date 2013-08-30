@@ -1,0 +1,31 @@
+{include 'base_header.tpl'}
+<div class="document-view-topaction">
+    <a href="{$url_mod_document}/upload.php?cmid={$base->get_cm()->id}" target="_blank">{get_string('upload_document','document')}</a>
+    {assign goto_other_base $base->get_course_document_base_navigation_option_array()}
+    {if count($goto_other_base)}
+    <span>{get_string('goto_other_document_base','document')}<select onchange="window.location.href=this.options[this.selectedIndex].value">
+        {foreach $goto_other_base as $c=>$v}
+        <option value="{$url_mod_document}/view.php?base_id={$c}" {if $base->id eq $c}selected="selected"{/if}>{$v}</option>
+        {/foreach}
+    </select>
+    </span>
+    {/if}
+</div>
+<div class="document-view-wrapepr">
+    <h2 class="title">{$base->name}</h2>
+    <div class="document-view-outter">
+        <div class="document-view-nav">
+            <ul>
+                <li>
+                    <a href="{$url_mod_document}/upload.php?cmid={$base->get_cm()->id}&user=me" target="_self">{get_string('my_documents','document')}</a>
+                </li>
+                <li>
+                    <a href="{$url_mod_document}/upload.php?cmid={$base->get_cm()->id}" target="_self">{get_string('all_documents','document')}</a>
+                </li>
+            </ul>
+        </div>
+        <div class="document-view-main">
+        </div>
+    </div>
+</div>
+{include 'base_footer.tpl'}

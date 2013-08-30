@@ -1,0 +1,277 @@
+<?php
+require_once(dirname(__FILE__).'/lib.php');
+
+class field_manage
+{
+
+}
+
+/**
+* @property int $id
+* @property int $course_id
+* @property string $name
+* @property string $type document_field_type::TYPE_*
+* @property int $dict_root
+* @property int $user_id
+* @property int $permission
+* @property int $updatetime
+* @property document_field_tree $dict
+*/
+class document_field_type extends document_common
+{
+    /** type dictionary*/
+    const TYPE_DICT = 'dict';
+
+    /** type string*/
+    const TYPE_STRING = 'string';
+
+    /** type int unix time*/
+    const TYPE_TIME = 'time';
+
+    protected static $_table = 'document_field_type';
+
+    protected $_dict = null;
+
+    protected $_fields = array(
+        'id'=>0,
+        'course_id'=>0,
+        'name'=>0,
+        'type'=>0,
+        'dict_root'=>0,
+        'user_id'=>0,
+        'permission'=>0,
+        'updatetime'=>0,
+    );
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'dict':
+                return document_field_tree::tree_from_id($this->dict_root);
+                break;
+            default:
+                return parent::__get($k);
+                break;
+        }
+    }
+
+
+}
+
+/**
+* @property self $parent
+* @property self[] $children
+* @property int $id
+* @property int $pid
+* @property string $content
+* @property int $level
+* @property int $sort
+* @property string $remark
+* @property int $status
+* @property int $updatetime
+*/
+class document_field_tree extends document_common{
+
+    protected static $_table = 'document_field_dict';
+
+
+
+    protected $_fields = array(
+        'id'=>0,
+        'pid'=>0,
+        'content'=>0,
+        'level'=>0,
+        'sort'=>0,
+        'remark'=>0,
+        'status'=>0,
+        'updatetime'=>0,
+    );
+
+    protected $_parent = null;
+
+    protected $_children = null;
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'parent':
+                return $this->getParent();
+                break;
+            case 'children':
+                return $this->getChildren();
+                break;
+            default:
+                return parent::__get($k);
+                break;
+        }
+    }
+
+    public function getChildren()
+    {
+        global $DB;
+
+        if($this->_children === null)
+        {
+            $records = $DB->get_records(static::$_table,array('pid'=>$this->id));
+            $children = array();
+            if($records)
+            {
+                foreach($records as $row)
+                {
+                    $children[] = new static($row);
+                }
+            }
+            $this->_children = $children;
+        }
+        return (array)$this->_children;
+    }
+
+    public function getParent()
+    {
+        if(!$this->pid) return null;
+        if($this->_parent === null)
+        {
+            $this->_parent = static::tree_from_id($this->pid);
+        }
+        return $this->_parent;
+    }
+
+    public function getIdChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->id;
+        do{
+            $chain[] = $parent->id;
+
+        }while($parent = $parent->parent);
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+    }
+
+    public function getContentChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->content;
+        do{
+            $chain[] = $parent->content;
+
+        }while($parent = $parent->parent);
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+
+    }
+
+    public function toArray()
+    {
+        $return = $this->getFields();
+        $return['children'] = array();
+        if($this->children)
+        {
+            foreach($this->children as $child)
+            {
+                $return['children']['c'.$child->id] = $child->toArray();
+            }
+
+        }
+        return $return;
+    }
+
+
+
+    /**
+    * put your comment there...
+    *
+    * @param int $id
+    */
+    public static function tree_from_id($id)
+    {
+        global $DB;
+        $record = $DB->get_record(static::$_table,array('id'=>$id));
+        $tree = null;
+        if($record)
+        {
+            $tree = new static($record);
+        }
+        return $tree;
+
+    }
+}
+
+class document_common
+{
+    protected $_fields;
+
+    public function __construct($fields){
+        $this->setFields((array)$fields);
+    }
+
+    public function setFields(array $fileds)
+    {
+        foreach($fileds as $k=>$v)
+        {
+            $this->setField($k, $v);
+        }
+        return $this;
+    }
+
+    public function setField($k,$v)
+    {
+        if(key_exists($k, $this->_fields))
+        {
+            $this->_fields[$k] = $v;
+        }
+        return $this;
+    }
+
+    public function getField($k)
+    {
+        return isset($this->_fields[$k]) ? $this->_fields[$k] : null;
+    }
+
+    public function getFields()
+    {
+        return $this->_fields;
+    }
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'parent':
+                return $this->getParent();
+                break;
+            case 'children':
+                return $this->getChildren();
+                break;
+            default:
+                return $this->getField($k);
+                break;
+        }
+    }
+
+    public function __set($k,$v = null )
+    {
+        if(is_string($k))
+        {
+            $this->setField($k,$v);
+        }elseif(is_array($k)){
+            $this->setFields($k);
+        }
+    }
+}

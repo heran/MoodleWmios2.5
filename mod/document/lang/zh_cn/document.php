@@ -1,0 +1,74 @@
+<?php
+
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Strings for component 'page', language 'en', branch 'MOODLE_20_STABLE'
+ *
+ * @package   multimedia
+ * @copyright 2013 Wmios  {@link http://wmios.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+$string['pluginname'] = '文档库';
+$string['modulename'] = '文档库';
+$string['modulenameplural'] = '文档库';
+$string['goto_field_type_list'] = '跳转到字段列表';
+$string['goto_edit_field_dictionary'] = '编辑字段字典';
+$string['document_entity_permission'] = '权限';
+$string['document_entity_title'] = '标题';
+$string['document_entity_summary'] = '简介';
+$string['document_entity_keywords'] = '关键字';
+$string['document_field_dict_content'] = '内容';
+$string['document_field_dict_remark'] = '备注';
+$string['document_field_dict_sort'] = '排序';
+$string['not_copy_field_type'] = '不复制字段';
+$string['document_field_type_name'] = '名称';
+$string['document_field_type_remark'] = '备注';
+$string['document_field_type_type'] = '类型';
+$string['document_field_type_permission'] = '权限';
+$string['document_fields'] = '字段';
+$string['userdefined_field_types'] = '自定义字段';
+$string['search_all'] = '搜索所有';
+$string['content'] = '内容';
+$string['upload_document'] = '上传文档';
+$string['document_upload_success'] = '文档上传成功';
+$string['cancel_upload'] = '取消上传';
+$string['goto_course_type_list'] = '课程字段类型';
+$string['edit_dictionary'] = '编辑字典';
+$string['select_single'] = '单选';
+$string['select_multi'] = '多选';
+$string['input_string'] = '字符串';
+$string['input_time'] = '时间';
+$string['download'] = '下载';
+$string['input_document_info'] = '填写文档信息';
+$string['edit_document_info'] = '编辑文档信息';
+$string['document_file_size'] = '文件大小';
+$string['draft_documents'] = '临时目录里面存有你的以下文件';
+$string['current_document_base'] = '当前文档库';
+$string['goto_other_document_base'] = '前往其他文档库：';
+$string['my_documents'] = '我的文档';
+$string['all_documents'] = '他人的文档';
+$string['more_condtions'] = '更多筛选条件';
+$string['no_more_documents'] = '没有相关文档';
+$string['author'] = '上传者';
+$string['create_time'] = '上传时间';
+$string['update_time'] = '更新时间';
+$string['file_extension'] = '文件类型';
+$string['keywords'] = 'keywords';
+$string['search_documents'] = '搜索文档';
+$string['advance_search'] = '高级搜索';
+$string['get_a_results'] = '获得约{$a}条结果';

@@ -1,0 +1,3 @@
+$(function(){
+    $('input[name="submitbutton"]').addClass('btn btn-success');
+})

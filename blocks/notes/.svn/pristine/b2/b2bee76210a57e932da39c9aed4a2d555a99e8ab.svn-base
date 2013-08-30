@@ -1,0 +1,33 @@
+<?php
+
+class restore_notes_block_structure_step extends restore_structure_step {
+
+    protected function define_structure() {
+        
+        $paths = array();
+        
+        //When no user info, we need not restore this.
+        
+        /** @var backup_users_setting */
+        if($this->get_task()->get_plan_setting_value('users')){
+            $paths[] = new restore_path_element('note', '/block/notes/note');
+        }
+        return $paths;
+    }
+
+    public function process_note($data) {
+        global $DB;
+        
+        $data = (object)$data;
+        
+        $oldid = $data->id;
+        unset($data->id);
+        
+        $data->courseid = $this->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->modifiedtime = $this->apply_date_offset($data->modifiedtime);
+        
+        $newitemid = $DB->insert_record('notes', $data);
+        
+    }
+}

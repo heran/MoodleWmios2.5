@@ -1,0 +1,111 @@
+
+$(document).on('click','.my-courses-nav .gray-nav li',function(){
+    $('.my-courses-nav .gray-nav li').removeClass('current');
+    $(this).addClass('current');   
+
+    var type = $(this).attr('type');
+    $('#my-courses #list ul').hide();
+    $('#my-courses #list ul[type="'+type+'"]').show();
+    return false; 
+
+});
+  
+/**************************************************************/
+/*
+$(document).on('click','.my-courses-nav .gray-nav li',function(){
+    $('.my-courses-nav .gray-nav li').removeClass('current');
+
+    $(this).addClass('current');   
+
+    var order = $(this).attr('order');
+    var inprohtml = $('#my-courses #list ul[type="inprogress"]').html();
+    var completedhtml = $('#my-courses #list ul[type="completed"]').html();
+    var nostarthtml= $('#my-courses #list ul[type="nostart"]').html();
+
+    $('#my-courses #list ul').hide();
+
+    if(order == 0){
+
+        if(inprohtml !=''){
+
+            $('#my-courses #list ul[type="inprogress"]').show();
+
+        }else{
+
+            if(completedhtml !=''){
+
+                $('#my-courses #list ul[type="completed"]').show();
+
+            }else{
+
+                if(nostarthtml !=''){
+
+                    $('#my-courses #list ul[type="nostart"]').show();
+                }
+            }
+        }
+
+    }
+
+    if(order==1){
+
+        if(completedhtml !=''){
+
+            $('#my-courses #list ul[type="completed"]').show();
+        }else{
+
+            if(nostarthtml !=''){
+
+                $('#my-courses #list ul[type="nostart"]').show(); 
+            } else{
+                
+                $('#my-courses #list ul[type="inprogress"]').show();
+            }
+        }
+    }
+
+    if(order==2){
+
+        if(nostarthtml !=''){
+
+            $('#my-courses #list ul[type="nostart"]').show();
+
+        } else{
+
+            if(inprohtml !=''){
+
+                $('#my-courses #list ul[type="inprogress"]').show();
+            }else{
+                
+                 $('#my-courses #list ul[type="completed"]').show();
+            }
+        }
+    }
+
+});
+ */
+window.onload = function(){  
+       $('#my-courses #list ul').hide();
+       $('.my-courses-nav .gray-nav li').removeClass('current');
+       
+       var inprohtml = $('#my-courses #list ul[type="inprogress"]').html();
+       var completedhtml = $('#my-courses #list ul[type="completed"]').html();
+       var nostarthtml= $('#my-courses #list ul[type="nostart"]').html();
+       
+       if(inprohtml !=''){
+
+            $('#my-courses #list ul[type="inprogress"]').show();
+            $('.my-courses-nav .gray-nav li:eq(0)').addClass('current');
+
+        }
+       if(completedhtml !=''){
+
+            $('#my-courses #list ul[type="completed"]').show();
+            $('.my-courses-nav .gray-nav li:eq(1)').addClass('current');
+       }
+       if(nostarthtml !=''){
+
+            $('#my-courses #list ul[type="nostart"]').show();
+            $('.my-courses-nav .gray-nav li:eq(2)').addClass('current'); 
+        } 
+}

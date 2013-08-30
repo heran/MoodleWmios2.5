@@ -1,0 +1,819 @@
+<?php
+
+require_once(dirname(__FILE__).'/dreamplug/http_plug.php');
+require_once(dirname(__FILE__).'/dreamplug/dream_plug.php');
+
+/**
+* @property int $user_id
+* @property int $permission
+* @property int status
+* @property string $user_name
+*/
+class document_entity extends document_common
+{
+    private $_base = null;
+
+    /**@var DreamPlug*/
+    private $_plug = null;
+
+    private $_plug_base_url = null;
+    private $_plug_client_key = null;
+    private $_plug_client_pas = null;
+
+    const DOCUMENT_STATUS_DELETE = -1;
+    const DOCUMENT_STATUS_DRAFT = 0;
+    const DOCUMENT_STATUS_CONVERTED = 1;
+
+    const DOCUMENT_PERMISSION_PUBLIC = 0;
+    const DOCUMENT_PERMISSION_PRIVATE = 1;
+
+    const DOCUMENT_PUT_URI = '/doconvert/document';
+
+    protected $_client_fields = null;
+
+    protected $_server_fields = null;
+
+    protected $_fields =array(
+        'id'=>0,
+        'key'=>'',
+        'create_time'=>0,
+        'update_time'=>0,
+        'directory'=>'',
+        'title'=>'',
+        'summary'=>'',
+        'keywords'=>'',
+        'file_name'=>'',
+        'file_extension'=>''
+    );
+
+    public function __construct(document_base $base)
+    {
+        $this->_server_fields = array_keys($this->_fields);
+
+        $this->_base = $base;
+
+        $fields = $base->refrence_fields_to_server();
+
+        foreach($fields as $field_name)
+        {
+            $this->_fields[$field_name] = 0;
+        }
+
+        $config = (array)get_config('local_wmios');
+        $this->_plug_base_url = $config['document_apiurl'];
+        $this->_plug_client_key = $config['document_client_key'];
+        $this->_plug_client_pas = $config['document_client_pas'];
+        $plug = new DreamPlug($this->_plug_base_url);
+        $this->_plug = $plug->With('dream.out.format',DreamPlug::DREAM_FORMAT_JSON)
+            ->WithHeader('X-ClientKey',$this->_plug_client_key,true)
+            ->WithHeader('X-ClientPas',$this->_plug_client_pas,true);
+
+    }
+
+    private function get_server_fields()
+    {
+        $return = array();
+
+        foreach($this->_base->refrence_fields_to_server() as $server_key=>$my_key)
+        {
+            $return[$server_key] = $this->getField($my_key);
+        }
+
+        foreach($this->_server_fields as $key)
+        {
+            $return[$key] = $this->getField($key);
+        }
+        return $return;
+
+    }
+
+    private function set_server_fields($data)
+    {
+
+        foreach($this->_base->refrence_fields_to_server() as $server_key=>$my_key)
+        {
+            if(isset($data['fields']) && isset($data['fields'][$server_key]))
+            {
+                $this->setField($my_key,$data['fields'][$server_key]);
+            }else if(isset($data[$server_key])){
+                $this->setField($my_key,$data[$server_key]);
+            }
+        }
+        foreach($this->_server_fields as $key)
+        {
+            $this->setField($key,$data[$key]);
+        }
+    }
+
+    public function save()
+    {
+        $plug = $this->_plug->At('doconvert','document');
+        $fields = $this->get_server_fields();
+        $result = $plug->PostFields((object)$fields);
+        if($result['status'] == 200)
+        {
+            $doc = json_decode($result['body'],true);
+        }else{
+
+        }
+    }
+
+    public function init_with_key($key)
+    {
+        /** @var DreamPlug*/
+        $plug = $this->_plug->At('doconvert','document',$key);
+        $result = $plug->Get();
+        if($result['status'] == 200)
+        {
+            $doc = json_decode($result['body'],true);
+            $this->set_server_fields($doc['document']);
+        }else{
+            throw new moodle_exception('key is not exist');
+        }
+    }
+
+    public function init_with_id($id)
+    {
+        /** @var DreamPlug*/
+        $plug = $this->_plug->At('doconvert','document','id', $id);
+        $result = $plug->Get();
+        if($result['status'] == 200)
+        {
+            $doc = json_decode($result['body'],true);
+            $this->set_server_fields($doc);
+        }else{
+            throw new moodle_exception('id is not exist');
+        }
+    }
+
+    public function upload_file($file)
+    {
+        $key = null;
+        $plug = $this->_plug->At('doconvert','document');
+        $this->file_name = $file['name'];
+        $this->title = $file['name'];
+
+        $fields = $this->get_server_fields();
+        foreach($fields as $k=>$v)
+        {
+            $plug = $plug->With($k,$v);
+        }
+        $result = $plug->PutFile($file['tmp_name']);
+        if($result['status'] == 200)
+        {
+            $doc = json_decode($result['body'],true);
+        }else{
+            throw new moodle_exception('upload file error:'.$result['status']);
+        }
+        $this->key = $key = $doc['key'];
+        return $key;
+    }
+
+
+
+    public  function file_size_is_valid($fileSize)
+    {
+        //$option = self::getOption();
+        if($fileSize<= 0 || $fileSize >= 20 * 1024 * 1024)
+        {
+            return false;
+        }else{
+            return true;
+        }
+
+    }
+
+    public  function get_file_extension($fileName,$tolower = false)
+    {
+        $tmp = array_reverse( explode('.',$fileName));
+        return count($tmp)>1 ? ($tolower ? strtolower($tmp[0]) : $tmp[0]) : '';
+    }
+
+    public  function file_extension_is_valid($fileName)
+    {
+        $fileExtension = self::get_file_extension($fileName);
+        if(!in_array(strtolower($fileExtension),array('pdf','swf','doc','docx','xls','xlsx','ppt','pptx','txt','jpg','gif','png')))
+        {
+            return false;
+        }else{
+            return true;
+        }
+
+    }
+}
+
+class document_base extends document_common{
+
+    protected static $_table = 'document';
+
+    protected $_fileds_to_server = null;
+
+    protected $_fields = array(
+        'id'=>0,
+        'course_id'=>0,
+        'name'=>'',
+        'intro'=>'',
+        'introformat'=>0,
+        'timemodified'=>0
+    );
+
+    /**
+    * put your comment there...
+    *
+    * @param array $fields
+    * @param int $preclear -1 0 1
+    */
+    public function update_document_fields($fields, $preclear = 0)
+    {
+        global $DB;
+        if($this->id <= 0){
+            throw new moodle_exception('no base id');
+        }
+        if($preclear<0)
+        {
+            $DB->delete_records_select('document_field', "mid='{$this->id}' and type<0");
+        }else if($preclear>0)
+        {
+            $DB->delete_records_select('document_field', "mid='{$this->id}' and type>0");
+        }
+        foreach($fields as $p)
+        {
+            $DB->insert_record('document_field',(object)array('mid'=>$this->id,'type'=>$p));
+        }
+    }
+
+    /**
+    * @return int[]
+    *
+    */
+    public function get_document_fields_id()
+    {
+       return static::document_fields_id_by_baseid($this->id);
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param int $base_id
+    * @return int[]
+    */
+    public static function document_fields_id_by_baseid($base_id)
+    {
+        global $DB;
+        $tmp =  $DB->get_records('document_field',array('mid'=>$base_id));
+        $return = array();
+        foreach($tmp as $record)
+        {
+            $return[] = $record->type;
+        }
+        return $return;
+    }
+
+    public function get_document_fields()
+    {
+        $ids = $this->get_document_fields_id();
+        $return = array();
+        if(count($ids))
+        {
+            $ids = implode(',',$ids);
+            $return = document_field_type::instances_from_select('id in ('.$ids.')');
+        }
+        return $return;
+
+    }
+
+    public function refrence_fields_to_server()
+    {
+        if($this->_fileds_to_server === null)
+        {
+            $int_i=6;
+            $text_i = 6;
+            $return = array();
+            $return['int_'.$int_i++] = 'user_id';
+            $return['text_'.$text_i++] = 'user_name';
+            $return['int_'.$int_i++] = 'permission';
+            $return['int_'.$int_i++] = 'status';
+
+            $user_defined_fields = $this->get_document_fields();
+            ksort($user_defined_fields);
+            foreach($user_defined_fields as $field_type)
+            {
+                /** @var document_field_type*/
+                $field_type;
+                if($field_type->is_dictionary_type())
+                {
+                    $return['int_'.$int_i++] = $field_type->name;
+
+                }else{
+                    $return['text_'.$text_i++] = $field_type->name;
+                }
+
+            }
+            $this->_fileds_to_server = $return;
+        }
+        return $this->_fileds_to_server;
+    }
+
+}
+
+/**
+* @property int $id
+* @property int $course_id
+* @property string $name
+* @property string $type document_field_type::TYPE_*
+* @property int $dict_root
+* @property int $user_id
+* @property int $permission
+* @property int $updatetime
+* @property string $remark
+* @property document_field_tree $dict
+*/
+class document_field_type extends document_common
+{
+    /** type dictionary*/
+    const TYPE_CHECK_SINGLE = 'check_single';
+
+    /** type dictionary*/
+    const TYPE_CHECK_MULTI = 'check_multi';
+
+    /** type string*/
+    const TYPE_INPUT_STRING = 'input_string';
+
+    /** type int unix time*/
+    const TYPE_INPUT_TIME = 'input_time';
+
+    const PERMISSION_PUBLIC = 1;
+    const PERMISSION_PRIVATE = 0;
+
+    const PREDEFINED_USER_ID = -1;
+    const PREDEFINED_USER_NAME = -2;
+    const PREDEFINED_PERMISSION = -3;
+    const PREDEFINED_STATUS = -4;
+
+    protected static $_table = 'document_field_type';
+
+    protected $_dict = null;
+
+    protected $_fields = array(
+        'id'=>0,
+        'course_id'=>0,
+        'name'=>'',
+        'type'=>self::TYPE_INPUT_STRING,
+        'dict_root'=>0,
+        'user_id'=>0,
+        'permission'=>self::PERMISSION_PUBLIC,
+        'updatetime'=>0,
+        'remark'=>'',
+    );
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'dict':
+                return $this->dict_root ? document_field_tree::instance_from_id($this->dict_root) : null;
+                break;
+            default:
+                return parent::__get($k);
+                break;
+        }
+    }
+
+    public static function type_option_array()
+    {
+        return array(
+            static::TYPE_CHECK_MULTI=>get_string(static::TYPE_CHECK_MULTI,MOD_DOCUMENT_PLUGIN_NAME),
+            static::TYPE_CHECK_SINGLE=>get_string(static::TYPE_CHECK_SINGLE,MOD_DOCUMENT_PLUGIN_NAME),
+            static::TYPE_INPUT_STRING=>get_string(static::TYPE_INPUT_STRING,MOD_DOCUMENT_PLUGIN_NAME),
+            static::TYPE_INPUT_TIME=>get_string(static::TYPE_INPUT_TIME,MOD_DOCUMENT_PLUGIN_NAME),
+        );
+    }
+
+    public static function permission_option_array()
+    {
+        return array(
+            static::PERMISSION_PUBLIC=>get_string('field_type_permission_'.static::PERMISSION_PUBLIC,MOD_DOCUMENT_PLUGIN_NAME),
+            static::PERMISSION_PRIVATE=>get_string('field_type_permission_'.static::PERMISSION_PRIVATE,MOD_DOCUMENT_PLUGIN_NAME),
+        );
+    }
+
+    public static function predefined_option_array()
+    {
+        return array(
+            static::PREDEFINED_USER_ID=>get_string('PREDEFINED_USER_ID',MOD_DOCUMENT_PLUGIN_NAME),
+            static::PREDEFINED_USER_NAME=>get_string('PREDEFINED_USER_NAME',MOD_DOCUMENT_PLUGIN_NAME),
+            static::PREDEFINED_PERMISSION=>get_string('PREDEFINED_PERMISSION',MOD_DOCUMENT_PLUGIN_NAME),
+            static::PREDEFINED_STATUS=>get_string('PREDEFINED_STATUS',MOD_DOCUMENT_PLUGIN_NAME),
+        );
+    }
+
+    public function is_dictionary_type()
+    {
+        return in_array($this->type ,array(static::TYPE_CHECK_MULTI,static::TYPE_CHECK_SINGLE));
+    }
+
+    public function is_mine()
+    {
+        global $USER;
+        return $this->user_id == $USER->id;
+    }
+
+    /**
+    *
+    * copy a new field type
+    *
+    * @param document_field_type $old
+    * @param int $course_id into which course when 0, copy into the same course.
+    */
+    public static function copy_new(document_field_type $old, $course_id = 0)
+    {
+        //TODO use transction
+
+        $new = new static($old->getFields());
+        $new->id = 0;
+        $new->name = get_string('copy').':'.$new->name;
+        $new->course_id = $course_id ?: $new->course_id ;
+        $new->save();
+        if($old->is_dictionary_type())
+        {
+            $new->dict_root = document_field_tree::copy_new( $old->dict,$new)->id;
+        }
+        $new->save();
+        return $new;
+    }
+
+    /**
+    * all public type for copy
+    *
+    * @param int $course_id
+    * @return document_field_type[][]
+    */
+    public static function get_public_field_types($course_id = 0)
+    {
+        $tmp = static::instances_from_select(
+            "permission='".static::PERMISSION_PUBLIC."'" .($course_id ? " and course_id='{$course_id}'":""));
+        $types = array();
+        foreach($tmp as $type)
+        {
+            if(has_capability('mod/document:field_manage',context_course::instance($type->course_id)))
+            {
+                if(!isset($types[$type->course_id]))
+                {
+                    $types[$type->course_id] = array();
+                }
+                $types[$type->course_id][] = $type;
+            }
+        }
+        return $types;
+
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param int $course_id
+    * @return document_field_type[]
+    */
+    public static function get_types_by_courseid($course_id)
+    {
+        return static::instances_from_select("course_id='{$course_id}'");
+    }
+
+
+}
+
+/**
+* @property self $parent
+* @property self[] $children
+* @property int $id
+* @property int $pid
+* @property string $content
+* @property int $level
+* @property int $sort
+* @property string $remark
+* @property int $status
+* @property int $updatetime
+*
+*/
+class document_field_tree extends document_common{
+
+    protected static $_table = 'document_field_dict';
+
+
+
+    protected $_fields = array(
+        'id'=>0,
+        'pid'=>0,
+        'content'=>'',
+        'level'=>0,
+        'sort'=>0,
+        'remark'=>'',
+        'status'=>0,
+        'updatetime'=>0,
+    );
+
+    protected $_parent = null;
+
+    protected $_children = null;
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'parent':
+                return $this->getParent();
+                break;
+            case 'children':
+                return $this->getChildren();
+                break;
+            default:
+                return parent::__get($k);
+                break;
+        }
+    }
+
+    public function getChildren()
+    {
+        global $DB;
+
+        if($this->_children === null)
+        {
+            $this->_children = static::instances_from_select("pid='{$this->id}' and level={$this->level}+1",null,'sort desc');;
+        }
+        return (array)$this->_children;
+    }
+
+    public function getParent()
+    {
+        //level eq 0 ,it is a root.
+        //also pid eq 0, it is a root.
+        //now pid neq 0 ,but level eq 0 , it is root.
+        if(!$this->pid || $this->level == 0) return null;
+        if($this->_parent === null)
+        {
+            $this->_parent = static::instance_from_id($this->pid);
+        }
+        return $this->_parent;
+    }
+
+    public function get_select_option_array()
+    {
+        $return = array();
+        $children = (array)$this->getChildren();
+        foreach($children as $child)
+        {
+            $return[$child->id] = $child->name;
+        }
+        return $return;
+
+    }
+
+    public function getIdChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->id;
+        while($parent)
+        {
+            $chain[] = $parent->id;
+            $parent = $parent->parent;
+        }
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+    }
+
+    public function getContentChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->content;
+        while($parent)
+        {
+            $chain[] = $parent->content;
+            $parent = $parent->parent;
+        }
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+
+    }
+
+    public function toArray()
+    {
+        $return = $this->getFields();
+        $return['children'] = array();
+        if($this->children)
+        {
+            foreach($this->children as $child)
+            {
+                $return['children']['c'.$child->id] = $child->toArray();
+            }
+
+        }
+        return $return;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param document_field_tree $old
+    * @param document_field_tree|document_field_type $parent
+    * @return static
+    */
+    public static function copy_new(document_field_tree $old, $parent)
+    {
+        $new = new static($old->getFields());
+        $new->id = 0;
+        $new->pid = $parent->id;
+        if($new->level == 0)
+        {
+            // when level eq 0, mean $parent is document_field_type
+            $new->content = $parent->name;
+        }
+        $new->save();
+        if($old->children)
+        {
+            foreach($old->children as $child)
+            {
+                static::copy_new($child, $new);
+            }
+        }
+        return $new;
+    }
+
+
+
+
+}
+
+/**
+* @property int $id
+*/
+class document_common
+{
+    protected static $_table = '';
+
+    protected $_fields =array('id'=>0);
+
+    public function __construct($fields){
+        $this->setFields((array)$fields);
+    }
+
+    public function setFields(array $fileds)
+    {
+        foreach($fileds as $k=>$v)
+        {
+            $this->setField($k, $v);
+        }
+        return $this;
+    }
+
+    public function setField($k,$v)
+    {
+        if(key_exists($k, $this->_fields))
+        {
+            $this->_fields[$k] = $v;
+        }
+        return $this;
+    }
+
+    public function getField($k)
+    {
+        return isset($this->_fields[$k]) ? $this->_fields[$k] : null;
+    }
+
+    public function getFields()
+    {
+        return $this->_fields;
+    }
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'parent':
+                return $this->getParent();
+                break;
+            case 'children':
+                return $this->getChildren();
+                break;
+            default:
+                return $this->getField($k);
+                break;
+        }
+    }
+
+    public function __set($k,$v = null )
+    {
+        if(is_string($k))
+        {
+            $this->setField($k,$v);
+        }elseif(is_array($k)){
+            $this->setFields($k);
+        }
+    }
+
+    public function save()
+    {
+        global $DB;
+        $result = false;
+        if($this->id <= 0)
+        {
+            $this->id = $DB->insert_record(static::$_table,(object)$this->getFields(),true);
+            $result = $this->id > 0;
+        }else{
+            $result = $DB->update_record(static::$_table,(object)$this->getFields());
+        }
+        return $result;
+
+    }
+
+    /**
+    * @param int $id
+    * @return self
+    */
+    public static function instance_from_id($id)
+    {
+        global $DB;
+        $record = $DB->get_record(static::$_table,array('id'=>$id));
+        $tree = null;
+        if($record)
+        {
+            $tree = new static($record);
+        }
+        return $tree;
+    }
+
+    /**
+    *
+    * @param string $query
+    * @return static
+    */
+    public static function instance_from_select( $query, array $params=null, $fields='*')
+    {
+        global $DB;
+        $record = $DB->get_record_select(static::$_table,$query,$params,$fields);
+        $tree = null;
+        if($record)
+        {
+            $tree = new static($record);
+        }
+        return $tree;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param string $query
+    * @return static[]
+    */
+    public static function instances_from_select( $query, array $params=null, $sort='', $fields='*', $limitfrom=0, $limitnum=0)
+    {
+        global $DB;
+        $records = $DB->get_records_select(static::$_table,$query,$params,$sort,$fields,$limitfrom,$limitnum);
+        $trees = null;
+        if($records)
+        {
+            $trees = array();
+            foreach($records as $record)
+            {
+                $trees[] = new static($record);
+            }
+        }
+        return $trees;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param array $arr
+    * @return self
+    */
+    public static function instance_from_create($arr)
+    {
+        $r = new static($arr);
+        if($r->save())
+        {
+            return $r;
+        }else{
+            return null;
+        }
+    }
+
+    public static function delete_instance(document_common $instance)
+    {
+        global $DB;
+        return $DB->delete_records(static::$_table,array('id'=>$instance->id));
+    }
+}

@@ -1,0 +1,638 @@
+<?php
+namespace wmios\survey;
+use \MoodleQuickForm,\moodle_url,\stdClass;
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/survey_client.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/fpdf/fpdf.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/pchart/pData.class.php');
+require_once($CFG->dirroot.'/mod/surveyactivitybase/lib/pchart/pChart.class.php');
+
+
+class activity_employengage extends activity{
+
+    protected $_instance = null;
+
+    public static function process_update_form(MoodleQuickForm $mform,activity_wrapper $activity_wrapper = null)
+    {
+        if(!$activity_wrapper || $activity_wrapper->is_new())
+        {
+            $filepickeroptions = array('accepted_types' => '.csv','return_types'=>FILE_INTERNAL);
+            $mform->addElement('filepicker','userfile',get_string('userfile',SURVEYACTIVITYBASE_PLUGIN_NAME), null,$filepickeroptions);
+
+        }
+    }
+
+    public static function get_add_instance_default_data(){
+        return array();
+    }
+
+    /**
+    * @return activity_employengage_instance
+    * 
+    */
+    public function get_instance()
+    {
+        if($this->_instance == null)
+        {
+            $this->_instance = activity_employengage_instance::instance_from_id($this->_wrapper->instance_id);
+        } 
+        return $this->_instance;
+    }
+
+    public static function add_instance(stdClass $general, stdClass $special, moodleform_activity $mform)
+    {
+        global $DB, $CFG;
+        $users = self::process_survey_users_from_userfile($mform, true);
+
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+
+        $surveyclient = new \survey_client($url,$username,$password);
+        $file = $CFG->dirroot.'/mod/surveyactivitybase/activity/employengage/file/limesurvey_survey.lss';
+        $type = 'lss';
+        $name = 'mytests';
+
+        $new_survey_id = $surveyclient->copy_survey($file,$type,$name);
+        if( $new_survey_id)
+        {
+            if($surveyclient->init_tokens($new_survey_id))
+            {
+                $arr = array();
+                $us = array();
+                foreach($users as $d)
+                {
+                    $arr['email'] = $d['email'];
+                    $arr['firstname'] = $d['firstname'];
+                    $arr['lastname'] = $d['lastname'];
+                    $arr['token'] = $d['token'];
+
+                    $us[] = $arr;
+                }
+                if($cheng=$surveyclient->add_usersurvey($new_survey_id,$us))
+                {
+
+                    foreach($us as $data)
+                    {
+                        $data['surveyid'] = $new_survey_id;
+                        $userinstance = new activity_employengage_users_instance($data);
+
+                        $bool=$userinstance->save();
+                        if(!$bool)
+                        {
+                            throw new \moodle_exception("");
+                        }
+                    }
+                }
+                else
+                {
+                    throw new \moodle_exception("");
+                }
+            }
+            else
+            {
+                throw new \moodle_exception("");
+
+            }
+
+            $data = array('survey_id'=>$new_survey_id);
+            $instance = new activity_employengage_instance($data);
+            $instance->save();
+            return $instance->id;
+
+        }
+        else
+        {
+            throw new \moodle_exception("");
+
+        }
+
+    }
+
+    public function update_instance(stdClass $general, stdClass $special, moodleform_activity $mform){
+        if($this->_wrapper->is_new())
+        {
+            $users = self::process_survey_users_from_userfile($mform, false);
+            if($users)
+            {
+                //push users to survey server.
+            }
+            //post the date time ,survey name, survey intro,users to server.
+            //get the result ,return the result,true or false.
+            //throw exception
+        }
+        return true;
+    }
+
+    protected static function process_survey_users_from_userfile(moodleform_activity $mform, $force = false)
+    {
+        $users = array();
+
+        $userfile = $mform->get_file_content('userfile');
+        if(!strlen($userfile))
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 1');
+            }else{
+                return $users;
+            }
+        }
+
+        $lines = explode("\n",$userfile);
+        if(count($lines)<2)
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 2');
+            }else{
+                return $users;
+            }
+        }
+        $ks = explode(',',trim($lines[0],"\r\n, "));
+        for($i=1;$i<count($lines);$i++)
+        {
+            if($lines[$i] == "")continue;
+            $user = array();
+            $vs = explode(',', trim($lines[$i],"\r"));
+            foreach($vs as $k=> $v)
+            {
+                $user[trim($ks[$k],"'\n\" ")] = trim($v,"'\n\" ");
+            }
+            $users[] = $user;
+        }
+        return $users;
+    }
+    public function survey_reports($userfile, $force = false)
+    {
+
+        $users = array();
+
+        // $userfile = $mform->get_file_content('userfile');
+
+        if(!strlen($userfile))
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 1');
+            }else{
+                return $users;
+            }
+        }
+
+        $lines = explode("\n",$userfile);
+        if(count($lines)<2)
+        {
+            if($force)
+            {
+                throw new \Exception('user file need content 2');
+            }else{
+                return $users;
+            }
+        }
+        $ks = explode(',',trim($lines[0],"\r\n, "));
+        for($i=1;$i<count($lines);$i++)
+        {
+            if($lines[$i] == "")continue;
+            $user = array();
+            $vs = explode(',', trim($lines[$i],"\r"));
+            foreach($vs as $k=> $v)
+            {
+                $user[trim($ks[$k],"'\n\" ")] = trim($v,"'\n\" ");
+            }
+            $users[] = $user;
+        }
+        return $users;
+
+    }
+
+    public static function delete_instance($id){
+        return true;
+    }
+
+    public function get_update_instance_data(){
+        return array('dd'=>time());
+    }
+
+    public function get_view_url(){
+        return new moodle_url('/mod/surveyactivity/activity/simple/view.php',array('id'=>$this->_wrapper->id));
+    }
+
+    /**
+    *
+    * True if this type has a global report.
+    *
+    * @return bool
+    *
+    */
+    public function has_global_report()
+    {
+        return true;
+    }
+
+    public function start()
+    {
+        //start survey
+        $url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+        $username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+        $password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+        $surveyclient= new \survey_client($url,$username,$password);
+
+        $surveyid = $this->get_instance()->survey_id;
+        $surveyclient->active_survey($surveyid);
+        $active=$surveyclient->active_survey($surveyid);
+
+        if($active)
+        {
+            $access=$surveyclient->invite_users($surveyid);
+
+            if(!$access)
+            {
+                throw new \moodle_exception('no send');   
+
+            }
+        }
+
+    }
+
+
+    public function stop()
+    {
+        //stop survey
+        return true;
+    }
+
+    public function get_global_report_view_url()
+    {
+
+
+    }
+
+    public function get_global_report_download_url()
+    {
+        return new moodle_url('/mod/surveyactivity/activity/employengage/reports.php',array('id'=>$this->_wrapper->id));
+
+
+    }
+    /**
+    * 调查报告的信息存到数据库
+    * 
+    * @param mixed $data
+    * @return static
+    */
+    public function activity_instance_updates($data)
+    {
+        $str = $data['操作代码'];
+        $query = "token ='".$str."'";
+        $rowobj = activity_employengage_users_instance::instance_from_select($query);
+
+        unset($data['id']);
+        return $rowobj->setFields($data)->save();
+    }
+
+    /**
+    * 单个调查信息/默认
+    * 
+    * @param mixed $values,$surveyid,$name
+    * return array[][]
+    */
+    public function activity_reportsinfo($surveyid,$name=null,$values=null)
+    {    
+        $rows=array();
+
+        if($values !== null && $name !== null) 
+        {
+            $query = "surveyid ='".$surveyid."' and ".$name. "='".$values."'";
+            $rowarr = activity_employengage_users_instance::instances_from_select($query);
+            if($rowarr)
+            {
+                foreach($rowarr as $dataobj)
+                {
+                    $rows[]= $dataobj->getFields();
+                } 
+
+            }
+
+        }else{
+
+            $query = "surveyid ='".$surveyid."'";
+            $rowarr = activity_employengage_users_instance::instances_from_select($query);
+            if($rowarr)
+            {
+                foreach($rowarr as $dataobj)
+                {
+                    $rows[]= $dataobj->getFields();
+                }
+            }
+
+        }
+
+        return $rows;
+    }
+
+    /**
+    * 调查信息
+    * 
+    * @param mixed $arr, $surveyid
+    * return array[][][]
+    */
+    public function activity_reportsinfos($surveyid,$arr,$name)
+    {
+        $fields = array();
+        $nan = array();
+        $nv = array();
+        $row = array();
+        $count = count($arr);
+        if($count > 0 && $count < 2)
+        {
+            if($surveyid !== null && $name !== null)
+            {
+                foreach($arr as $data)
+                {
+                    $query = "surveyid ='".$surveyid."' and ".$name."='".$data."'";
+                    $rowarr = activity_employengage_users_instance::instances_from_select($query);
+                    if($rowarr)
+                    {
+                        foreach($rowarr as $dataobj)
+                        {
+                            $rows[]= $dataobj->getFields();
+                        }
+                    }
+
+                }
+
+            }
+        }
+        if($count > 1)
+        {
+            if($surveyid !== null && $name !== null)
+            {
+                foreach($arr as $data)
+                {
+                    $query = "surveyid ='".$surveyid."' and ".$name."='".$data."'";
+                    $rowarr = activity_employengage_users_instance::instances_from_select($query);
+                    if($rowarr)
+                    {
+                        foreach($rowarr as $dataobj)
+                        {
+
+                            $fields = $dataobj->getFields();
+                            if(in_array('男',$fields))
+                            {
+                                $nan[] = $fields;
+                            } else if(in_array('女',$fields))
+                            {
+                                $nv[] = $fields;
+                            }else
+                            {
+                                $row[] = $fields;
+                            }
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+        if(count($nan)>0)
+        {
+            $row[] = $nan;
+        }
+        if(count($nv)>0)
+        {
+            $row[] = $nv;
+        }
+
+        return $row;
+    }
+
+    /**
+    * 调查报告的计算分数
+    *@param mixed $arr
+    * return array[][]
+    */
+    public function reports_results($arr)
+    {
+        $summary = array();
+        $sum = array();
+        $statics = array();
+        $avg = array();
+        $count = count($arr);
+        foreach($arr as $d)
+        {
+            foreach($d as $k=>$v)
+            {
+                if(!isset($sum[$k]))
+                {
+                    $sum[$k] = 0;    
+                }
+                if(preg_match('/^q\d*/',$k,$matches))
+                {
+                    foreach($matches as $key)
+                    {
+                        switch($d[$key])
+                        {
+                            case 1:$v = "5"; break;
+                            case 2:$v = "4"; break;
+                            case 3:$v = "3"; break;
+                            case 4:$v = "2"; break;
+                            case 5:$v = "1"; break;
+
+                        }
+
+                    }
+
+                }
+                $sum[$k] += $v;
+            }
+            $newk = sprintf('%.1f',$d['averages']);
+
+            if(!isset($statics[$newk]))
+            {
+                $statics[$newk] = 0;
+            }
+
+            $statics[$newk]++;
+        }
+        foreach($sum as $keys=>$vs)
+        {
+            $avg[$keys] = $vs/$count;
+        }
+
+        if(count($avg)>0)
+        {
+            $summary['avg'] = $avg;
+        }
+        if(count($statics)>0)
+        {
+            $summary['statics'] = $statics;
+        }
+
+        return $summary;
+    }
+
+    /**
+    * 按部门 统计结果 默认全部
+    * return array[][][]
+    */
+    public function departments_results($surveyid)
+    {
+        $fields = array();
+        $ks = array();
+        $kvalues = array();
+        $rows =array();
+
+        $query = "surveyid ='".$surveyid."'";
+        $rowarr = activity_employengage_users_instance::instances_from_select($query);
+        if($rowarr)
+        {
+            foreach($rowarr as $dataobj)
+            {
+                $fields[] = $dataobj->getFields();
+
+            }
+            foreach($fields as $datas)
+            {
+                foreach($datas as $k=>$v)
+                {
+                    if(preg_match('/^dplevel*/',$k,$matches))
+                    {
+                        foreach($matches as $key)
+                        {
+                            switch($k)
+                            {
+                                case 'dplevel_one':
+                                case 'dplevel_two':
+                                case 'dplevel_three':
+                                case 'dplevel_four':
+                                case 'dplevel_five':
+                                case 'dplevel_six':
+                                case 'dplevel_seven':
+                                case 'dplevel_eitght':
+                                case 'dplevel_nine':
+                                case 'dplevel_ten':$ks[$k]=$v; break;
+                            }
+
+                        }
+
+                    }
+
+                }
+                $kvalues[]=$ks;   
+            }
+
+            foreach($kvalues as $kdata)
+            {
+                foreach($kdata as $knames=>$kv)
+                {
+                    if(!empty($kv))
+                    {
+                        $rows[] = $this->activity_reportsinfo($surveyid,$knames,$kv);
+
+                    }
+                }
+            }
+
+        }
+        return $rows;
+    }
+
+    /**
+    * 单一部门调查结果
+    * 
+    * @param mixed $surveyid
+    * @param mixed $arr
+    * @param mixed $name
+    * return array[][][]
+    */
+    public function department_simple($surveyid,$arr)
+    {
+        $fields = array();
+        $rows = array();
+        $count = count($arr);
+        if($count>0)
+        {
+            foreach($arr as $data)
+            {
+                $fields = $this->activity_reportsinfo($surveyid);
+                foreach($fields as $datas)
+                {
+                    foreach($datas as $k=>$v)
+                    {
+                        if($k == $data)
+                        {
+                            if(!empty($v))
+                            {
+                                $rows[$data] = $this->activity_reportsinfo($surveyid,$k,$v);
+                            } 
+                        }
+                    }
+                }
+            }
+        }else
+        {
+            throw new \moodle_exception('wrong');
+        }
+
+        return $rows;
+
+    }
+
+    /**
+    * 各个条件的调查报告
+    * 
+    * @param mixed $surveyid
+    * @param mixed $arr
+    * return array[][]
+    */
+    public function surveyreports_results($surveyid,$arr=null)
+    {
+        $rows = array();
+        if(!empty($surveyid))
+        {
+            if(count($arr)>0)
+            {
+                $query = "surveyid ='".$surveyid."' ";
+                foreach($arr as $k=>$v)
+                {
+                    $query.= "and ".$k."='".$v."'";
+                }
+                $rowarr = activity_employengage_users_instance::instances_from_select($query);
+                if($rowarr)
+                {
+                    foreach($rowarr as $dataobj)
+                    {
+                        $rows[] = $dataobj->getFields();
+                    } 
+
+                } 
+            }else
+            {
+                 $rows = $this->activity_reportsinfo($surveyid);
+            }
+
+        }
+
+        return $rows;
+
+    }
+    
+   public function activity_page($surveyid,$offset,$pagesize)
+   {
+       $rows = array();
+             $query = "surveyid ='".$surveyid."' limit $offset,$pagesize";
+            $rowarr = activity_employengage_users_instance::instances_from_select($query);
+            if($rowarr)
+            {
+                foreach($rowarr as $dataobj)
+                {
+                    $rows[]= $dataobj->getFields();
+                }
+            }
+            return $rows;
+   }
+}

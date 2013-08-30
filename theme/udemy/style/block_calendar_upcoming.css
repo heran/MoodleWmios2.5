@@ -1,0 +1,207 @@
+/*We hide this blog for a time*/
+.block_calendar_upcoming{
+    display: none;
+}
+.block_calendar_upcoming #events li{
+    height:40px;
+
+}
+.block_calendar_upcoming #events ul li, #invitationrequests ul li {
+    background:#f2f2f2;
+    background:-webkit-linear-gradient(#ffffff, #f2f2f2);
+    background:-o-linear-gradient(#ffffff, #f2f2f2);
+    background:-ms-linear-gradient(#ffffff, #f2f2f2);
+    background:linear-gradient(#ffffff, #f2f2f2);
+    border-top:1px solid #c5c5c5;
+    color:#353535;
+    padding:10px;
+    position:relative;
+    display:block;
+    cursor:pointer;
+}
+
+.block_calendar_upcoming #events ul li a, #invitationrequests ul li a {
+    color:#353535;
+}
+
+.block_calendar_upcoming #events ul li .date a{
+    color:#999;
+}
+
+.block_calendar_upcoming #events .gotocal a{
+    
+    color:white;
+}
+
+.block_calendar_upcoming #events .newevent a{
+    
+    color:white;
+}
+
+
+.block_calendar_upcoming #events ul li.no-announcements, #invitationrequests ul li.no-announcements, #announcements ul li.no-invitationrequests, #invitationrequests ul li.no-invitationrequests {
+    font-size:16px!important;
+    cursor:default;
+}
+.block_calendar_upcoming #events ul li.unread, #invitationrequests ul li.unread {
+    background:#fff5e6;
+    background:-webkit-linear-gradient(#ffffff, #fff5e6);
+    background:-o-linear-gradient(#ffffff, #fff5e6);
+    background:-ms-linear-gradient(#ffffff, #fff5e6);
+    background:linear-gradient(#ffffff, #fff5e6);   
+    margin-left:0px;  
+
+}
+.block_calendar_upcoming #events ul li.announcement-item:active, #invitationrequests ul li.announcement-item:active, #announcements ul li.load-wrapper-item:active, #invitationrequests ul li.load-wrapper-item:active {
+    background-color:#e6e6e6;
+    background-color:#d9d9d9 \9;
+    background-image:none;
+    outline:0;
+    -webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05);
+    -moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05);
+    box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05);
+}
+.block_calendar_upcoming #events ul li .btn-group, #invitationrequests ul li .btn-group {
+    float:right;
+}
+.block_calendar_upcoming #events ul li .user-image, #invitationrequests ul li .user-image {
+    height:32px;
+    width:32px;
+    float:left;
+    text-indent:-99em;
+    margin-right:5px;
+}
+.block_calendar_upcoming #events ul li article, #invitationrequests ul li article {
+    float:left;
+    font-size:14px;
+    margin-top:2px;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    width:330px;
+    text-align:left;
+}
+.block_calendar_upcoming #events ul li time, #invitationrequests ul li time {
+    color:#999;
+   
+    font-size:11px;
+    margin-top:-17px;
+}
+.block_calendar_upcoming #events ul li time:before, #invitationrequests ul li time:before {
+    content:'';
+    float:left;
+    background:url([[pix:theme|sprites]]) -60px -1077px;
+    width:16px;
+    height:16px;
+}
+.block_calendar_upcoming #events ul li:first-child, #invitationrequests ul li:first-child {
+    border:0;
+}
+
+.block_calendar_upcoming .dashboard-panel ul li.load-wrapper {
+    cursor:pointer;
+    text-align:center;
+    color:#666;  
+    background:#e0e0e0;
+    background:-webkit-linear-gradient(#ffffff, #e0e0e0);
+    background:-o-linear-gradient(#ffffff, #e0e0e0);
+    background:-ms-linear-gradient(#ffffff, #e0e0e0);
+    background:linear-gradient(#ffffff, #e0e0e0);
+}
+.block_calendar_upcoming .dashboard-panel ul li.load-wrapper .more {
+    background:#646464;
+    border-radius:20px;
+    padding:2px 15px;
+    color:#fff;
+    font-size:13px;
+
+    text-shadow:0 1px #000;
+    box-shadow:0 1px #fff;
+}
+.block_calendar_upcoming .dashboard-panel ul li.load-wrapper .more:hover {
+    text-decoration:underline;
+}
+.block_calendar_upcoming .dashboard-panel ul li.load-wrapper:after {
+    background:none;
+}
+.block_calendar_upcoming .dashboard-panel ul li.load-wrapper .ajax-loader-tiny {
+    position:relative;
+    display:none;
+}
+.block_calendar_upcoming  #course-dashboard.main .zero-case {
+    text-align: center;
+    padding: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #AAA; 
+
+
+}
+
+
+
+/*************************************************************/
+.block_calendar_upcoming .gotocal{
+    float:left;
+    position:relative;
+    margin-top:-2px;
+    margin-left:50px;
+    background:#646464;
+    border-radius:20px;
+    padding:2px 15px;
+    color:#fff;
+    font-size:13px;
+
+    text-shadow:0 1px #000;
+    box-shadow:0 1px #fff;
+
+}
+
+.block_calendar_upcoming .newevent{
+    width:100px;
+    position:relative;
+    margin-left:280px;
+    margin-top:-2px;
+    background:#646464;
+    border-radius:20px;
+    padding:2px 15px;
+    color:#fff;
+    font-size:13px;
+
+    text-shadow:0 1px #000;
+    box-shadow:0 1px #fff; 
+
+}
+
+.block_calendar_upcoming .event{
+    display:none;
+
+}
+
+.block_calendar_upcoming.block .content{
+
+    padding:0px;
+    display:none;
+}
+
+.block_calendar_upcoming #events li{
+    height:60px;
+
+}
+
+.block_calendar_upcoming .date time:before {
+
+    background:url([[pix:theme|sprites]]);
+}
+
+.block_calendar_upcoming #events .zero-case{
+    color:#AAA;
+    height:40px;
+}
+
+.block_calendar_upcoming #events .load-wrapper{
+    height:40px;
+
+}
+
+

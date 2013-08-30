@@ -1,0 +1,119 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir.'/conditionlib.php');
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = optional_param('id',0, PARAM_INT);
+}
+if($cmid)
+{
+    $cm = get_coursemodule_from_id('document', $cmid);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/document:view', $cm_context);
+    $document_base = document_base::instance_from_id($cm->instance);
+    $document_base->set_cm($cm);
+}else
+{
+    $base_id = required_param('base_id',PARAM_INT);
+    $document_base = document_base::instance_from_id($base_id);
+    $cm = get_coursemodule_from_instance('document', $base_id, $document_base->course_id, false, MUST_EXIST);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/document:view', $cm_context);
+
+}
+
+
+
+$PAGE->set_context($cm_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_cm($cm);
+$PAGE->set_pagelayout('noregion');
+
+/** @var mod_document_renderer*/
+$renderer = $PAGE->get_renderer('mod_document');
+
+$url_edit_document_entity = new moodle_url('/mod/document/upload.php',array('cmid'=>$cm->id));
+
+//one document
+$entity_key = optional_param('key','',PARAM_TEXT);
+if(optional_param('search',false,PARAM_BOOL))
+{
+    $in_search = true;
+}else{
+    $in_search = false;
+}
+
+$page         = optional_param('page', 0, PARAM_INT);
+$perpage      = optional_param('perpage', 30, PARAM_INT);
+
+echo $OUTPUT->header();
+if($entity_key)
+{
+    $de = $document_base->get_entity_by_key($entity_key);
+    if($de->permission < document_entity::DOCUMENT_PERMISSION_PUBLIC_READ && !$de->belong_to($USER->id))
+    {
+        print_error('document is private');
+    }
+    echo $renderer->render_document_entity($de);
+}else if($in_search)
+{
+
+}else{
+    $tmpl = array();
+    $q = array();
+
+    $user_me = optional_param('user_me',0,PARAM_INT);
+    $tmpl['user_me'] = $user_me;
+    if($user_me)
+    {
+        $q['user_id'] = $USER->id;
+    }
+
+
+    $file_extension = optional_param('file_extension','',PARAM_TEXT);
+    if($file_extension)
+    {
+        $q['file_extension'] = $file_extension;
+    }
+    $tmpl['file_extension'] = $file_extension;
+
+
+    foreach($document_base->get_document_fields_by_type(document_field_type::TYPE_SELECT_SINGLE) as $field_type)
+    {
+        $p = optional_param($field_type->name, 0 , PARAM_INT);
+        if($p)
+        {
+            $dict = $field_type->dict->find_descendent_by_id($p);
+            if($dict)
+            {
+                $q['left_'.$field_type->name.'_chain'] = $dict->getIdChain(false);
+            }
+            $tmpl[$field_type->name] = $p;
+        }
+        $tmpl[$field_type->name] = $p;
+    }
+
+    $permission = optional_param('permission',-5 ,PARAM_INT);
+    if($permission != -5)
+    {
+        $q['max_permission'] =
+            ($permission == 0) ? document_entity::DOCUMENT_PERMISSION_PRIVATE : document_entity::DOCUMENT_PERMISSION_PUBLIC_DOWNLOAD;
+    }
+    $tmpl['permission'] = $permission;
+
+    $tmpl['thumb'] = optional_param('thumb', 0 ,PARAM_INT);
+
+    $total = 0;
+    $des = $document_base->get_entities_by_query($q, $total, $page, $perpage);
+
+    $tmpl['page'] = $page;
+    $tmpl['perpage'] = $perpage;
+
+    echo $renderer->render_document_entity_list($document_base, $des, $total, $tmpl);
+    //echo $OUTPUT->paging_bar($usercount, $page, $perpage, $baseurl);
+
+}
+echo $OUTPUT->footer();

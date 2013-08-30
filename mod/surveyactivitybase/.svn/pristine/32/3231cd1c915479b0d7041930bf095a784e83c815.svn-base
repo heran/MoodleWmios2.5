@@ -1,0 +1,594 @@
+<?php
+
+//wmios is mine.
+namespace wmios\survey;
+
+use \navigation_node,\moodle_url;
+
+require_once(dirname(__FILE__).'/../lib.php');
+require_once(dirname(__FILE__).'/outputlib.php');
+require_once(dirname(__FILE__).'/../activity/activity.class.php');
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+
+/**
+* Some tool function
+*/
+class tool{
+
+    /** @var activity_base*/
+    private static $_base = null;
+
+    private static $_wrapper = null;
+
+    public static function set_surveyactivity_base(activity_base $base)
+    {
+        self::$_base = $base;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @return activity_base
+    */
+    public static function get_surveyactivity_base()
+    {
+        return self::$_base;
+    }
+
+    public static function set_surveyactivity_wrapper(activity_wrapper $wrapper)
+    {
+        self::$_wrapper = $wrapper;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @return activity_wrapper
+    */
+    public static function get_surveyactivity_wrapper()
+    {
+        return self::$wrapper;
+    }
+
+    /**
+    * Get Survey Main navigation
+    *
+    * Normaly the nav node will be cached.
+    *
+    * @param bool $disablecache True if disabled the cache
+    * @return \navigation_node
+    */
+    public static function get_nav( $disablecache = false){
+        static $nav = null;
+
+        if($disablecache || $nav === null){
+            $nav = new navigation_node(array('text'=>'survey_nav_root'));
+
+            if(\has_capability('mod/surveyactivitybase:update_activity',\context_system::instance())){
+                $nav->add_node(
+                    new navigation_node(array('text'=>get_string('activity_list',SURVEYACTIVITYBASE_PLUGIN_NAME),
+                        'action'=>new moodle_url('/mod/surveyactivitybase/view.php',array('cmid'=>self::$_base->cmid))))
+                );
+            }
+
+            /** @var plugininfo_base[]*/
+            $plugins = self::get_surveyactivity_base()->get_my_activity_types();
+            foreach($plugins as $plugin){
+
+                /**
+                *
+                * @var activity
+                */
+                $plugin_class = activity_wrapper::get_interface_class_by_name($plugin->name);
+
+                $plugin_class::extend_nav($nav, self::$_wrapper);
+            }
+        }
+        return $nav;
+    }
+
+    /**
+    * extends admin setting menu.
+    *
+    * @param \part_of_admin_tree $admin
+    * @param mixed $settings
+    * @param mixed $module
+    */
+    public static function add_admin_plugin_settings(\part_of_admin_tree $admin, \admin_settingpage $settings,$module)
+    {
+        global $CFG;
+
+        $first = true;
+        foreach (\plugin_manager::instance()->get_plugins_of_type('surveyactivity') as $plugin) {
+
+            $file = $CFG->dirroot . "/mod/surveyactivitybase/activity/{$plugin->name}/settings.php";
+            if(file_exists($file))
+            {
+                if($first)
+                {
+                    $category = new \admin_category('surveyactivityplugins',
+                        new \lang_string('surveyactivityplugins', SURVEYACTIVITYBASE_PLUGIN_NAME),
+                        $module->is_enabled() === false);
+                    $admin->add('modules', $category);
+                    $first = false;
+                }
+                $settings = new \admin_settingpage('surveyactivity_' . $plugin->name,
+                                                  $plugin->displayname,
+                                                  'moodle/site:config',
+                                                  $module->is_enabled() === false);
+                if ($admin->fulltree) {
+                    include($file);
+                }
+                $admin->add('surveyactivityplugins', $settings);
+            }
+        }
+
+    }
+}
+
+/**
+* It's a refrence of mod_surveyactivity table
+* It's an activity instance's wrapper*
+* when you need activity instance info
+* please call activity_wrapper::get_activity_instance()
+*
+* If there's a mod_surveyactivity id,
+* call activity_wrapper::instance_from_id($id)->get_activity_instance()
+* To get the activity instance
+*
+* ////It's function can't be called by layer 2 code
+*
+* @property int $id
+* @property int $base_id which surveyactivity
+* @property int $cmid the surveyactivity's cmid
+* @property string $name
+* @property string $description
+* @property string $activity which activity template the directory's name in ./activity
+* @property int $instance_id which instance if in activity template
+* @property int $starttime when start
+* @property int $endtime when over
+* @property int $creator_id who create this
+* @property int $status status activity_wrapper::STATUS_NEW ...
+* @property int $modifiedtime when modified the info.
+*
+*/
+class activity_wrapper extends \wmios_common_object{
+
+    protected static $_table = 'surveyactivity_instance';
+
+    /** when create new */
+    const STATUS_NEW = 0;
+
+    /** On going*/
+    const STATUS_ONGOING = 1;
+
+    /** when stop can not restart*/
+    const STATUS_STOP = 2;
+
+    /** is over*/
+    const STATUS_COMPLETE = 3;
+
+    /** @var activity_base*/
+    protected $_base;
+
+    protected $_fields =array(
+        'id'=>0,
+        'base_id'=>0,
+        'cmid'=>0,
+        'name'=>'',
+        'description'=>'',
+        'activity'=>'',
+        'instance_id'=>0,
+        'starttime'=>0,
+        'endtime'=>0,
+        'creator_id'=>0,
+        'status'=>0,
+        'modifiedtime'=>0
+    );
+
+    /**
+    * @return int $status status activity_wrapper::STATUS_NEW ...
+    *
+    */
+    public function get_status()
+    {
+        return $this->status;
+    }
+
+    /**
+    * display string for the activity status.
+    * @return string
+    *
+    */
+    public function get_status_display(){
+        return get_string('activity_status_'.$this->status,SURVEYACTIVITYBASE_PLUGIN_NAME);
+    }
+
+    /**
+    * @return bool
+    *
+    */
+    public function is_new()
+    {
+        return $this->status == self::STATUS_NEW;
+    }
+
+    /**
+    * @return bool
+    *
+    */
+    public function is_ongoing()
+    {
+        return $this->status == self::STATUS_ONGOING;
+    }
+
+    /**
+    * @return bool
+    *
+    */
+    public function is_stop()
+    {
+        return $this->status == self::STATUS_STOP;
+    }
+
+    /**
+    * @return bool
+    *
+    */
+    public function is_complete()
+    {
+        return $this->status == self::STATUS_COMPLETE;
+    }
+
+
+    /**
+    * The obj of ac instance
+    *
+    * @var \wmios\survey\activity
+    */
+    protected $_activity_obj = null;
+
+    public static function get_interface_class_by_name($activity)
+    {
+        return '\wmios\survey\activity_'.$activity;
+    }
+
+    public function get_interface_class()
+    {
+        return self::get_interface_class_by_name($this->activity);
+    }
+
+    public static function get_activity_component_by_name($activity)
+    {
+        return 'surveyactivity_'.$activity;
+    }
+
+    public function get_activity_component()
+    {
+        return self::get_activity_component_by_name($this->activity);
+    }
+
+    /**
+    *
+    * Get the ac instance
+    *
+    * If there's a mod_surveyactivity id,
+    * call activity_wrapper::instance_from_id($id)->get_activity_instance()
+    * To get the activity instance
+    *
+    * @return \wmios\survey\activity
+    */
+    public function get_activity_instance(){
+        if($this->_activity_obj === null){
+            activity_wrapper::required_classes($this->activity);
+            /** @var \wmios\survey\activity */
+            $class_name = $this->get_interface_class();
+            $this->_activity_obj = new $class_name($this);
+        }
+        return $this->_activity_obj;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param activity_base $base
+    * @return static
+    */
+    public function set_base(activity_base $base)
+    {
+        $this->_base = $base;
+        return $this;
+    }
+
+    /**
+    * @return activity_base
+    *
+    */
+    public function get_base()
+    {
+        if($this->_base == null)
+        {
+            $this->_base = activity_base::instance_from_id($this->base_id);
+        }
+        return $this->_base;
+    }
+
+    /**
+    * Use the activity's type name and instance id get the wrapper
+    *
+    * @param \String $activity_name name of the activity type
+    * @param int $instance_id the instance id,
+    * @return self if there isn't a record in mod_surveyactivity table,will return null.
+    */
+    public static function instance_for_activity_and_instance($activity_name,$instance_id){
+        global $DB;
+        $obj = $DB->get_record(static::$_table,array('activity'=>$activity_name,'instance_id'=>$instance_id));
+        return static::instance_from_select("activity='{$activity_name}' and instance_id='{$instance_id}'");
+    }
+
+    /**
+    * Create a wrapper
+    *
+    * @param \String $name
+    * @param \String $description
+    * @param \String $activity
+    * @param int $instance_id
+    * @param int $starttime
+    * @param int $endtime
+    * @param int $creator_id
+    * @return self
+    */
+    public static function create($name,$description,$activity,$instance_id,$starttime,$endtime,$creator_id){
+        global $DB;
+        $data = array(
+            'name'=>$name,
+            'description'=>$description,
+            'activity'=>$activity,
+            'instance_id'=>$instance_id,
+            'starttime'=>$starttime,
+            'endtime'=>$endtime,
+            'creator_id'=>$creator_id,
+            'modifiedtime'=>time());
+        $id = $DB->insert_record(static::$_table,(object)$data,true);
+        $data['id'] = $id;
+        return static::instance_for_fields($data);
+
+    }
+
+    /**
+    * Delete a wrapper and it's activity instance
+    *
+    * @param int $id
+    * @return bool
+    */
+    public static function delete($id){
+
+        $obj = static::instance_from_id($id);
+
+        $plugininfo = new plugininfo_activity($obj->activity);
+
+        /**
+        * @var \wmios\survey\activity
+        */
+        $class_name = $plugininfo->get_interface_class();
+
+        return $class_name::delete_instance($obj->instance_id) && parent::delete($id);
+    }
+
+    public static function required_classes($activity_type)
+    {
+        global $CFG;
+        $file = $CFG->dirroot.'/mod/surveyactivitybase/activity/'.$activity_type.'/lib.php';
+        include_once($file);
+    }
+
+    /**
+    *
+    * start a activity
+    *
+    * @return bool
+    *
+    */
+    public function start()
+    {
+        if($this->is_new() && $this->get_activity_instance()->start())
+        {
+            $this->status = self::STATUS_ONGOING;
+            return $this->save();
+        }else{
+            return false;
+        }
+
+    }
+
+    /**
+    * stop a activity
+    *
+    * @return bool
+    *
+    */
+    public function stop()
+    {
+        if($this->is_ongoing() && $this->_activity_obj->stop())
+        {
+            $this->status = self::STATUS_STOP;
+            return $this->save();
+        }else{
+            return false;
+        }
+    }
+}
+
+/**
+* Get a activity wrapper list
+* It's a \ArrayObject
+*/
+class activity_list extends \ArrayObject{
+
+    /** @var activity_base*/
+    protected $_base = null;
+
+    /**
+    *
+    * @param int $user_id
+    * @param \String $sort order string
+    * @return \wmios\survey\activity_wrapper[]
+    */
+    public function __construct(activity_base $base, $sort=''){
+        global $DB;
+        if(!$base){
+            throw new \Exception('activity_list need activity_base');
+        }
+
+        $this->_base = $base;
+        $activities = (array)activity_wrapper::instances_from_select('base_id='.$base->id);
+
+        foreach($activities as $activity){
+            $activity->set_base($base);
+        }
+        parent::__construct($activities);
+    }
+
+    /**
+    * @return activity_base
+    *
+    */
+    public function get_base()
+    {
+        return $this->_base;
+    }
+
+
+}
+
+/**
+* the base is table surveyactivity's record
+* a survey activity base is created by a course edit teacher.
+* a survey activity is created by a role who can edit a survey activity.
+*
+* @property int $id
+* @property int $cmid which course module.
+* @property course $course which course.
+* @property string $name base's name
+* @property string $intro
+* @property int $introformat
+* @property int $timemodified when modified.
+*/
+class activity_base extends \wmios_common_object
+{
+    //determined by $this->course
+    private $_course = null;
+
+    //determined by $this->cmid
+    private $_cm = null;
+
+    /** @var \context_module*/
+    private $_context = null;
+
+    protected static $_table = 'surveyactivitybase';
+
+    protected $_fields =array(
+        'id'=>0,
+        'cmid'=>0,
+        'course'=>0,
+        'name'=>'',
+        'intro'=>'',
+        'introformat'=>'',
+        'timemodified'=>''
+    );
+
+    /**
+    * set base's course module
+    *
+    * @param mixed $cm
+    * @return self
+    */
+    public function set_cm($cm)
+    {
+        if($cm->instance == $this->id)
+        {
+            $this->_cm = $cm;
+        }
+        return $this;
+    }
+
+
+    public function get_cm()
+    {
+        if($this->_cm === null)
+        {
+            $this->_cm = get_coursemodule_from_instance(SURVEYACTIVITYBASE_PLUGIN_NAME, $this->id, $this->course_id, false, MUST_EXIST);
+        }
+        return $this->_cm;
+    }
+
+    public function set_context(\context_module $context)
+    {
+        if($context->instanceid == $this->cmid)
+        {
+            $this->_context = $context;
+        }
+        return $this;
+    }
+
+
+    public function get_context()
+    {
+        if($this->_context === null)
+        {
+            $this->_context = \context_module::instance($this->cmid);
+        }
+        return $this->_context;
+    }
+
+    /**
+    * set base's course
+    *
+    * @param stdClass|mixed $course
+    * @return self
+    */
+    public function set_course($course)
+    {
+        if($this->course == $course->id)
+        {
+            $this->_course = $course;
+        }
+        return $this;
+    }
+
+    /**
+    *
+    * @return stdClass|mixed $course refrence by course_id
+    *
+    */
+    public function get_course()
+    {
+        global $DB;
+        if($this->_course === null)
+        {
+            $this->_course =  $DB->get_record('course', array('id'=>$this->course), '*');
+        }
+        return $this->_course;
+    }
+
+    /**
+    * @return plugininfo_base[]
+    *
+    */
+    public function get_my_activity_types()
+    {
+        $all = array();
+        /** @var \plugininfo_base[]*/
+        $activities = \plugin_manager::instance()->get_subplugins_of_plugin(SURVEYACTIVITYBASE_PLUGIN_NAME);
+        foreach($activities as $activity)
+        {
+            if(has_capability('surveyactivity/'.$activity->name.':edit',$this->get_context()))
+            {
+                activity_wrapper::required_classes($activity->name);
+                $all[] = $activity;
+            }
+        }
+        return $all;
+    }
+
+}

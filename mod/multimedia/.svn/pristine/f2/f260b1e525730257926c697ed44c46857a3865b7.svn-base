@@ -1,0 +1,7 @@
+<?php
+
+class multimedia_video extends multimedia_base{
+    public function format_unit($num){
+        return wmios_format_second_to_minute($num);
+    }
+}

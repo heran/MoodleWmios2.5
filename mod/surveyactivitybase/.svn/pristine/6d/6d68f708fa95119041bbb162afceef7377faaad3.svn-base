@@ -1,0 +1,265 @@
+<?php
+use wmios\survey as survey;
+
+require_once(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = optional_param('id',0, PARAM_INT);
+}
+if($cmid)
+{
+    $cm = get_coursemodule_from_id('surveyactivitybase', $cmid);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+    $sa_base = survey\activity_base::instance_from_id($cm->instance);
+}else
+{
+    $base_id = required_param('base_id',PARAM_INT);
+    $sa_base = document_base::instance_from_id($base_id);
+    $cm = get_coursemodule_from_instance('surveyactivitybase', $base_id, $sa_base->course_id, false, MUST_EXIST);
+    $cm_context = context_module::instance($cm->id);
+    require_capability('mod/surveyactivitybase:update_activity', $cm_context);
+}
+$course = $DB->get_record('course', array('id'=>$cm->course), '*', MUST_EXIST);
+require_course_login($course, true, $cm);
+$sa_base->set_course($course);
+$sa_base->set_cm($cm);
+$sa_base->set_context($cm_context);
+survey\tool::set_surveyactivity_base($sa_base);
+
+
+/**
+* @var \mod_surveyactivitybase_renderer
+*/
+$renderer = $PAGE->get_renderer('surveyactivitybase');
+
+$str = new stdClass();
+$str->activity_list = get_string('activity_list',SURVEYACTIVITYBASE_PLUGIN_NAME);
+
+$PAGE->set_context($cm_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_cm($cm);
+$PAGE->set_pagelayout('noregion');
+$PAGE->set_title($course->shortname.':'.$sa_base->name);
+$PAGE->set_heading($str->activity_list);
+
+
+echo $renderer->header();
+?>
+<script type="text/javascript">
+$(function(){$('.left-col').removeClass('left-col');$('.right-col').remove();});
+</script>
+
+<style type="text/css">
+.diaocha a{cursor:pointer;}
+.diaocha{ padding:10px; position:relative;}
+.diaocha h3{ text-align:center; font-size:18px; color:#0088cc; height:80px; line-height:80px; text-shadow: 0 1px 2px #c9c9c9;}
+.diaocha .top_btn{ height:26px; line-height:26px; position:absolute; top:-1px; right:10px; font-size:12px; font-style:normal; font-weight:normal; margin-bottom:0; }
+.diaocha .top_btn a{ z-index:9; padding:0px 5px; margin-left:1px; display:inline-block; border:1px solid #285618; cursor:pointer;color: #ffffff; text-shadow: 0 -1px 0 rgba(0,0,0,0.25);  background-color: #7ca254; background-image: -moz-linear-gradient(top,#a5be71,#3e7929); background-image: -webkit-gradient(linear,0 0,0 100%,from(#a5be71),to(#3e7929)); background-image: -webkit-linear-gradient(top,#a5be71,#3e7929); background-image: -o-linear-gradient(top,#a5be71,#3e7929); background-image: linear-gradient(to bottom,#a5be71,#3e7929); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffa5be71',endColorstr='#ff3e7929',GradientType=0); border-color: #3e7929 #3e7929 #214016;border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25); filter: progid:DXImageTransform.Microsoft.gradient(enabled= false);-webkit-border-radius:3px; -moz-border-radius:3px; border-radius:3px;
+box-shadow: 0px 1px 3px #d7d7d7; -moz-box-shadow: 0px 1px 3px #d7d7d7; -webkit-box-shadow: 0px 1px 3px #d7d7d7;}
+.diaocha .top_btn a:hover{color:#ffffff; background-color:#3e7929;text-decoration:none; background-position:0 -15px; -webkit-transition:background-position 0.1s linear;-moz-transition:background-position 0.1s linear; -o-transition:background-position 0.1s linear; transition:background-position 0.1s linear; -webkit-transition:background-position 0.1s linear; -moz-transition:background-position 0.1s linear; -o-transition:background-position 0.1s linear; transition:background-position 0.1s linear;}
+.diaocha .top_btn a:active{ background-image:none; outline:0; -webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05);}
+.diaocha .dc_brief{ font-size:12px; line-height:22px; padding:10px; border:1px solid #e7e7e7;-webkit-border-radius:3px; -moz-border-radius:3px; margin-bottom:10px; background:#fbfbfb; border-radius:3px; border:1px solid #b2b2b2; box-shadow:0px 1px 3px rgba(0, 0, 0, 0.3);}
+.diaocha .dc_brief span{ margin-right:50px;}
+.diaocha .dc_brief span b{ color:#0088cc}
+.diaocha .dc_brief span i{ font-style:normal;}
+.diaocha .dc_list{}
+.dc_list table{ border:1px solid #CCC; border-collapse:collapse; }
+.dc_list table td{ height:30px; line-height:30px; border:1px solid #CCC; text-align:center;}
+.dc_list table .list_bt{ height:40px; line-height:40px; color:#0088cc; font-weight:bold; font-size:14px; text-transform:uppercase;    background:#e0e0e0; background:-moz-linear-gradient(#ffffff, #e0e0e0); background:-webkit-linear-gradient(#ffffff, #e0e0e0); background:-o-linear-gradient(#ffffff, #e0e0e0); background:-ms-linear-gradient(#ffffff, #e0e0e0); background:linear-gradient(#ffffff, #e0e0e0);    border-radius:4px 4px 0 0;}
+.dc_list table .list_bt:hover{background:#e0e0e0; background:-moz-linear-gradient(#ffffff, #e0e0e0); background:-webkit-linear-gradient(#ffffff, #e0e0e0); background:-o-linear-gradient(#ffffff, #e0e0e0); background:-ms-linear-gradient(#ffffff, #e0e0e0); background:linear-gradient(#ffffff, #e0e0e0); border-radius:4px 4px 0 0;}
+.dc_list table .tr_bg{ background:#f4f4f4;}
+.dc_list table tr:hover{background: #dae8ef;}
+.dc_list table .list_bt td{ text-align:center}
+.page_btn{ padding:20px 10px 10px 0px;}
+.page_btn a{ background:#80a337 url(/theme/image.php?theme=udemy&component=theme&image=noise);  border:1px solid #3c5f00; margin-right:5px;  padding:4px 8px; display:inline-block; border-radius:3px; color:#fff; font-weight:bold; font-size:12px; text-shadow:0 -1px rgba(0, 0, 0, 0.5);
+ box-shadow:0 1px rgba(255, 255, 255, 0.45) inset, 0 1px 3px rgba(0, 0, 0, 0.3), 0 -32px 16px -16px rgba(0, 0, 0, 0.2) inset;    -webkit-transition:background-color 0.3s ease; -moz-transition:background-color 0.3s ease; -o-transition:background-color 0.3s ease;
+transition:background-color 0.3s ease; -webkit-transition:background-color 0.3s ease; -moz-transition:background-color 0.3s ease; -o-transition:background-color 0.3s ease; transition:background-color 0.3s ease;}
+.page_btn a:hover{background-color:#91b448; text-decoration:none}
+.page_btn a:active {background-color:#6f9226;}
+.page_btn .page_btn_cur{ color:#FFF; border:1px solid #848484; text-decoration:none; background:#d0d0d0; background:-moz-linear-gradient(#e4e4e4, #d0d0d0); background:-webkit-linear-gradient(#e4e4e4, #d0d0d0); background:-o-linear-gradient(#e4e4e4, #d0d0d0); background:-ms-linear-gradient(#e4e4e4, #d0d0d0); background:linear-gradient(#e4e4e4, #d0d0d0); }
+
+.search_nr{ padding:10px; border:1px solid #d8d8d8; background:#f5f5f5; border-radius:3px;	-moz-box-shadow:1px 2px 8px #e3e3e3 inset;         /* For Firefox3.6+ */-webkit-box-shadow:1px 2px 8px #e3e3e3 inset; /* For Chrome5+, Safari5+ */	box-shadow:1px 2px 8px #e3e3e3 inset; /* For Latest Opera */}
+.search_wd{ padding-bottom:10px; border-bottom:1px dashed #dddddd; margin-bottom:10px;}
+.search_wd dl{ margin:0px;}
+.search_wd dt{ margin:0px; height:30px; line-height:30px; float:left; font-size:14px; font-weight:bold; color:#0088cc; border-right:1px solid #d5d5d5;}
+.search_wd dd{ margin:0px; height:30px; font-size:12px; line-height:30px; float:left; margin-left:15px;}
+.search_wd dd a{ padding:2px 5px; color:#333; background:#e6e6e6;}
+.search_wd dd a:hover{ background:#0088ce; color:#fff; text-decoration:none}
+.search_wd dd .weidu_cur{ background:#0088ce; color:#fff;}
+.search_wd dd select{ width:auto; margin-left:5px; margin-top:-2px;}
+
+.diaocha_qb{}
+.diaocha_qb .dc_nr_bt{ line-height:30px; padding-bottom:10px; border-bottom:1px solid #e2e2e2; margin-bottom:10px;}
+.diaocha_qb .dc_nr_bt select{ width:auto}
+.diaocha_qb .dc_nr_bt a{ min-width:30px; margin-right:1px; margin-top:1px; display:block; padding:0px 8px; background:#cecece; text-align:center; color:#333; float:left;}
+.diaocha_qb .dc_nr_bt a:hover{ text-decoration:none; background:#0088ce; color:#FFF;}
+.diaocha_qb .dc_nr_bt .bt_cur{ background:#0088ce; color:#FFF;}
+.dc_nr_bt ul li{ min-height:30px; position:relative; float:left;}
+.diaocha_qb .dc_nr_bt ul li a{ padding:5px 8px;}
+.dc_nr_bt ul li ul{ display:none}
+.dc_nr_bt ul li:hover ul{ width:372px; padding:10px; border:1px solid #d8d8d8; background:#FFF; display:block; position:absolute; bottom:30px; left:0px; -webkit-border-radius:3px; -moz-border-radius:3px; border-radius:3px;}
+.dc_nr_bt ul li ul li a.shiji{ background:#e6e6e6}
+.diaocha_qb .dc_nr_bt ul li ul li a{ padding:5px 8px;}
+.dc_nr_bt ul li ul li a.shiji:hover{ background:#34a4de;}
+.diaocha_qb .dc_nr_tb{ position:relative; text-align:center; padding-bottom:20px;}
+
+.xiazai{ font-size:12px; z-index:9; position:absolute; bottom:-11px; right:0px; padding:3px 5px; margin-left:1px; display:inline-block; border:1px solid #285618; cursor:pointer;color: #ffffff; text-shadow: 0 -1px 0 rgba(0,0,0,0.25);  background-color: #7ca254; background-image: -moz-linear-gradient(top,#a5be71,#3e7929); background-image: -webkit-gradient(linear,0 0,0 100%,from(#a5be71),to(#3e7929)); background-image: -webkit-linear-gradient(top,#a5be71,#3e7929); background-image: -o-linear-gradient(top,#a5be71,#3e7929); background-image: linear-gradient(to bottom,#a5be71,#3e7929); background-repeat: repeat-x; filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffa5be71',endColorstr='#ff3e7929',GradientType=0); border-color: #3e7929 #3e7929 #214016;border-color: rgba(0,0,0,0.1) rgba(0,0,0,0.1) rgba(0,0,0,0.25); filter: progid:DXImageTransform.Microsoft.gradient(enabled= false);-webkit-border-radius:3px; -moz-border-radius:3px; border-radius:3px;
+box-shadow: 0px 1px 3px #d7d7d7; -moz-box-shadow: 0px 1px 3px #d7d7d7; -webkit-box-shadow: 0px 1px 3px #d7d7d7;}
+.xiazai:hover{color:#ffffff; background-color:#3e7929;text-decoration:none; background-position:0 -15px; -webkit-transition:background-position 0.1s linear;-moz-transition:background-position 0.1s linear; -o-transition:background-position 0.1s linear; transition:background-position 0.1s linear; -webkit-transition:background-position 0.1s linear; -moz-transition:background-position 0.1s linear; -o-transition:background-position 0.1s linear; transition:background-position 0.1s linear;}
+.xiazai:active{ background-image:none; outline:0; -webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -webkit-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); -moz-box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05); box-shadow:inset 0 2px 4px rgba(0, 0, 0, .15), 0 1px 2px rgba(0, 0, 0, .05);}
+.diaocha_qb .dc_nr_tb .tupian_bt{ height:24px; line-height:24px; margin-top:10px; text-align:left; padding-left:10px; background:#dddddd;}
+</style>
+
+<div class="diaocha">
+	<p class="top_btn"><a href="#">返回列表</a></p>
+	<h3>调查标题调查标题</h3>
+	<div class="dc_brief"><p>调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要调查内容简要</p><p><span><b>开始日期</b>：<i>2013年7月31日</i></span><span><b>结束日期</b>：<i>2013年8月5日</i></span><span><b>报表状态</b>：<i>已结束</i></span></p></div>
+    
+    <div class="search_nr">
+      <div class="search_wd">
+          <dl>
+          <dt>报告纬度：</dt>
+          <dd><a href="#" class="weidu_cur">全部</a></dd>
+          <dd><a href="#">性别</a></dd>
+          <dd><a href="#">年龄</a></dd>
+          <dd><a href="#">地区</a></dd>
+          <dd><a href="#">部门</a></dd>
+          <div style=" clear:both"></div>
+          </dl>
+      </div>
+
+      
+      <!--全部-->
+      <div class="diaocha_qb">
+      	<div class="dc_nr_bt"><a href="#" class="bt_cur">全部</a><div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+        	<a href="#" class="xiazai">下载报告</a>
+        	<p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/radar.png" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/example12.png" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--男女-->
+      <div class="diaocha_qb" style=" display:none">
+      	<div class="dc_nr_bt"><a href="#" class="bt_cur">男</a><a href="#">女</a><div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+        	<a href="#" class="xiazai">下载报告</a>
+        	<p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/radar.png" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/example12.png" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--年龄-->
+      <div class="diaocha_qb" style=" display:none">
+      	<div class="dc_nr_bt"><a href="#" class="bt_cur">1-10岁</a><a href="#">11-20岁</a><a href="#">21-30岁</a><a href="#">31-40岁</a><a href="#">41-50岁</a><a href="#">51-60岁</a><a href="#">61-70岁</a><a href="#">71-80岁</a><a href="#">81-90岁</a><a href="#">91-100岁</a><div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+        	<a href="#" class="xiazai">下载报告</a>
+        	<p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/radar.png" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/example12.png" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--地区-->
+      <div class="diaocha_qb" style="display:none">
+      	<div class="dc_nr_bt">
+        	<ul>
+            	<li><a href="#" class="bt_cur">北京</a>
+                	<ul><li><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a><a href="#" class="shiji">东城区</a></li></ul>
+            	</li>
+                <li><a href="#">上海</a>
+                	<ul><li><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a></li></ul>
+                </li>
+                <li><a href="#">天津</a></li>
+                <li><a href="#">重庆</a></li>
+                <li><a href="#">宁夏</a></li>
+                <li><a href="#">吉林</a></li>
+                <li><a href="#">辽宁</a></li>
+                <li><a href="#">江苏</a></li>
+                <li><a href="#">山东</a></li>
+                <li><a href="#">安徽</a></li>
+                <li><a href="#">河北</a></li>
+                <li><a href="#">河南</a></li>
+                <li><a href="#">湖北</a></li>
+                <li><a href="#">湖南</a></li>
+                <li><a href="#">江西</a></li>
+                <li><a href="#">陕西</a></li>
+                <li><a href="#">山西</a></li>
+                <li><a href="#">四川</a></li>
+                <li><a href="#">青海</a></li>
+                <li><a href="#">海南</a></li>
+                <li><a href="#">广东</a></li>
+                <li><a href="#">贵州</a></li>
+                <li><a href="#">浙江</a></li>
+                <li><a href="#">福建</a></li>
+                <li><a href="#">台湾</a></li>
+                <li><a href="#">甘肃</a></li>
+                <li><a href="#">云南</a></li>
+                <li><a href="#">新疆</a></li>
+                <li><a href="#">西藏</a></li>
+                <li><a href="#">广西</a></li>
+                <li><a href="#">香港</a>
+                	<ul><li><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a><a href="#" class="shiji">匣北区</a></li></ul>
+                </li>
+                <li><a href="#">澳门</a></li>
+                <li><a href="#">内蒙古</a></li>
+                <li><a href="#">黑龙江</a></li>
+            </ul>
+            <div style="clear:both"></div>
+            </div>
+        
+        <div class="dc_nr_tb">
+        	<a href="#" class="xiazai">下载报告</a>
+        	<p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/radar.png" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/example12.png" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+      <!--部门-->
+      <div class="diaocha_qb" style="display:none">
+      	<div class="dc_nr_bt">
+        	<form action="" method="get">
+            	<select name="">
+            	  <option>请选择一级部门</option>
+            	</select>
+                <select name="">
+            	  <option>请选择二级部门</option>
+            	</select>
+                <select name="">
+            	  <option>请选择三级部门</option>
+            	</select>
+                <select name="">
+            	  <option>请选择四级部门</option>
+            	</select>
+            </form>
+        <div style="clear:both"></div></div>
+        
+        <div class="dc_nr_tb">
+        	<a href="#" class="xiazai">下载报告</a>
+        	<p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/radar.png" width="400" height="400" /></p>
+            <p class="tupian_bt">图表名称</p>
+            <p><img src="file:///C|/Users/Heran/Desktop/example12.png" width="700" height="230" /></p>
+        </div>
+      </div>
+      
+    </div>
+</div>
+
+
+<?php
+echo $renderer->footer();

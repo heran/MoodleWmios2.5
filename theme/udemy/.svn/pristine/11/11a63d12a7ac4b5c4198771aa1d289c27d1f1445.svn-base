@@ -1,0 +1,9 @@
+$( function(){
+    $('.path-mod-quiz input[type=submit]').addClass('btn');
+    $('.path-mod-quiz .submitbtns a').addClass('btn');
+    $('.path-mod-quiz #mod_quiz_navblock .othernav a').addClass('btn');
+    $('.path-mod-quiz table.quizattemptsummary')
+        .width($('.path-mod-quiz table.quizattemptsummary').width()-20);
+    $('.path-mod-quiz #feedback')
+        .width($('.path-mod-quiz #feedback').width()-20);
+});

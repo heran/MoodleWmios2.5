@@ -1,0 +1,557 @@
+<?php
+
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * @package    mod
+ * @subpackage multimedia
+ * @copyright  2013 Wmios (http://wmios.com)
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die;
+require_once (dirname(__FILE__) . '/locallib.php');
+require_once ($CFG->dirroot.'/local/wmios/completion/lib.php');
+require_once ($CFG->dirroot.'/local/wmios/lib.php');
+
+/**
+ * List of features supported in multimedia module
+ * @param string $feature FEATURE_xx constant for requested feature
+ * @return mixed True if module supports feature, false if not, null if doesn't know
+ */
+function multimedia_supports($feature) {
+    switch($feature) {
+        case FEATURE_MOD_ARCHETYPE:                     return MOD_ARCHETYPE_RESOURCE;
+        case FEATURE_GROUPS:                            return false;
+        case FEATURE_GROUPINGS:                         return false;
+        case FEATURE_GROUPMEMBERSONLY:                  return true;
+        case FEATURE_MOD_INTRO:                         return true;
+        case FEATURE_COMPLETION_TRACKS_VIEWS:           return true;
+        case FEATURE_COMPLETION_HAS_RULES:              return true;
+        case FEATURE_GRADE_HAS_GRADE:                   return false;
+        case FEATURE_GRADE_OUTCOMES:                    return false;
+        case FEATURE_BACKUP_MOODLE2:                    return true;
+        case FEATURE_SHOW_DESCRIPTION:                  return true;
+        case WMIOS_FEATURE_COMPLETION_TRACKS_RATIOS:    return true;
+
+        default: return null;
+    }
+}
+
+/**
+ * Returns all other caps used in module
+ * @return array
+ */
+function multimedia_get_extra_capabilities() {
+    return array('moodle/site:accessallgroups');
+}
+
+/**
+ * This function is used by the reset_course_userdata function in moodlelib.
+ * @param $data the data submitted from the reset course.
+ * @return array status array
+ */
+function multimedia_reset_userdata($data) {
+    return array();//TODO Delete multimedia_completion
+}
+
+/**
+ * List of view style log actions
+ * @return array
+ */
+function multimedia_get_view_actions() {
+    return array('view','view all');
+}
+
+/**
+ * List of update style log actions
+ * @return array
+ */
+function multimedia_get_post_actions() {
+    return array('update', 'add');
+}
+
+/**
+ * Add multimedia instance.
+ * @param stdClass $data
+ * @param mod_multimedia_mod_form $mform
+ * @return int new multimedia instance id
+ */
+function multimedia_add_instance($data, $mform = null) {
+    $data->type = clean_param($data->type, PARAM_PLUGIN);
+    $file = dirname(__FILE__).'/type/'.$data->type.'/multimedia.class.php';
+    if(!file_exists($file)){
+        return null;
+    }
+    require_once($file);
+    
+    /**
+    * @var multimedia_base
+    */
+    $class = 'multimedia_'.$data->type;
+    return $class::add_instance($data, $mform);
+}
+
+/**
+ * Update multimedia instance.
+ * @param object $data
+ * @param object $mform
+ * @return bool true
+ */
+function multimedia_update_instance($data, $mform) {
+    
+    $data->type = clean_param($data->type, PARAM_PLUGIN);
+    $file = dirname(__FILE__).'/type/'.$data->type.'/multimedia.class.php';
+    if(!file_exists($file)){
+        return null;
+    }
+    require_once($file);
+    
+    /**
+    * @var multimedia_base
+    */
+    $class = 'multimedia_'.$data->type;
+    return $class::update_instance($data, $mform);
+    
+}
+
+/**
+ * Delete multimedia instance.
+ * @param int $id
+ * @return bool true
+ */
+function multimedia_delete_instance($id) {//TODO delete multimedia_completion
+
+    /**
+    * @var multimedia_base
+    */
+    $class_name = get_class(multimedia_base::instance_for_multimedia_id($id));
+    return $class_name::delete_instance($id);
+}
+
+/**
+ * Return use outline
+ * @param object $course
+ * @param object $user
+ * @param object $mod
+ * @param object $multimedia
+ * @return object|null
+ */
+function multimedia_user_outline($course, $user, $mod, $multimedia) {
+    global $DB;
+
+    if ($logs = $DB->get_records('log', array('userid'=>$user->id, 'module'=>'multimedia',
+                                              'action'=>'view', 'info'=>$multimedia->id), 'time ASC')) {
+
+        $numviews = count($logs);
+        $lastlog = array_pop($logs);
+
+        $result = new stdClass();
+        $result->info = get_string('numviews', '', $numviews);
+        $result->time = $lastlog->time;
+
+        return $result;
+    }
+    return NULL;
+}
+
+/**
+ * Return use complete
+ * @param object $course
+ * @param object $user
+ * @param object $mod
+ * @param object $multimedia
+ */
+function multimedia_user_complete($course, $user, $mod, $multimedia) {//TODO completion
+    global $CFG, $DB;
+
+    if ($logs = $DB->get_records('log', array('userid'=>$user->id, 'module'=>'multimedia',
+                                              'action'=>'view', 'info'=>$multimedia->id), 'time ASC')) {
+        $numviews = count($logs);
+        $lastlog = array_pop($logs);
+
+        $strmostrecently = get_string('mostrecently');
+        $strnumviews = get_string('numviews', '', $numviews);
+
+        echo "$strnumviews - $strmostrecently ".userdate($lastlog->time);
+
+    } else {
+        print_string('neverseen', 'multimedia');
+    }
+}
+
+/**
+ * Given a course_module object, this function returns any
+ * "extra" information that may be needed when printing
+ * this activity in a course listing.
+ *
+ * See {@link get_array_of_activities()} in course/lib.php
+ *
+ * @param cm_info $coursemodule
+ * @return cached_cm_info Info to customise main multimedia display
+ */
+function multimedia_get_coursemodule_info($coursemodule) {//TODO extra info
+    global $CFG, $DB;
+    require_once("$CFG->libdir/resourcelib.php");
+
+    if (!$multimedia = $DB->get_record('multimedia', array('id'=>$coursemodule->instance),
+            'id, name, display, displayoptions, intro, introformat')) {
+        return NULL;
+    }
+
+    $info = new cached_cm_info();
+    $info->name = $multimedia->name;
+
+    if ($coursemodule->showdescription) {
+        // Convert intro to html. Do not filter cached version, filters run at display time.
+        $info->content = format_module_intro('multimedia', $multimedia, $coursemodule->id, false);
+    }
+
+    if ($multimedia->display != RESOURCELIB_DISPLAY_POPUP) {
+        return $info;
+    }
+
+    $fullurl = "$CFG->wwwroot/mod/multimedia/view.php?id=$coursemodule->id&amp;inpopup=1";
+    $options = empty($multimedia->displayoptions) ? array() : unserialize($multimedia->displayoptions);
+    $width  = empty($options['popupwidth'])  ? 620 : $options['popupwidth'];
+    $height = empty($options['popupheight']) ? 450 : $options['popupheight'];
+    $wh = "width=$width,height=$height,toolbar=no,location=no,menubar=no,copyhistory=no,status=no,directories=no,scrollbars=yes,resizable=yes";
+    $info->onclick = "window.open('$fullurl', '', '$wh'); return false;";
+
+    return $info;
+}
+
+
+/**
+ * Lists all browsable file areas
+ *
+ * @package  mod_multimedia
+ * @category files
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @return array
+ */
+function multimedia_get_file_areas($course, $cm, $context) {
+    $areas = array();
+    $areas['content'] = get_string('content', 'multimedia');
+    return $areas;
+}
+
+/**
+ * File browsing support for multimedia module content area.
+ *
+ * @package  mod_multimedia
+ * @category files
+ * @param stdClass $browser file browser instance
+ * @param stdClass $areas file areas
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param int $itemid item ID
+ * @param string $filepath file path
+ * @param string $filename file name
+ * @return file_info instance or null if not found
+ */
+function multimedia_get_file_info($browser, $areas, $course, $cm, $context, $filearea, $itemid, $filepath, $filename) {
+    global $CFG;
+
+    if (!has_capability('moodle/course:managefiles', $context)) {
+        // students can not peak here!
+        return null;
+    }
+
+    $fs = get_file_storage();
+
+    if ($filearea === 'content') {
+        $filepath = is_null($filepath) ? '/' : $filepath;
+        $filename = is_null($filename) ? '.' : $filename;
+
+        $urlbase = $CFG->wwwroot.'/pluginfile.php';
+        if (!$storedfile = $fs->get_file($context->id, 'mod_multimedia', 'content', 0, $filepath, $filename)) {
+            if ($filepath === '/' and $filename === '.') {
+                $storedfile = new virtual_root_file($context->id, 'mod_multimedia', 'content', 0);
+            } else {
+                // not found
+                return null;
+            }
+        }
+        return new multimedia_content_file_info($browser, $context, $storedfile, $urlbase, $areas[$filearea], true, true, true, false);
+    }
+
+    // note: multimedia_intro handled in file_browser automatically
+
+    return null;
+}
+
+/**
+ * Serves the multimedia files.
+ *
+ * @package  mod_multimedia
+ * @category files
+ * @param stdClass $course course object
+ * @param stdClass $cm course module object
+ * @param stdClass $context context object
+ * @param string $filearea file area
+ * @param array $args extra arguments
+ * @param bool $forcedownload whether or not force download
+ * @param array $options additional options affecting the file serving
+ * @return bool false if file not found, does not return if found - just send the file
+ */
+function multimedia_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options=array()) {
+    global $CFG, $DB;
+    require_once("$CFG->libdir/resourcelib.php");
+
+    if ($context->contextlevel != CONTEXT_MODULE) {
+        return false;
+    }
+
+    require_course_login($course, true, $cm);
+    if (!has_capability('mod/multimedia:view', $context)) {
+        return false;
+    }
+
+    if ($filearea !== 'content') {
+        // intro is handled automatically in pluginfile.php
+        return false;
+    }
+
+    // $arg could be revision number or index.html
+    $arg = array_shift($args);
+    if ($arg == 'index.html' || $arg == 'index.htm') {
+        // serve multimedia content
+        $filename = $arg;
+
+        if (!$multimedia = $DB->get_record('multimedia', array('id'=>$cm->instance), '*', MUST_EXIST)) {
+            return false;
+        }
+
+        // remove @@PLUGINFILE@@/
+        $content = str_replace('@@PLUGINFILE@@/', '', $multimedia->content);
+
+        $formatoptions = new stdClass;
+        $formatoptions->noclean = true;
+        $formatoptions->overflowdiv = true;
+        $formatoptions->context = $context;
+        $content = format_text($content, $multimedia->contentformat, $formatoptions);
+
+        send_file($content, $filename, 0, 0, true, true);
+    } else {
+        $fs = get_file_storage();
+        $relativepath = implode('/', $args);
+        $fullpath = "/$context->id/mod_multimedia/$filearea/0/$relativepath";
+        if (!$file = $fs->get_file_by_hash(sha1($fullpath)) or $file->is_directory()) {
+            $multimedia = $DB->get_record('multimedia', array('id'=>$cm->instance), 'id, legacyfiles', MUST_EXIST);
+            if ($multimedia->legacyfiles != RESOURCELIB_LEGACYFILES_ACTIVE) {
+                return false;
+            }
+            if (!$file = resourcelib_try_file_migration('/'.$relativepath, $cm->id, $cm->course, 'mod_multimedia', 'content', 0)) {
+                return false;
+            }
+            //file migrate - update flag
+            $multimedia->legacyfileslast = time();
+            $DB->update_record('multimedia', $multimedia);
+        }
+
+        // finally send the file
+        send_stored_file($file, 86400, 0, $forcedownload, $options);
+    }
+}
+
+/**
+ * Return a list of multimedia types
+ * @param string $pagetype current page type
+ * @param stdClass $parentcontext Block's parent context
+ * @param stdClass $currentcontext Current context of block
+ */
+function multimedia_multimedia_type_list($pagetype, $parentcontext, $currentcontext) {
+    $module_pagetype = array('mod-multimedia-*'=>get_string('multimedia-mod-multimedia-x', 'multimedia'));
+    return $module_pagetype;
+}
+
+/**
+ * Export multimedia resource contents
+ *
+ * @return array of file content
+ */
+function multimedia_export_contents($cm, $baseurl) {
+    global $CFG, $DB;
+    $contents = array();
+    $context = context_module::instance($cm->id);
+
+    $multimedia = $DB->get_record('multimedia', array('id'=>$cm->instance), '*', MUST_EXIST);
+
+    // multimedia contents
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_multimedia', 'content', 0, 'sortorder DESC, id ASC', false);
+    foreach ($files as $fileinfo) {
+        $file = array();
+        $file['type']         = 'file';
+        $file['filename']     = $fileinfo->get_filename();
+        $file['filepath']     = $fileinfo->get_filepath();
+        $file['filesize']     = $fileinfo->get_filesize();
+        $file['fileurl']      = file_encode_url("$CFG->wwwroot/" . $baseurl, '/'.$context->id.'/mod_multimedia/content/'.$multimedia->revision.$fileinfo->get_filepath().$fileinfo->get_filename(), true);
+        $file['timecreated']  = $fileinfo->get_timecreated();
+        $file['timemodified'] = $fileinfo->get_timemodified();
+        $file['sortorder']    = $fileinfo->get_sortorder();
+        $file['userid']       = $fileinfo->get_userid();
+        $file['author']       = $fileinfo->get_author();
+        $file['license']      = $fileinfo->get_license();
+        $contents[] = $file;
+    }
+
+    // $multimedia html conent
+    $filename = 'index.html';
+    $pagefile = array();
+    $pagefile['type']         = 'file';
+    $pagefile['filename']     = $filename;
+    $pagefile['filepath']     = '/';
+    $pagefile['filesize']     = 0;
+    $pagefile['fileurl']      = file_encode_url("$CFG->wwwroot/" . $baseurl, '/'.$context->id.'/mod_multimedia/content/' . $filename, true);
+    $pagefile['timecreated']  = null;
+    $pagefile['timemodified'] = $page->timemodified;
+    // make this file as main file
+    $pagefile['sortorder']    = 1;
+    $pagefile['userid']       = null;
+    $pagefile['author']       = null;
+    $pagefile['license']      = null;
+    $contents[] = $pagefile;
+
+    return $contents;
+}
+
+/**
+ * Register the ability to handle drag and drop file uploads
+ * @return array containing details of the files / types the mod can handle
+ */
+function multimedia_dndupload_register() {
+    return array('types' => array(
+                     array('identifier' => 'text/html', 'message' => get_string('createpage', 'multimedia')),
+                     array('identifier' => 'text', 'message' => get_string('createpage', 'multimedia'))
+                 ));
+}
+
+/**
+ * Handle a file that has been uploaded
+ * @param object $uploadinfo details of the file / content that has been uploaded
+ * @return int instance id of the newly created mod
+ */
+function multimedia_dndupload_handle($uploadinfo) {
+    // Gather the required info.
+    $data = new stdClass();
+    $data->course = $uploadinfo->course->id;
+    $data->name = $uploadinfo->displayname;
+    $data->intro = '<p>'.$uploadinfo->displayname.'</p>';
+    $data->introformat = FORMAT_HTML;
+    if ($uploadinfo->type == 'text/html') {
+        $data->contentformat = FORMAT_HTML;
+        $data->content = clean_param($uploadinfo->content, PARAM_CLEANHTML);
+    } else {
+        $data->contentformat = FORMAT_PLAIN;
+        $data->content = clean_param($uploadinfo->content, PARAM_TEXT);
+    }
+    $data->coursemodule = $uploadinfo->coursemodule;
+
+    // Set the display options to the site defaults.
+    $config = get_config('multimedia');
+    $data->display = $config->display;
+    $data->popupheight = $config->popupheight;
+    $data->popupwidth = $config->popupwidth;
+    $data->printheading = $config->printheading;
+    $data->printintro = $config->printintro;
+
+    return multimedia_add_instance($data, null);
+}
+
+/**
+ * Obtains the automatic completion state for this module based on any conditions
+ * in multimedia settings.
+ *
+ * @param object $course Course
+ * @param object $cm Course-module
+ * @param int $userid User ID
+ * @param bool $type Type of comparison (or/and; can be used as return value if no conditions)
+ * @return bool True if completed, false if not, $type if conditions not set.
+ */
+function multimedia_get_completion_state($course, $cm, $userid, $type) {
+    $completion_info = new wmios_completion_info($course);
+    return $completion_info->get_ratio($cm,$userid)->completionstate == WMIOS_COMPLETION_RATIO_END;
+}
+
+/**
+* True if enabled completion ratio
+*
+* @param cm_info $cm
+*/
+function multimedia_enabled_completion_ratio($cm){
+    $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->enabled_completion_ratio();
+}
+
+/**
+* The completion ratio unit
+*
+* @param cm_info $cm
+*/
+function multimedia_get_completion_unit($cm){
+    $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->get_unit();
+}
+
+/**
+*
+*
+* @param cm_info $cm
+*/
+function multimedia_get_completion_unit_max($cm){
+    $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->get_completion_unit_max();
+}
+
+/**
+*
+*
+* @param cm_info $cm
+* @param int $userid
+*/
+function multimedia_get_completion_unit_now($cm,$userid){
+     $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->get_completion_unit_now($userid);
+}
+
+/**
+*
+*
+* @param cm_info $cm
+* @param int $userid
+*/
+function multimedia_set_completion_unit_now($cm,$userid,$now){
+    $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->set_completion_unit_now($userid,$now);
+}
+
+/**
+* Format a mod's progress number
+* 
+* @param cm_info $cm
+* @param int $num
+*/
+function multimedia_format_unit($cm,$num){
+    $multimedia = multimedia_base::instance_for_course_module($cm);
+    return $multimedia->format_unit($num);
+}
+

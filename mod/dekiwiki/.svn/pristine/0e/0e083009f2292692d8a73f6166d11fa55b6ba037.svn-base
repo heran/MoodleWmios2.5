@@ -1,0 +1,186 @@
+<?php
+
+define('DEKIWIKI_PLUGIN_NAME','mod_dekiwiki');
+
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+require_once ($CFG->dirroot.'/local/wmios/vendor/dreamplug/http_plug.php');
+require_once ($CFG->dirroot.'/local/wmios/vendor/dreamplug/dream_plug.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+/**
+* @property int $id
+* @property int $cmid
+* @property int $page_id
+* @property string $name
+* @property string $intro
+* @property int $introformat
+* @property int $timemodified
+*/
+class dekiwiki_instance extends wmios_common_object
+{
+    protected static $_table = 'dekiwiki';
+
+    protected $_fields =array(
+        'id'=>0,
+        'cmid'=>0,
+        'course'=>0,
+        'page_id'=>0,
+        'name'=>'',
+        'intro'=>'',
+        'introformat'=>0,
+        'timemodified'=>0,
+    );
+
+    /**
+    * determined by $this->course
+    * @var stdClass
+    */
+    private $_course = null;
+
+    /**
+    *
+    * determined by $this->cmid
+    *
+    * @var stdClass
+    */
+    private $_cm = null;
+
+    /**
+    *
+    *
+    *
+    * @var context_module
+    *
+    */
+    private $_context = null;
+
+
+    /**
+    * set base's course module
+    *
+    * @param mixed $cm
+    * @return self
+    */
+    public function set_cm($cm)
+    {
+        if($cm->instance == $this->id)
+        {
+            $this->_cm = $cm;
+        }
+        return $this;
+    }
+
+    /**
+    * get the course module object
+    *
+    * @return stdClass
+    */
+    public function get_cm()
+    {
+        if($this->_cm === null)
+        {
+            $this->_cm = get_coursemodule_from_instance(SURVEYACTIVITYBASE_PLUGIN_NAME, $this->id, $this->course_id, false, MUST_EXIST);
+        }
+        return $this->_cm;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param context_module $context
+    * @return self
+    */
+    public function set_context(\context_module $context)
+    {
+        if($context->instanceid == $this->cmid)
+        {
+            $this->_context = $context;
+        }
+        return $this;
+    }
+
+    /**
+    * @return context_module
+    *
+    */
+    public function get_context()
+    {
+        if($this->_context === null)
+        {
+            $this->_context = context_module::instance($this->cmid);
+        }
+        return $this->_context;
+    }
+
+    /**
+    * set course
+    *
+    * @param stdClass|mixed $course
+    * @return self
+    */
+    public function set_course($course)
+    {
+        if($this->course == $course->id)
+        {
+            $this->_course = $course;
+        }
+        return $this;
+    }
+
+    /**
+    *
+    * @return stdClass|mixed $course refrence by course_id
+    *
+    */
+    public function get_course()
+    {
+        global $DB;
+        if($this->_course === null)
+        {
+            $this->_course =  $DB->get_record('course', array('id'=>$this->course), '*');
+        }
+        return $this->_course;
+    }
+
+    /**
+    * @return DreamPlug
+    *
+    */
+    public function get_plug()
+    {
+        static $plug;
+        if($plug == null)
+        {
+            $url = get_config(DEKIWIKI_PLUGIN_NAME,'server_url');
+            $apikey = get_config(DEKIWIKI_PLUGIN_NAME,'apikey');
+            $plug = new DreamPlug($url,DreamPlug::DREAM_FORMAT_PHP);
+            $plug = $plug->With('apikey',$apikey);
+        }
+        return $plug;
+    }
+
+    /**
+    * @return int $this->page_id or int lt 0.
+    *
+    */
+    public function create_root_page()
+    {
+        if($this->page_id>0)
+        {
+            return -1;
+        }else{
+
+        }
+        return $this->page_id;
+    }
+
+    /**
+    * @return int
+    *
+    */
+    public function update_root_page()
+    {
+        return $this->page_id;
+    }
+
+}

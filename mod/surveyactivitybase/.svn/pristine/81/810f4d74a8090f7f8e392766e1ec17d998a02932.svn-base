@@ -1,0 +1,201 @@
+<?php
+namespace wmios\survey;
+use \navigation_node,\moodleform,\MoodleQuickForm,\stdClass;
+
+require_once ($CFG->libdir.'/formslib.php');
+
+abstract class activity {
+
+    /**
+    * The activity is new
+    */
+    const ACTIVITY_STATUS_NEW = 'new';
+
+    /**
+    * The activity is ongoing
+    */
+    const ACTIVITY_STATUS_ONGOING = 'ongoing';
+
+    /**
+    * The activity is completed
+    */
+    const ACTIVITY_STATUS_COMPLETED = 'completed';
+
+    protected $_wrapper = null;
+
+    public function __construct(activity_wrapper $wrapper){
+        $this->_wrapper = $wrapper;
+    }
+
+    /**
+    *
+    * Extend survey's main navition
+    *
+    * Use $nav->add_node() add some note.
+    *
+    * @see \wmios\survey\tool::get_nav()
+    *
+    * @param navigation_node $nav
+    */
+    public static function extend_nav(navigation_node $nav){
+
+    }
+
+    /**
+    * When update or add a activity,You need change the form
+    *
+    * @param MoodleQuickForm $mform
+    * @param activity_wrapper $activity_wrapper
+    */
+    public static function process_update_form(MoodleQuickForm $mform,activity_wrapper $activity_wrapper = null){
+
+    }
+
+
+    /**
+    * When user save data
+    *
+    * @param stdClass $general
+    * @param stdClass $special
+    * @param moodleform_activity $mform
+    * @return int the instance id
+    */
+    public static function add_instance(stdClass $general, stdClass $special, moodleform_activity $mform = null){
+        return time();
+    }
+
+
+    /**
+    * Get some default data for add instance
+    *
+    * @return array
+    */
+    public static function get_add_instance_default_data(){
+        return array();
+    }
+
+    /**
+    * When user update data
+    *
+    * @param stdClass $general
+    * @param stdClass $special
+    * @param moodleform_activity $mform
+    * @return bool
+    */
+    abstract public function update_instance(stdClass $general, stdClass $special, moodleform_activity $mform = null);
+
+    /**
+    * Get some default data for update instance
+    * .
+    * @return array
+    */
+    abstract public function get_update_instance_data();
+
+    /**
+    * When user delete an instance
+    *
+    * @param int $id
+    * @return bool
+    */
+    public static function delete_instance($id){
+        return false;
+    }
+
+    /**
+    * Get the moodle_url for view activity detail,
+    * This url is the main view's url
+    *
+    * @return \moodle_url
+    *
+    */
+    abstract public function get_view_url();
+
+    abstract public function get_status();
+
+    public final function get_status_display(){
+        $status = $this->get_status();
+        return get_string('activity_status_'.$status,SURVEYACTIVITYBASE_PLUGIN_NAME);
+    }
+
+    /**
+    * return the wrapper
+    *
+    * @return \wmios\survey\activity_wrapper
+    *
+    */
+    public final function get_wrapper(){
+        return $this->_wrapper;
+    }
+
+
+}
+
+class moodleform_activity extends moodleform {
+
+    protected $_activity_wrapper;
+
+    /**
+    *
+    * @param plugininfo_activity $activity_plugin
+    * @param activity_wrapper $activity_wrapper
+    * @param \String $action html form action
+    * @param array $customdata
+    * @param \String $method
+    * @param \String $target
+    * @param mixed $attributes
+    * @param mixed $editable
+    * @return moodleform_activity
+    */
+    public function __construct(activity_wrapper $activity_wrapper = null, $action=null, $customdata=null, $method='post', $target='', $attributes=null, $editable=true) {
+        if($activity_wrapper && !$activity_plugin){
+            $activity_plugin = new plugininfo_activity($activity_wrapper->activity);
+        }
+        if(!$activity_plugin){
+            throw new \Exception('moodleform_activity need plugininfo_activity or activity_wrapper');
+        }
+        $this->_activity_wrapper = $activity_wrapper;
+        parent::moodleform($action, $customdata, $method, $target, $attributes, $editable);
+    }
+
+    public function definition() {
+        $mform    = &$this->_form;
+
+        //-------------------------------------general-----------------------------
+        $mform->addElement('header', 'general', get_string('general', 'form'));
+        $mform->addElement('text', 'general_name', get_string('name'), array('size'=>'48'));
+        if (!empty($CFG->formatstringstriptags)) {
+            $mform->setType('general_name', PARAM_TEXT);
+        } else {
+            $mform->setType('general_name', PARAM_CLEANHTML);
+        }
+        $mform->addRule('general_name', null, 'required', null, 'client');
+        $mform->addElement('editor', 'general_description', get_string('description'), null, array('maxfiles'=>EDITOR_UNLIMITED_FILES, 'noclean'=>true, 'context'=>\context_system::instance()));
+        $mform->setType('general_description', PARAM_RAW);
+        $mform->addElement('date_time_selector', 'general_starttime',get_string('starttime',SURVEYACTIVITYBASE_PLUGIN_NAME),array('optional'=>true));
+        $mform->addElement('date_time_selector', 'general_endtime',get_string('endtime',SURVEYACTIVITYBASE_PLUGIN_NAME),array('optional'=>true));
+        $mform->addElement('hidden', 'general_activity');
+        $mform->addElement('hidden', 'general_id');
+
+        //-------------------------------------special-----------------------------
+
+        $mform->addElement('header', 'special', get_string('pluginname', $this->_activity_wrapper->get_activity_component()));
+        /**
+        * @var \wmios\survey\activity
+        */
+        $classname = $this->_activity_wrapper->get_interface_class();
+        $classname::process_update_form($mform,$this->_activity_wrapper);
+
+        //-------------------------------------buttons-----------------------------
+        // elements in a row need a group
+        $buttonarray = array();
+        $buttonarray[] = &$mform->createElement('submit', 'general_save_and_return',
+            get_string('save_and_return_activity_list',SURVEYACTIVITYBASE_PLUGIN_NAME));
+        $buttonarray[] = &$mform->createElement('submit', 'general_save_and_display',
+            get_string('save_and_display_activity',SURVEYACTIVITYBASE_PLUGIN_NAME));
+        $buttonarray[] = &$mform->createElement('cancel');
+        $mform->addGroup($buttonarray, 'buttonar', '', array(' '), false);
+        $mform->setType('buttonar', PARAM_RAW);
+        $mform->closeHeaderBefore('buttonar');
+
+    }
+}

@@ -1,0 +1,47 @@
+.survey-layout-box{
+    overflow: hidden;
+    width: 100%;
+}
+.survey-leftrol{
+    float: left;
+    width:20%;
+    overflow: hidden;
+}
+.survey-leftrol > .block {
+    background: #fbfbfb;
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    margin-top: 20px;
+    overflow: hidden;
+}
+.survey-leftrol > .block:first-child {
+    margin-top: 0;
+}
+.survey-leftrol > .block > .header{
+    color:#555;
+    text-transform:uppercase;
+    padding:10px 15px;
+    font-size:15px;
+    border-bottom:1px solid #c9c9c9;
+    margin:0px;
+    background:#e0e0e0;
+    background:-moz-linear-gradient(#ffffff, #e0e0e0);
+    background:-webkit-linear-gradient(#ffffff, #e0e0e0);
+    background:-o-linear-gradient(#ffffff, #e0e0e0);
+    background:-ms-linear-gradient(#ffffff, #e0e0e0);
+    background:linear-gradient(#ffffff, #e0e0e0);
+    border-radius:4px 4px 0 0;
+    line-height: 18px;
+}
+.survey-leftrol > .block > .header > .title {
+    
+}
+.survey-leftrol > .block > .content{
+    
+}
+.survey-rightrol{
+    float: right;
+    width: 80%;
+    overflow: hidden;
+}

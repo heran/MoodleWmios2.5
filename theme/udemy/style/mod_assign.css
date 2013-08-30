@@ -1,0 +1,20 @@
+#assign-modal-iframe{
+    display: none;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+#assign-modal-iframe.show{
+    display: block;
+}
+.assign-in-modal{
+    background: white;
+}
+.assign-in-modal header,
+.assign-in-modal #page-content>.top,
+.assign-in-modal #page-content>.main-content>.right-col,
+.assign-in-modal #page-content div[role=main]>h2.main:first-of-type,
+.assign-in-modal #page-content div[role=main]>div#intro:first-of-type,
+.assign-in-modal #page-footer{
+    display: none;
+}

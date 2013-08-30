@@ -1,0 +1,12 @@
+<?php
+
+class block_notes_renderer extends plugin_renderer_base {
+    public function before_print_header($block){
+        global $PAGE;        
+        $PAGE->requires->js(new moodle_url('/blocks/notes/js/view.js'),true);
+    }
+    
+    public function render_notes_box(){
+        return '';
+    }
+}

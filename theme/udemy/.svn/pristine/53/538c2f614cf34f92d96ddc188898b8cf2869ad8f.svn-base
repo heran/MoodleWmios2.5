@@ -1,0 +1,112 @@
+<?php
+include_once($CFG->dirroot . "/local/wmios/lib.php");
+include_once($CFG->dirroot . "/theme/udemy/locallib.php");
+
+function theme_udemy_page_init(moodle_page $page) {
+    global $CFG,$COURSE;
+
+    $page->requires->jquery();
+    //$page->requires->jquery_plugin('migrate');
+    $page->requires->jquery_plugin('lightness-css','theme_udemy');
+    $page->requires->jquery_override_plugin('ui-css','lightness-css');
+    $page->requires->jquery_plugin('mousewheel','theme_udemy');
+    $page->requires->jquery_plugin('placeholder','theme_udemy');
+    $page->requires->jquery_plugin('redactor','theme_udemy');
+    $page->requires->jquery_plugin('fancyapps','theme_udemy');
+
+    $page->requires->jquery_plugin('must','theme_udemy');
+
+    $plugins = theme_udemy_jquery_plugins();
+    $pathes = explode('-',$page->pagetype);
+    for($i=1;$i<count($pathes);$i++){
+        $key = 'path-'.join('-',array_slice($pathes, 0, $i));
+        if(isset($plugins[$key])){
+            $page->requires->jquery_plugin($key,'theme_udemy');
+        }
+    }
+
+}
+
+function theme_udemy_jquery_plugins(){
+    global $CFG;
+    static $plugins = null;
+    if(!$plugins){
+        $jquery_dir = $CFG->dirroot.'/theme/udemy/jquery';
+        $plugins = array(
+            'lightness-css'  => array('files' => array('ui-1.10.2/ui-lightness/jquery-ui-1.10.2.custom.min.css')),
+            'redactor'  => array('files' => array('redactor/redactor.min.js','redactor/redactor.css')),
+            'placeholder'  => array('files' => array('placeholder/jquery.placeholder.1.3.min.js')),
+            'mousewheel'  => array('files' => array('mousewheel/jquery.mousewheel-3.0.6.js')),
+            'fancyapps'  => array('files' => array('fancyapps/jquery.fancybox.min.js','fancyapps/jquery.fancybox.css'))
+        );
+
+        $must_directory = new DirectoryIterator($jquery_dir.'/must');
+        foreach($must_directory as $must_file){
+            if($must_file->isDot())continue;
+            $filename = $must_file->getFilename();
+            $mustname = str_ireplace('.min.js','',$filename);
+            $mustname = str_ireplace('.js','',$mustname);
+            if(!isset($plugins['must']['files'][$mustname])){
+                if(file_exists($must_directory->getPathname()."/{$mustname}.min.js")){
+                    $plugins['must']['files'][$mustname] = "must/{$mustname}.min.js";
+                }else{
+                    $plugins['must']['files'][$mustname] = "must/{$mustname}.js";
+                }
+            }
+        }
+
+        $block_directory = new DirectoryIterator($jquery_dir.'/blocks');
+        foreach($block_directory as $block_file){
+            if($block_file->isDot())continue;
+            $filename = $block_file->getFilename();
+            $blockname = str_ireplace('.min.js','',$filename);
+            $blockname = str_ireplace('.js','',$blockname);
+            if(!isset($plugins[$blockname])){
+                if(file_exists($block_directory->getPathname()."/{$blockname}.min.js")){
+                    $plugins[$blockname]['files'][] = "blocks/{$blockname}.min.js";
+                }else{
+                    $plugins[$blockname]['files'][] = "blocks/{$blockname}.js";
+                }
+            }
+        }
+
+        $path_directory = new DirectoryIterator($jquery_dir.'/path');
+        foreach($path_directory as $path_folder){
+            if($path_folder->isDot())continue;
+            $path_folder_name = $path_folder->getFilename();
+            foreach(new DirectoryIterator($jquery_dir.'/path/'.$path_folder_name) as $path_file){
+                if($path_file->isDot())continue;
+                $filename = $path_file->getFilename();
+                $path_file_name = str_ireplace('.min.js','',$filename);
+                $path_file_name = str_ireplace('.js','',$path_file_name);
+
+                if(!isset($plugins[$path_folder_name]['files'][$path_file_name])){
+                    if(file_exists($path_folder->getPathname()."/{$path_file_name}.min.js")){
+                        $plugins[$path_folder_name]['files'][$path_file_name] = "path/{$path_folder_name}/{$path_file_name}.min.js";
+                    }else{
+                        $plugins[$path_folder_name]['files'][$path_file_name] = "path/{$path_folder_name}/{$path_file_name}.js";
+                    }
+                }
+            }
+        }
+    }
+    return $plugins;
+}
+
+function theme_udemy_before_print_header(moodle_page $page){
+    global $COURSE,$SITE,$CFG;
+
+    $theme_name = 'theme_udemy';
+    $plugins = theme_udemy_jquery_plugins();
+
+    $regions = $page->blocks->get_regions();
+    foreach($regions as $region){
+        $blocks = $page->blocks->get_blocks_for_region($region);
+        foreach($blocks as $block){
+            $class_name = get_class($block);
+            if(isset($plugins[$class_name])){
+                $page->requires->jquery_plugin($class_name,$theme_name);
+            }
+        }
+    }
+}

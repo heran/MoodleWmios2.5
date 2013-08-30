@@ -1,0 +1,2 @@
+<?php
+$strings[] = array('allcategories','theme_udemy');

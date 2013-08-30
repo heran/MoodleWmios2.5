@@ -1,0 +1,3 @@
+{include 'view_header.tpl'}
+{print_r($des,true)}
+{include 'view_footer.tpl'}

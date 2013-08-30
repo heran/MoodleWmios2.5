@@ -1,0 +1,436 @@
+.path-mod-forum {
+}
+.path-mod-forum .paging {
+    overflow: hidden;
+    margin-right: 0;
+    float: right;
+    margin-right: 20px;
+}
+.path-mod-forum .paging>li {
+    float: left;
+    margin: 0 5px 0 0;
+}
+.path-mod-forum .paging>li a {
+    font-family: Courier New, Arial;
+    font-size: 12pt;
+    color: #58595B;
+    background-color: #F2F2F2;
+    display: block;
+    text-align: center;
+    padding: 3px 6px;
+    text-decoration: none;
+}
+.path-mod-forum .paging>li  a.current {
+    color: white;
+    font-weight: bold;
+    border: 0;
+    background: #58595B;
+
+}
+.path-mod-forum .paging>li  a.next {
+    background-color: #CCC;
+    color: #666;
+}
+.path-mod-forum .paging>li  a.previous {
+    background-color: #CCC;
+    color: #666;
+}
+.path-mod-forum .paging>li  a.first {
+    background-color: #CCC;
+    color: #666;
+}
+.path-mod-forum .paging>li  a.last {
+    background-color: #CCC;
+    color: #666;
+}
+.path-mod-forum .paging:first-child {
+    margin-bottom: 20px;
+}
+/*form-view*/
+.path-mod-forum .forumaddnew.singlebutton {
+    float: left;
+    margin:0 0 0 20px;
+    background:none;
+}
+.path-mod-forum#page-mod-forum-discuss .discussioncontrols{
+    margin: 0;
+    padding: 5px;
+}
+.path-mod-forum#page-mod-forum-discuss .discussioncontrols .discussioncontrol{
+    width: auto;
+}
+.path-mod-forum>.top{
+    margin-bottom: 20px;
+}
+.path-mod-forum #page-content div[role=main] {
+    background: #fbfbfb;
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    background-color: #fbfbfb;
+    padding-bottom: 20px;
+}
+.path-mod-forum #page-content #intro{
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border:none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+}
+.path-mod-forum #page-content #intro *{
+    padding: 0;
+    margin: 0;
+}
+.path-mod-forum #page-content .forumheaderlist{
+    display: none;
+}
+.path-mod-forum #page-content .thread-list{
+    clear: both;
+    margin: 0 0 20px 0;
+    width: 100%;
+}
+.path-mod-forum #page-content .thread-list-row{
+    padding: 10px 0;
+    overflow: hidden;
+    zoom:1;
+    background-color: inherit;
+}
+.path-mod-forum #page-content .thread-list-row.odd{
+    background-color: whiteSmoke;
+}
+.path-mod-forum #page-content .thread-li-left{
+    float: left;
+    width: 75px;
+    overflow: hidden;
+}
+.path-mod-forum #page-content .thread-li-middle{
+    float: left;
+    overflow: hidden;
+}
+.path-mod-forum #page-content .thread-li-right{
+    float: right;
+    width: 270px;    
+    overflow: hidden;
+}
+.path-mod-forum #page-content .reply-num{
+    padding: 0 4px 0 1px;
+    overflow: hidden;
+    width: 55px;
+    height: 23px;
+    line-height: 23px;
+    text-align: center;
+    color: #333;
+    background: url([[pix:theme|reply_num_bg]]) no-repeat;
+    margin-left: 10px;
+    font-size: 12px;
+}
+.path-mod-forum #page-content .thread-li-middle .title{
+    font-size: 14px;    
+    line-height: 24px;
+}
+.path-mod-forum #page-content .thread-li-middle .content{
+    font-size: 12px;
+    line-height: 20px;
+}
+.path-mod-forum #page-content .thread-li-right .author{
+    background: url([[pix:theme|tb_icon]]) 0 -852px no-repeat;
+    padding-left: 16px;
+    font-size: 12px;   
+    line-height: 24px;
+}
+.path-mod-forum #page-content .thread-li-right .replyer{
+    background: url([[pix:theme|tb_icon]]) 0 -883px no-repeat;
+    padding-left: 16px;
+    font-size: 12px;
+    color: #999;
+    line-height: 20px;
+}
+.path-mod-forum #page-content .thread-li-right .replyer .name{
+    width: 70px;
+    overflow: hidden;
+    display: inline-block;
+    margin-right: 10px;
+}
+.path-mod-forum #page-content .thread-li-right .replyer a{
+    color: #999;
+    width: 165px;
+    overflow: hidden;
+    display: inline-block;
+}
+/*forum-discuss*/
+.path-mod-forum .discussioncontrol.displaymode{
+    /*    display: none;*/
+}
+.path-mod-forum .forumpost{
+    display: none;    
+}
+.path-mod-forum .forumthread{
+    line-height: 30px;
+}
+.path-mod-forum .forumpost-row{
+    border-top: 1px solid #D9D9D9;
+    overflow: hidden;
+    width: 100%;
+    font-size: 12px;
+}
+.path-mod-forum .author-box{
+    width: 130px;
+    float: left;
+    text-align: center;
+    padding: 15px 0;
+}
+.path-mod-forum .p_author{
+    position: relative;
+    text-align: center;
+}
+.path-mod-forum .icon_relative {
+    top: 0;
+    left: 0;
+    position: relative;
+    display: inline-block;
+    zoom: 1;
+    padding: 4px;
+    margin-top: 2px;
+}
+.path-mod-forum .icon_relative img {
+    border: 1px solid #CCC;
+    padding: 3px;
+    background-color: white;
+    float: left;
+    width: 80px;
+}
+.path-mod-forum .d_name {
+    padding: 4px 0 7px;
+}
+.path-mod-forum .l_badge {
+    display: none;
+    position: relative;
+    top: 0;
+    left: 0;
+}
+.path-mod-forum .d_post_content_main {
+    float: left;
+    padding: 20px 15px 7px;
+    width: 580px;
+}
+.path-mod-forum .p_title{
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.path-mod-forum .p_content {
+    height: auto!important;
+    min-height: 145px;
+    height: 145px;
+    margin-bottom: 20px;
+}
+.path-mod-forum .p_operation {
+    line-height: 28px;
+    height: 28px;
+    width: 100%;
+    text-align: right;
+}
+.path-mod-forum .p_operation .time{
+    color: #999;
+    margin-right: 10px;
+}
+.path-mod-forum #mformforum{
+    padding: 10px 30px;
+}
+
+.path-mod-forum #mformforum.mform fieldset{
+    border: none;
+}
+.path-mod-forum #mformforum .fitem{
+    width: 100%;
+    overflow: hidden;
+    margin: 20px 0;
+}
+.path-mod-forum #mformforum .fitemtitle{
+    width: 8%;
+    float: left;
+}
+.path-mod-forum #mformforum .felement{
+    width: 90%;
+    float: left;
+    margin-left:1%;
+}
+.path-mod-forum #mformforum .felement.fsubmit{
+    margin-left:9%;
+}
+.path-mod-forum #mformforum .felement input[type=text],
+.path-mod-forum #mformforum .felement textarea{
+    width:100%;
+
+}
+.path-mod-forum #notice{
+    width: 50%;
+    margin: 20px auto;
+    text-align: center;
+    border: none;
+    color: red;
+}
+.path-mod-forum #notice .buttons .singlebutton {
+    float: none;
+    background: none;
+}
+.path-mod-forum .redirectmessage {
+    padding: 20px;
+}
+.path-mod-forum .redirectmessage~.continuebutton {
+    padding: 20px;
+}
+/**User Forum search Forum **/
+#page-mod-forum-user.path-mod-forum div[role=main]>h2.main,
+#page-mod-forum-search.path-mod-forum div[role=main]>h2.main{
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border:none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+    margin-bottom: 20px;
+}
+#page-mod-forum-search.path-mod-forum div[role=main]>h2.main~#intro{
+    background: none;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+#page-mod-forum-search.path-mod-forum div[role=main] {
+    position: relative;
+}
+#page-mod-forum-search.path-mod-forum div[role=main]>div.reportlink {
+    position: absolute;
+    top: 10px;
+    right: 5px;
+}
+#page-mod-forum-search.path-mod-forum #intro~.box.generalbox{
+    border: none;
+    
+}
+#page-mod-forum-search.path-mod-forum  .searchbox {
+    width: 100%;
+}
+#page-mod-forum-search.path-mod-forum .searchbox .c0 {
+    width: 250px;
+    padding-right: 10px;
+}
+#page-mod-forum-search.path-mod-forum .searchbox .menufromday,
+#page-mod-forum-search.path-mod-forum .searchbox .menutoday,
+#page-mod-forum-search.path-mod-forum .searchbox .menufrommonth,
+#page-mod-forum-search.path-mod-forum .searchbox .menutomonth,
+#page-mod-forum-search.path-mod-forum .searchbox .menufromyear,
+#page-mod-forum-search.path-mod-forum .searchbox .menutoyear,
+#page-mod-forum-search.path-mod-forum .searchbox .menufromhour,
+#page-mod-forum-search.path-mod-forum .searchbox .menutohour,
+#page-mod-forum-search.path-mod-forum .searchbox .menufromminute,
+#page-mod-forum-search.path-mod-forum .searchbox .menutominute,
+#page-mod-forum-search.path-mod-forum .searchbox .menufromday,
+#page-mod-forum-search.path-mod-forum .searchbox .menutoday{
+    width: auto;
+    margin-right: 3px;
+}
+#page-mod-forum-search.path-mod-forum .searchbox td.submit {
+    text-align: left;
+    padding-left: 260px;
+}
+#page-mod-forum-search.path-mod-forum .searchbox td.submit input[type=submit] {
+    display: none;
+}
+
+/*********************************************************/
+
+
+.path-mod-forum  .searchform_button{
+    background:transparent;
+    border:0;
+    color:#777;
+    font-size:16px;
+    position:absolute;
+    top:50%;
+    margin-left: -30px;
+    margin-top:-11px!important;
+
+}
+
+
+
+
+
+
+.path-mod-forum .icon-search{
+    display:inline-block;
+
+    vertical-align:text-top;
+
+
+    background-position:14px 14px;
+    background-repeat:no-repeat;
+    margin-top:1px;
+}
+
+
+.path-mod-forum .icon-search:before {
+    content: "\f002";
+}
+
+
+
+.path-mod-forum .searchform{
+    position:relative;
+    margin-top:3px;
+    margin-left:-18px; 
+
+}
+
+.path-mod-forum [class^="icon-"], [class*=" icon-"] {
+    font-family: FontAwesome;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: inherit;
+    -webkit-font-smoothing: antialiased;
+    display: inline;
+    width: auto;
+    height: auto;
+    line-height: normal;
+    vertical-align: baseline;
+    background-image: none;
+    background-position: 0% 0%;
+    background-repeat: repeat;
+    margin-top: 0;
+}
+
+.path-mod-forum .block-header a{
+    color:#555;
+
+}
+
+ .block-header button~a {
+    margin-left:10px;
+}
+
+.path-mod-forum .helptooltip{
+    float:right;
+    margin-top: 6px;
+    
+}

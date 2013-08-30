@@ -1,0 +1,67 @@
+<?php
+
+class restore_qanda_block_structure_step extends restore_structure_step {
+
+    protected function define_structure() {
+        
+        $paths = array();
+        
+        //When no user info, we need not restore this.
+        
+        /** @var backup_users_setting */
+        if($this->get_task()->get_plan_setting_value('users')){
+            $paths[] = new restore_path_element('question', '/block/questions/question');
+            $paths[] = new restore_path_element('answer', '/block/questions/question/answers/answer');
+            $paths[] = new restore_path_element('follow', '/block/questions/question/follows/follow');
+        }
+        return $paths;
+    }
+
+    public function process_question($data) {
+        global $DB;
+        
+        $data = (object)$data;
+        
+        $oldid = $data->id;
+        unset($data->id);
+        
+        $data->courseid = $this->get_courseid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->modifiedtime = $this->apply_date_offset($data->modifiedtime);
+        
+        $newitemid = $DB->insert_record('qanda', $data);
+        
+        $this->set_mapping('question', $oldid, $newitemid);
+    }
+    
+    public function process_answer($data) {
+        global $DB;
+        
+        $data = (object)$data;
+        
+        unset($data->id);
+        
+        $data->qandaid = $this->get_new_parentid('question');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->modifiedtime = $this->apply_date_offset($data->modifiedtime);
+        
+        $newitemid = $DB->insert_record('qanda_answer', $data);
+    }
+    
+    public function process_follow($data) {
+        global $DB;
+        
+        $data = (object)$data;
+        
+        unset($data->id);
+        
+        $data->qandaid = $this->get_new_parentid('question');
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->modifiedtime = $this->apply_date_offset($data->modifiedtime);
+        
+        $newitemid = $DB->insert_record('qanda_follow', $data);
+    }
+    
+    
+    
+}

@@ -1,0 +1,159 @@
+<?php
+use wmios\survey as survey;
+
+require_once(dirname(__FILE__).'/../../config.php');
+require_login();
+
+$context_system = context_system::instance();
+
+require_capability('mod/surveyactivity:update_activity',$context_system);
+
+require_once($CFG->dirroot.'/mod/surveyactivity/lib.php');
+
+$add    = optional_param('add', '', PARAM_ALPHA);  //activity name
+$update = optional_param('update', 0, PARAM_INT); //mod_surveyactivity table's id
+
+$str = new stdClass();
+$str->activity_edit = survey\get_string('activity_edit',SURVEYACTIVITYBASE_PLUGIN_NAME);
+
+$PAGE->set_context(context_system::instance());
+$PAGE->set_pagelayout('mod_surveyactivity');
+$PAGE->set_title($str->activity_edit);
+$PAGE->set_heading($str->activity_edit);
+
+/**
+* The activity class name
+* 
+* @var String
+*/
+$activity_name = null;
+
+/**
+* The activity plugin info
+* 
+* @var \wmios\survey\plugininfo_activity
+*/
+$activity_plugin = null;
+
+/**
+* The data
+* 
+* @var array
+*/
+$data = array();
+
+/**
+* 
+* @var \wmios\survey\activity_wrapper
+*/
+$activity_wrapper = null;
+
+if(!empty($add)){
+    $activity_name = $add;
+}elseif(!empty($update)){
+    $activity_wrapper = survey\activity_wrapper::instance_for_id($update);
+    if($activity_wrapper->creator_id != $USER->id && !has_capability('mod/surveyactivity:manage_system',$context_system)){
+        print_error('only creator and admin can edit this activity');
+    }
+    $activity_name = $activity_wrapper->activity;
+}else{
+    print_error('invalidaction');
+}
+
+$activity_plugin = new survey\plugininfo_activity($activity_name);
+
+/**
+* @var \wmios\survey\activity
+*/
+$activity_class_name = $activity_plugin->get_interface_class();
+
+
+$mform = new survey\moodleform_activity(
+    $activity_plugin,$activity_wrapper,
+    "/mod/surveyactivity/activity_edit.php?add={$add}&update={$update}");
+
+if(!empty($add)){
+    $data = $activity_class_name::get_add_instance_default_data();
+    $data['general_activity'] = $activity_name;
+    $data['general_id'] = 0;
+}elseif(!empty($update)){
+    $data = $activity_wrapper->get_activity_instance()->get_update_instance_data();
+    $data['general_name'] = $activity_wrapper->name;
+    $data['general_description']['text'] = $activity_wrapper->description;
+    $data['general_starttime'] = $activity_wrapper->starttime;
+    $data['general_endtime'] = $activity_wrapper->endtime;
+    $data['general_activity'] = $activity_name;
+    $data['general_id'] = $update;
+}
+$mform->set_data($data);
+
+/**
+* 
+* @var \mod_surveyactivity_core_renderer
+*/
+$renderer = survey\get_renderer('mod_surveyactivity_core');
+
+$activity_list_url = new moodle_url('/mod/surveyactivity/');
+
+if ($mform->is_cancelled()) {
+    redirect($activity_list_url);
+} else if ($fromform = $mform->get_data()) {
+    $fromform = (array)$fromform;
+    
+    $general = new stdClass();
+    $special = new stdClass();
+    $general->starttime = 0;
+    $general->endtime = 0;
+    foreach($fromform as $k=>$v){
+        if(substr($k,0,strlen('general_'))==='general_'){
+            $k = str_ireplace('general_','',$k);
+            $general->$k = $v;
+        }else{
+            $special->$k = $v;
+        }
+    }
+    if(!empty($general->description)) {
+        $general->description = $general->description['text'];
+    }
+    
+    if(!empty($add)){
+        $instance_id = $activity_class_name::add_instance($general,$special,$mform);
+        if(!is_int($instance_id) || $instance_id < 0 ){
+            throw new \Exception('can not create activity instance');
+        }
+        $general->instance_id = $instance_id;
+        $activity_wrapper = survey\activity_wrapper::create(
+            $general->name,
+            $general->description,
+            $general->activity,
+            $general->instance_id,
+            $general->starttime,
+            $general->endtime,
+            $USER->id
+            );
+            
+    }else{
+        if(!$activity_wrapper->get_activity_instance()->update_instance($general,$special,$mform)){
+            throw new \Exception('can not update activity instance');
+        }
+        
+        $activity_wrapper->update_fields($general);
+        
+        if(!$activity_wrapper->update()){
+            throw new Exception('can not update survey instance');
+        }
+        $activity_list_url->set_anchor('survey-'.$activity_wrapper->id);
+    }
+    
+    if($general->save_and_return){
+        redirect($activity_list_url);
+    }else{
+        redirect( $activity_wrapper->get_activity_instance()->get_view_url());
+    }
+    
+}else{
+    echo $renderer->header();
+    $mform->display();
+    echo $renderer->footer();
+}
+die();

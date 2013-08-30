@@ -1,0 +1,172 @@
+.path-mod-quiz{
+}
+.path-mod-quiz div[role=main] {
+    background: repeat scroll 0% 0% #fbfbfb;/*url([[pix:theme|noise2]])*/
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    padding-bottom: 20px;
+}
+.path-mod-quiz div#intro{
+    font-size: 21px;
+    text-shadow: 0px 1px rgb(255, 255, 255);
+    text-align: left;
+    margin: 15px 0px;
+    border: none;
+}
+.path-mod-quiz div[role=main]>h2.main:first-of-type,
+.path-mod-quiz div[role=main] .quizattemptcounts {
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+    width: 100%;
+}
+.path-mod-quiz div[role=main] .mdl-align {
+    margin: 20px 0;
+}
+.path-mod-quiz div[role=main] input[name=regradeall],
+.path-mod-quiz div[role=main] input[name=regrade]
+{
+    margin: 0 20px;
+
+}
+.path-mod-quiz #attemptsform{
+    padding: 10px;
+}
+.path-mod-quiz table.quizsummaryofattempt,
+.path-mod-quiz table.quizreviewsummary,
+.path-mod-quiz table.quizattemptsummary,
+.path-mod-quiz table#attempts {
+    width: 100%;
+}
+.path-mod-quiz table.quizsummaryofattempt thead,
+.path-mod-quiz table.quizsummaryofattempt tbody,
+.path-mod-quiz table.quizsummaryofattempt tr ,
+.path-mod-quiz table.quizreviewsummary thead,
+.path-mod-quiz table.quizreviewsummary tbody,
+.path-mod-quiz table.quizreviewsummary tr ,
+.path-mod-quiz table.quizattemptsummary thead,
+.path-mod-quiz table.quizattemptsummary tbody,
+.path-mod-quiz table.quizattemptsummary tr ,
+.path-mod-quiz table#attempts thead,
+.path-mod-quiz table#attempts tbody,
+.path-mod-quiz table#attempts tr {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    font-size: 100%;
+    vertical-align: baseline;
+    background: transparent;
+    font-style: normal;
+}
+.path-mod-quiz table.quizsummaryofattempt th ,
+.path-mod-quiz table.quizreviewsummary th ,
+.path-mod-quiz table.quizattemptsummary th ,
+.path-mod-quiz table#attempts th {
+    font-weight: bold;
+    vertical-align: bottom;
+}
+.path-mod-quiz table.quizsummaryofattempt th,
+.path-mod-quiz table.quizsummaryofattempt td,
+.path-mod-quiz table.quizreviewsummary th,
+.path-mod-quiz table.quizreviewsummary td,
+.path-mod-quiz table.quizattemptsummary th,
+.path-mod-quiz table.quizattemptsummary td,
+.path-mod-quiz table#attempts th,
+.path-mod-quiz table#attempts td{
+    border: 1px solid #ddd;
+    border-bottom: 1px solid #eeeeee;
+    padding: 0.75em 0.5em;
+}
+#page-mod-quiz-attempt.path-mod-quiz div[role=main] ,
+#page-mod-quiz-review.path-mod-quiz div[role=main] {
+    padding: 10px 10px 20px 10px;
+}
+.path-mod-quiz#page-mod-quiz-attempt .submitbtns,
+.path-mod-quiz#page-mod-quiz-review .submitbtns,
+.path-mod-quiz .submitbtns{
+    text-align: center;
+}
+.path-mod-quiz #mod_quiz_navblock .content{
+    padding: 10px 20px;
+}
+.path-mod-quiz #mod_quiz_navblock .qn_buttons{
+    margin: 20px 0;
+    overflow: hidden;
+}
+.path-mod-quiz #mod_quiz_navblock .othernav{
+    overflow: hidden;
+    zoom:1;
+    position: relative;
+    margin: 0;
+}
+#page-mod-quiz-attempt.path-mod-quiz #mod_quiz_navblock .othernav{
+    padding-bottom: 40px;
+}
+.path-mod-quiz #mod_quiz_navblock .othernav #quiz-timer{
+    position: absolute;
+    top: 20px;
+    left: 5px;
+}
+.path-mod-quiz #mod_quiz_navblock .othernav>a {
+    float: left;
+}
+.path-mod-quiz #mod_quiz_navblock .othernav>a,
+.path-mod-quiz #mod_quiz_navblock .othernav>.singlebutton input {
+    display: inline-block;
+    margin: 0;
+}
+.path-mod-quiz #mod_quiz_navblock .othernav>.singlebutton {
+    display: inline-block;
+    background: none;
+    margin: 0;
+}
+#page-mod-quiz-summary h3.main,
+.path-mod-quiz .quizattemptcounts~h2.main,
+.path-mod-quiz .quizattemptsummary~h2.main,
+.path-mod-quiz .quizinfo~h2.main,
+.path-mod-quiz #feedback>h2.main{
+    font-size: 18px;
+    margin: 20px;
+}
+.path-mod-quiz .quizattempt{
+    overflow: hidden;
+    
+}
+.path-mod-quiz .quizattempt .singlebutton{
+    float: none;
+    background: none;
+}
+.path-mod-quiz#page-mod-quiz-view .generalbox#feedback{
+    width: 100%;
+    padding: 10px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+}
+.path-mod-quiz #quiz-timer.timeleft0{
+    background: green;
+    width: 80%;    
+}
+.path-mod-quiz #quiz-time-left{
+    color: red;
+}
+#page-mod-quiz-summary .submitbtns{
+    overflow: hidden;
+}
+#page-mod-quiz-summary .submitbtns .singlebutton{
+    background: none;
+}

@@ -1,0 +1,768 @@
+<!doctype html>
+<!--[if !IE]><!--><html lang="en"><!--<![endif]-->
+<!--[if gt IE 9]><html lang="en" class="ie gt-ie9"><![endif]-->
+<!--[if IE 9]><html lang="en" class="ie lt-ie10 ie9"><![endif]-->
+<!--[if lt IE 9]><html lang="en" class="ie lt-ie10 lt-ie9"><![endif]-->
+<head>
+<script type="text/javascript">var NREUMQ=NREUMQ||[];NREUMQ.push(["mark","firstbyte",new Date().getTime()]);</script>
+<link rel="stylesheet" media="all" type="text/css" href="/static/css/udemy.css?v=12e4abfb9ba3b9f556cd133a47625fbd8293422b"/>
+<meta name="apple-itunes-app" content="app-id=562413829">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>Page Not Found</title>
+<meta name="title" content="Page Not Found"/>
+<meta name="keywords" content="udemy, e-learning, social, teach, learn, share, course, online course, how to, howto, academic, live, session, virtual, classroom"/>
+<meta name="description" content="Udemy is the world's largest destination for online courses. Discover an online course on Udemy.com and start learning a new skill today."/>
+<link rel="icon" href="https://www.udemy.com/favicon.ico" type="image/x-icon"/>
+<link rel="image_src" href="https://www.udemy.com/static/images/v3/logo.png"/>
+<meta name="robots" content="noindex"/>
+<meta property="fb:app_id" content="313137469260"/>
+<meta name="medium" content="mult"/>
+<meta property="og:type" content="video_lecture"/>
+<meta property="og:url" content=""/>
+<meta property="og:title" content="Page Not Found"/>
+<meta property="og:description" content=""/>
+<meta property="og:image" content=""/>
+<meta property="og:site_name" content="Udemy"/>
+<meta property="og:locale" content="en_US"/>
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:url" content=""/>
+<meta name="twitter:title" content="Page Not Found"/>
+<meta name="twitter:description" content=""/>
+<meta name="twitter:image" content=""/>
+<meta name="twitter:site" content="@udemy"/>
+<meta http-equiv="X-UA-Compatible" content="IE=9"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link href='https://fonts.googleapis.com/css?family=Short+Stack|Arvo:400,700,400italic,700italic|Montserrat:400,700' rel='stylesheet' type='text/css'>
+</head>
+<body id="udemy" class="udemy controller-static action-fonts/fontawesome-ext-webfont.eot ">
+<div id="fb-root"></div>
+<script>
+  window.fbAsyncInit = function() {
+	  FB.init({
+	  	appId : "313137469260",
+	    status : true,
+	    cookie : true,
+	    xfbml : true,
+	    oauth : true
+	  });
+  };
+</script>
+<style>body header .container #logo{background:url('https://www.udemy.com/static/images/v3/logo.png') no-repeat center!important;background-size:contain!important;}@media (max-width: 1024px) body header .container #logo{background: url("https://www.udemy.com/static/images/v3/logo.png") no-repeat center !important;
+        background-size: contain !important;
+    }
+    @media (max-width: 568px) {
+        body header .container #logo {
+            width: 130px;
+            margin-left: -65px;
+            background-size: contain !important;
+        }
+    }
+    @media (-webkit-min-device-pixel-ratio: 2) {
+        body header .container #logo {
+            /*retina display*/
+            background: url("https://www.udemy.com/static/images/v3/logo_2x.png") no-repeat center !important;
+            background-size: contain !important;
+        }
+    }
+    </style>
+
+<div id="old-browser" style="display: none">
+    <div class="copy">
+        <img src="/static/images/v3/chrome-logo.png">
+        We highly recommend using the free <a class='download' href='http://www.google.com/chrome'>Google Chrome Browser</a> on our site! <a id='hide-browser-message' href='javascript:void(0)'>Hide</a>    </div>
+    <div class="overlay"></div>
+</div>
+
+<header class="udemy-header ">
+    <div class="container header-container strict not-loggedin">
+                                <a id="logo" href="https://www.udemy.com/">Udemy Logo</a>
+
+                        <a href="/static/fonts/fontawesome-ext-webfont.eot" class="ud-popup header-btn header-login-button" data-requirelogin='true' data-padding='0'>Signup / Login</a>
+                            <a href="https://www.udemy.com/teach" class="top-link-my-courses graylink">Create a Course</a>
+            
+
+
+                                            <script id="search-menu-header" type="text/x-handlebars-template">
+
+    <li class="header"><h3>{{&title}}</h3></li>
+
+</script>
+        
+<script id="search-menu-item" type="text/x-handlebars-template">
+
+    <li>
+        <a href="{{item.url}}" data-cat="{{item.category}}" data-id="{{item.id}}">
+            <span class="bordered-thumb thumb"><img src="{{item.imgUrl}}" class="thumb"/></span>
+            <span class="text">
+                <b class="title">{{&item.title}}</b>
+				{{#if item.subtitle}}
+				<i class="subtitle">{{&item.subtitle}}</i>
+				{{/if}}
+				{{#if item.extraContentExists}}
+				<i class="extra">
+					<span class="rating-small-stars">
+						<span style="width:{{item.avgRatingRatio}}%"></span>
+					</span>
+					<span class="subscribers">
+						<b>{{&item.numSubscribers}}</b> Students					</span>
+					<span class="price">
+						<span>{{&item.priceText}}</span>
+					</span>
+				</i>
+				{{/if}}
+            </span>
+        </a>
+    </li>
+
+</script>
+
+<script id="search-footer" type="text/x-handlebars-template">
+
+    <li class='more ui-menu-item' role='menuitem'><a href='{{moreSearchURL}}' class="search-more-link">See more results about <i>{{&searchTerm}}</i> &raquo; <span>Displaying top {{&totalItemsFound}} results </span></a></li>
+
+</script>                <div class="ud-search" class="left-bordered">
+                    <form id="searchbox" action="https://www.udemy.com/courses/search">
+                        <input type="text" placeholder="Search" autocomplete="off" name="q" id="quick-search" />
+                        <input type="submit"/>
+                    </form>
+                </div>
+            
+
+                        <a href="https://www.udemy.com/courses" class="header-btn header-discover-button">Discover Courses</a>
+        
+    </div>
+
+        
+</header>    <div style="border: 1px solid #ccc;margin: 50px auto;width: 400px;padding:15px">
+    <h1>Error 404</h1>
+    <div>Sorry, the page you are trying to reach does not exist! </div>
+    <br/>
+    <p><a href="https://www.udemy.com/">Return to home page</a></p>
+    <br/>
+    <p><a href="https://support.udemy.com">Go to the support page</a></p>
+</div>
+    <script type="text/javascript">
+    UD = {};
+    UD.Tmp = { jwPlayerLoaded: false, transcripts: [] };
+    UD.Config={
+        http:'https://www.udemy.com/',
+        link: function(controller,action,params){
+            var baseUrl = controller ? (action ? UD.Config.http+controller+'/'+action : UD.Config.http+controller+'/') : UD.Config.http;
+            return !params ? baseUrl : baseUrl+'?'+$.param(params);
+        },
+        ENV: "PROD",
+        APP: "base",
+        Brand: {
+            identifier: "udemy",
+            type: "udemy"
+        },
+        mixpanelToken: "7a997f05ed8692f2b964c04285041da5",
+        mixpanelHost: "http://api.mixpanel.com",
+        quantcastAccount: "p-UJegsEwvrTF01",
+        facebookAppId: "313137469260"
+    };
+
+    UD.me = {};
+        
+    KB=UD;
+
+    var _oldWindowLoad;
+	if(typeof window.onload == 'function') {
+		_oldWindowLoad = window.onload;
+	}
+
+
+</script>    
+<script src="/static/js/jsrepl/build/jsrepl.js" id="jsrepl-script"></script> 
+    
+	<script data-main="/static/compiled-js-12e4abfb9ba3b9f556cd133a47625fbd8293422b/ud.package.all" src="/static/js/require.js"></script>
+	<script>
+		require.config({waitSeconds: 0});
+	</script>
+
+<script>
+        UD.wishlistedCourseIds = [];
+</script>
+    
+    <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-12366301-1']);
+  _gaq.push(["_setDomainName", "none"]);
+  _gaq.push(["_setAllowLinker", true]);
+  _gaq.push(['_trackPageview']);
+</script>        <!-- Compete XL Code for udemy.com -->
+<script type="text/javascript">
+__compete_code = 'd7c98646df36de38186f8c8bbd16900c';
+/* Set control variables below this line. */ 
+</script>
+<!-- End of Compete XL Code for udemy.com -->        <div class="ud-actionlogger" data-item1="https://www.udemy.com/action/log?refCode=SlFHLgkmFDhQURFjOVEGJWgkZXEP" data-item2="NUw5YEESKjQxPHp4HmUyDzU7Pn0eeTENDyMmVTBiMicPJyRVNG4oIQs8JVclG3xMHw==" />
+            <script type="text/javascript">
+    if (typeof mixpanel != "undefined") {
+mixpanel.register_once({'tc_initial': 'direct'});
+mixpanel.register({'tc_current': 'direct'});
+}
+    /**
+     * This function looks for __mixpanel_calls array in global scope,
+     * if it finds, iterates on each function item in the array and calls them
+     */
+    (function() {
+        if(typeof mixpanel == "undefined") {
+            return;
+        }
+        if(typeof __mixpanel_calls != "undefined") {
+            __mixpanel_calls.forEach(function(fn) {
+                fn.call();
+            });
+        }
+    })();
+</script>
+
+    
+    <script id="homepageActivityCommentActivityNotificationTemplate" type="text/x-handlebars-template">
+
+    <li>
+		<a href="{{aggregated_story.aggregated_values.target_url}}">
+    		<span style="background-image: url({{aggregated_story.activities.0.commenting_user.images.img_50x50}});" class="bordered-thumb thumb"></span>
+    		<div class="details">
+    			<p>
+                    {{#if aggregated_story.activities.2.commenting_user.title}}
+                        <b>{{&aggregated_story.activities.0.commenting_user.title}}</b> and <b>{{&aggregated_story.aggregated_values.more_story_count}} others</b> commented on your activity
+                    {{else}}
+                        {{#if aggregated_story.activities.1.commenting_user.title}}
+                            <b>{{&aggregated_story.activities.0.commenting_user.title}}</b> and <b>{{&aggregated_story.activities.1.commenting_user.title}}</b> commented on your activity
+                        {{else}}
+                            <b>{{&aggregated_story.activities.0.commenting_user.title}}</b> commented on your activity
+                        {{/if}}
+                    {{/if}}
+    			</p>
+    			<time data-redistimestamp="{{aggregated_story.aggregated_values.max_redis_timestamp}}"></time>
+    		</div>
+		</a>
+    </li>
+
+</script>    <script id="homepageUserFollowsUserActivityNotificationTemplate" type="text/x-handlebars-template">
+
+    <li>
+		<a href="{{aggregated_story.aggregated_values.target_url}}">
+            <span style="background-image: url({{aggregated_story.activities.0.follower_user.images.img_50x50}});" class="bordered-thumb thumb"></span>
+            <div class="details">
+                <p>
+                    <b>{{&aggregated_story.activities.0.follower_user.title}}</b> started following you.
+                </p>
+                <time data-redistimestamp="{{aggregated_story.aggregated_values.max_redis_timestamp}}"></time>
+            </div>
+		</a>
+    </li>
+
+</script>    <script id="noNotificationsFoundTemplate" type="text/x-handlebars-template">
+
+    <li class="null">
+		<div class="notification-zero-case">
+			<p>You don't have any notifications</p>
+    	</div>
+    </li>
+
+</script>    <script id="homepageActivityLikeActivityNotificationTemplate" type="text/x-handlebars-template">
+
+    <li>
+		<a href="{{aggregated_story.aggregated_values.target_url}}">
+            <span style="background-image: url({{aggregated_story.activities.0.liking_user.images.img_50x50}});" class="bordered-thumb thumb"></span>
+            <div class="details">
+                <p>
+                    {{#if aggregated_story.activities.2.liking_user.title}}
+                        <b>{{&aggregated_story.activities.0.liking_user.title}}</b> and <b>{{&aggregated_story.aggregated_values.more_story_count}} others</b> liked your activity
+                    {{else}}
+                        {{#if aggregated_story.activities.1.liking_user.title}}
+                            <b>{{&aggregated_story.activities.0.liking_user.title}}</b> and <b>{{&aggregated_story.activities.1.liking_user.title}}</b> liked your activity
+                        {{else}}
+                            <b>{{&aggregated_story.activities.0.liking_user.title}}</b> liked your activity
+                        {{/if}}
+                    {{/if}}
+                </p>
+                <time data-redistimestamp="{{aggregated_story.aggregated_values.max_redis_timestamp}}"></time>
+            </div>
+		</a>
+    </li>
+
+</script>    <script id="homepageSubscribedToCourseActivityNotificationTemplate" type="text/x-handlebars-template">
+
+    <li>
+		<a href="{{aggregated_story.aggregated_values.target_url}}">
+            <span style="background-image: url({{aggregated_story.activities.0.subscribed_user.images.img_50x50}});" class="bordered-thumb thumb"></span>
+            <div class="details">
+                <p>
+                    {{#if aggregated_story.activities.2.subscribed_user.title}}
+                        <b>{{&aggregated_story.activities.0.subscribed_user.title}}</b> and <b>{{&aggregated_story.aggregated_values.more_story_count}} others</b> subscribed to your course <b>{{{aggregated_story.aggregated_values.subscribed_course.title}}}</b>
+                    {{else}}
+                        {{#if aggregated_story.activities.1.subscribed_user.title}}
+                            <b>{{&aggregated_story.activities.0.subscribed_user.title}}</b> and <b>{{&aggregated_story.activities.1.subscribed_user.title}}</b> subscribed to your course <b>{{{aggregated_story.aggregated_values.subscribed_course.title}}}</b>
+                        {{else}}
+                            <b>{{&aggregated_story.activities.0.subscribed_user.title}}</b> subscribed to your course <b>{{{aggregated_story.aggregated_values.subscribed_course.title}}}</b>
+                        {{/if}}
+                    {{/if}}
+                </p>
+                <time data-redistimestamp="{{aggregated_story.aggregated_values.max_redis_timestamp}}"></time>
+            </div>
+		</a>
+    </li>
+
+</script>    
+    <script id="homepageQuestionAskedActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="question_asked">
+        <a mixpanel-target-page-type="profile_page" href="{{../aggregated_story.aggregated_values.user.url}}" style="position: absolute;" target="_blank"><span style="background-image: url({{../aggregated_story.aggregated_values.user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+        {{#if show_follow_button}}
+            <a href="#" class="follow-user none" data-userid="{{user.id}}">Follow</a>
+        {{/if}}
+        <div class="news">
+            <h4 class="header">
+                <b><a mixpanel-target-page-type="profile_page" class="user-name" href="{{../aggregated_story.aggregated_values.user.url}}">{{&../aggregated_story.aggregated_values.user.title}}</a></b>
+                <span> asked a question in </span><a mixpanel-target-page-type="course_page" href="{{course_url}}">{{{course_title}}}</a>
+            </h4>
+            <div class="main">
+                <div class="left-col">
+                    <a mixpanel-target-page-type="course_page" style="background-image: url({{course_image_url}})" href="{{course_url}}" class="thumb"></a>
+                </div>
+                <div class="right-col" style="color: #222;">
+                    <p>{{&question_title}}</p>
+                </div>
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more questions by {{&aggregated_story.aggregated_values.user.title}}</a>
+    {{/if}}
+</li>
+
+</script>    <script id="homepageLectureCompletedActivityTemplate" type="text/x-handlebars-template">
+
+    <li class="aggregated-story-container" mixpanel-feed-story-type="lectures_completed">
+        <div class="aggregated-story">
+            <a mixpanel-target-page-type="profile_page" href="{{aggregated_story.aggregated_values.user.url}}" target="_blank"><span style="background-image: url({{aggregated_story.aggregated_values.user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+            <div class="news">
+                <h4 class="header">
+                    <a mixpanel-target-page-type="profile_page" class="user-name" href="{{aggregated_story.aggregated_values.user.url}}">{{&aggregated_story.aggregated_values.user.title}}</a>
+                    completed {{&aggregated_story.aggregated_values.story_count}} new lecture(s) on
+                    <a mixpanel-target-page-type="course_page" href="{{aggregated_story.aggregated_values.course_url}}">{{{aggregated_story.aggregated_values.course_title}}}</a>
+                </h4>
+                <div class="main">
+                    <div class="left-col">
+                        <a mixpanel-target-page-type="course_page" style="background-image: url({{aggregated_story.aggregated_values.course_image_url}})" href="{{aggregated_story.aggregated_values.course_url}}" class="thumb"></a>
+                    </div>
+                    <div class="right-col">
+                        <ul class="lectures">
+                            {{#each aggregated_story.activities}}
+                                <li class="{{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" data-redistimestamp="{{redis_timestamp}}">
+                                    
+                                    <span class="video"></span>
+                                    <a mixpanel-target-page-type="lecture_page" href="{{lecture_url}}" style="color: #777;">
+                                    Lecture {{&lecture_index}}: <b>{{{lecture_name}}}</b>
+                                    </a>
+                                    <a href="#" class="like" style="color:#999;margin-left: 6px;">Like{{#if liked_by_user}}d{{/if}}</a>
+                                </li>
+                            {{/each}}
+                        </ul>
+
+                        {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+                        <a href="#" class="show-more" >... and {{&aggregated_story.aggregated_values.more_story_count}} other lectures</a>
+                        {{/if}}
+
+                        <div class="progress clearfix">
+                            <a mixpanel-target-page-type="single_activity_page" href={{aggregated_story.aggregated_values.aggregated_story_url}} target="_blank"><time data-redistimestamp="{{aggregated_story.aggregated_values.max_redis_timestamp}}"></time></a>
+                            <span>Course Progress:</span>
+                            <div class="progress-bar">
+                                <span style="width: {{aggregated_story.aggregated_values.course_progress_percentage}}%"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+
+</script>    <script id="homepageStatusUpdateActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="status_update">
+        <a mixpanel-target-page-type="profile_page" href="{{../aggregated_story.aggregated_values.user.url}}" target="_blank" style="position: absolute;"><span style="background-image: url({{../aggregated_story.aggregated_values.user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+        {{#if show_follow_button}}
+            <a href="#" class="follow-user none" data-userid="{{../../aggregated_story.aggregated_values.user.id}}">Follow</a>
+        {{/if}}
+        <div class="news">
+            <h4 class="header">
+                <b><a mixpanel-target-page-type="profile_page" class="user-name" href="{{../aggregated_story.aggregated_values.user.url}}">{{&../aggregated_story.aggregated_values.user.title}}</a></b>
+            </h4>
+            <div class="main">
+                <div class="right-col" style="
+    margin-left: 0px;
+">
+                    <p style="color: #222;">
+{{#each status_update_parts}}<span>{{#if escape}}{{part}}{{else}}{{{part}}}{{/if}}</span>{{/each}}
+                    </p>
+                    {{#each interest_tags}}
+                        <span class="interest-tags">
+                            <span style="font-weight:normal;">#{{&tag}}</span>
+                        </span>
+                    {{/each}}
+                </div>
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more updates by {{&aggregated_story.aggregated_values.user.title}}</a>
+    {{/if}}
+</li>
+
+</script>    <script id="homepageSubscribedToCourseActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="subscribed_to_course">
+        <a mixpanel-target-page-type="profile_page" href="{{../aggregated_story.aggregated_values.user.url}}" target="_blank"><span style="background-image: url({{../aggregated_story.aggregated_values.user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+        <div class="news">
+            <h4 class="header">
+                <b><a mixpanel-target-page-type="profile_page" class="user-name" href="{{../aggregated_story.aggregated_values.user.url}}">{{../aggregated_story.aggregated_values.user.title}}</a></b>
+                <span> enrolled in a new course.</span>
+            </h4>
+            <div class="main">
+                <div class="left-col">
+                    <a mixpanel-target-page-type="course_page" style="background-image: url({{course_image_url}})" href="{{course_url}}" class="thumb"></a>
+                </div>
+                <div class="right-col">
+                    <p>
+                        <a mixpanel-target-page-type="course_page" href="{{course_url}}" class="title">
+                            <b>{{{course_title}}}</b>
+                        </a>
+                        by 
+                        <a mixpanel-target-page-type="instructor_page" style="color: #777;" href="{{instructor_url}}" class="title">
+                            <b>{{{course_instructor_full_name}}}</b>
+                        </a>
+                    </p>
+                    <p>{{{course_headline}}}</p>
+                    <div class="reviews clearfix">
+                        <div class="small-rating">
+                            <span style="width: {{average_review_percentage}}%"></span>
+                        </div>
+                        <span class="review-count">({{&total_review_count}} reviews)</span>
+                        <span class="students-count">
+                            <b>{{&enrolled_student_count}}</b> students
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more courses {{&aggregated_story.aggregated_values.user.title}} enrolled in</a>
+    {{/if}}
+</li>
+
+</script>
+    <script id="homepageCourseReviewedActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="course_review">
+        <a mixpanel-target-page-type="profile_page" href="{{reviewer_user.url}}" target="_blank" style="position: absolute;"><span style="background-image: url({{reviewer_user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+        {{#if show_follow_button}}
+            <a href="#" class="follow-user none" data-userid="{{reviewer_user.id}}">Follow</a>
+        {{/if}}
+        <div class="news">
+            <h4 class="header">
+                <b><a mixpanel-target-page-type="profile_page" class="user-name" href="{{reviewer_user.url}}">{{&reviewer_user.title}}</a></b> published a review for
+                <a mixpanel-target-page-type="course_page" href="{{../aggregated_story.aggregated_values.reviewed_course_url}}">{{&../aggregated_story.aggregated_values.reviewed_course_name}}</a>
+            </h4>
+            <div class="main">
+                <div class="review-wrapper clearfix">
+                    <div class="small-rating">
+                        <span style="width: {{review_percentage}}%"></span>
+                    </div>
+                    <div class="review">
+                        {{#if review_title}}
+                            <b><p>{{&review_title}}</p></b>
+                        {{/if}}
+                        {{#if review_body}}
+                            <p>{{{review_body}}}</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more review(s) published recently in {{{aggregated_story.aggregated_values.reviewed_course_name}}}</a>
+    {{/if}}
+</li>
+
+</script>
+    <script id="homepageStatusUpdateLoadingTemplate" type="text/x-handlebars-template">
+
+    <li class="aggregated-story-container empty-status-update">
+        <div class="aggregated-story " data-activityid="250">
+            <div class="news">
+                <div class="main">
+                    <div class="ajax-loader-stick" style="position: relative;left: 45%;top: 14px;"></div><div class="right-col" style="margin-left: 0px;">
+                        <p style="color: #222;"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </li>
+
+</script>    <script id="homepageHighQualityCourseAddedActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="new_hq_course">
+        <a mixpanel-target-page-type="profile_page" href="{{../aggregated_story.aggregated_values.category_url}}" target="_blank"><span style="background-image: url({{../aggregated_story.aggregated_values.category_image}});" class="user-img bordered-thumb"></span></a>
+        <div class="news">
+            <h4 class="header">
+                <span>A new <b><a mixpanel-target-page-type="category_page" class="user-name" href="{{../aggregated_story.aggregated_values.category_url}}">{{&../aggregated_story.aggregated_values.category_title}}</a></b> course has just been published!</span>
+            </h4>
+            <div class="main">
+                <div class="left-col">
+                    <a mixpanel-target-page-type="course_page" style="background-image: url({{course_image_url}})" href="{{course_url}}" class="thumb"></a>
+                </div>
+                <div class="right-col">
+                    <p>
+                        <a mixpanel-target-page-type="course_page" href="{{course_url}}" class="title">
+                            <b>{{{course_title}}}</b>
+                        </a>
+                        by 
+                        <a mixpanel-target-page-type="instructor_page" style="color: #777;" href="{{instructor_url}}" class="title">
+                            <b>{{{course_instructor_full_name}}}</b>
+                        </a>
+                    </p>
+                    <p>{{{course_headline}}}</p>
+                    <div class="reviews clearfix">
+                        <div class="small-rating">
+                            <span style="width: {{average_review_percentage}}%"></span>
+                        </div>
+                        <span class="review-count">({{&total_review_count}} reviews)</span>
+                        <span class="students-count">
+                            <b>{{&enrolled_student_count}}</b> students
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more new courses in {{&aggregated_story.aggregated_values.category_title}}</a>
+    {{/if}}
+</li>
+
+</script>
+    <script id="homepageUserFollowsUserActivityTemplate" type="text/x-handlebars-template">
+<li class="aggregated-story-container">
+    {{#each aggregated_story.activities}}
+    <div class="aggregated-story {{#if hidden}}hideItem{{/if}}" data-activityid="{{activity_id}}" mixpanel-feed-story-type="user_followed_user">
+        <a mixpanel-target-page-type="profile_page" href="{{../aggregated_story.aggregated_values.follower_user.url}}" target="_blank"><span style="background-image: url({{../aggregated_story.aggregated_values.follower_user.images.img_50x50}});" class="user-img bordered-thumb"></span></a>
+        <div class="news">
+            <h4 class="header">
+                <b><a mixpanel-target-page-type="profile_page" class="user-name" href="{{../aggregated_story.aggregated_values.follower_user.url}}">{{&../aggregated_story.aggregated_values.follower_user.title}}</a></b>
+                <span> started following </span><a mixpanel-target-page-type="profile_page" href="{{followed_user.url}}">{{&followed_user.title}}</a>
+                <!--
+                {{#if show_follow_button_for_followed_user}}
+                    <span style=" color: #999; ">&middot;</span>
+                    <a href="#" class="follow-user" data-userid="{{followed_user.id}}" style=" color: #999; ">Follow {{&followed_user.name}}</a>
+                {{/if}}
+                -->
+            </h4>
+            <div class="main">
+            </div>
+            <div class="footer clearfix">
+                <a href="#" class="comment social">Comment</a>
+                <a href="#" class="like social {{#if liked_by_user}}liked{{/if}}">Like{{#if liked_by_user}}d{{/if}}</a>
+                {{#if total_like_count}}
+                    <a href="/newsfeed/show-users-that-liked-activity?activity_id={{activity_id}}" class="like_count ud-popup" style="margin-left: 10px;"><i class="icon-thumbs-up" style="margin-top: 3px;"></i><span style="margin-left: 1px;color:black;">{{&total_like_count}}</span></a>
+                {{/if}}
+                {{#if comments_count}}
+                    <a href="#" class="comment_count none" style="margin-left: 10px;">{{&comments_count}} comments</a>
+                {{/if}}
+                <a mixpanel-target-page-type="single_activity_page" href="{{story_url}}" target="_blank" class="timestamp"><time data-redistimestamp="{{redis_timestamp}}"></time></a>
+            </div>
+
+            <div class="comments">
+                <ul></ul>
+
+                <form class="flex-wrapper">
+                    <div class="flex input-wrapper">
+                        <textarea tabindex="1" placeholder="Add your comment"></textarea>
+                    </div>
+					<input type="submit" tabindex="1" value="Send" class="btn btn-small btn-inverse send">
+                </form>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+    {{#if aggregated_story.aggregated_values.view_more_button_is_visible}}
+        <a href="#" class="show-more" >Show {{&aggregated_story.aggregated_values.more_story_count}} more users followed by {{&aggregated_story.aggregated_values.follower_user.title}}</a>
+    {{/if}}
+</li>
+
+</script>    <script id="homepageReachedEndOfFeedTemplate" type="text/x-handlebars-template">
+
+    <div class="feed-last-news" mixpanel-feed-story-type="reached_end_of_feed">
+        <h4 class="header">
+            <b>Hi there! You have reached the end of your feed and found this secret button:
+            <a href="/discover" class="btn btn-success" style="margin: 10px;">Discover Amazing Courses</a></b>
+        </h4>
+        <div class="main">
+        </div>
+    </div>
+
+</script>    <script id="homepageLoadingMoreFeedItemsTemplate" type="text/x-handlebars-template">
+
+    <li class="aggregated-story-container loading-more-items">
+        <div class="aggregated-story">
+            <div class="news">
+                <h4 class="header">
+                    <div class="ajax-loader-stick" style="position: relative;"></div>
+                </h4>
+                <div class="main"></div>
+            </div>
+        </div>
+    </li>
+
+</script>    
+    <script id="activityCommentTemplate" type="text/x-handlebars-template">
+
+    {{#if view_more_comments_button_is_visible}}
+        <a href="#" class="view-previous-comments">view previous comments ({{more_comments_count}})</a>
+    {{/if}}
+    {{#each comments}}
+        <li class="clearfix {{#if hidden}}none{{/if}}">
+            <a mixpanel-target-page-type="profile_page" href="{{user.url}}"><span class="user-img bordered-thumb" style="background-image: url({{user.images.img_50x50}});"></span>
+            <p>
+                <a mixpanel-target-page-type="profile_page" href="{{user.url}}">{{&user.title}}</a>
+                {{{body}}}
+            </p>
+        </li>
+    {{/each}}
+
+</script>
+              
+    <script type="text/javascript">if(!NREUMQ.f){NREUMQ.f=function(){NREUMQ.push(["load",new Date().getTime()]);var e=document.createElement("script");e.type="text/javascript";e.async=true;e.src="https://d1ros97qkrwjf5.cloudfront.net/42/eum/rum.js";document.body.appendChild(e);if(NREUMQ.a)NREUMQ.a();};NREUMQ.a=window.onload;window.onload=NREUMQ.f;};NREUMQ.push(["nrf2","beacon-1.newrelic.com","3bb663a57e",511624,"NVJWNRdVDEICVBVRDQwYYRMMGwtfB1IZFhIKRw==",0,42,new Date().getTime()]);</script>
+            <script type="text/javascript">
+        adroll_adv_id = "554CPNW4XBAX5EYKBL4HVU";
+        adroll_pix_id = "OKLCQMMNANCRNGGEOKKR5M";
+
+            </script>
+     
+</body>
+</html>

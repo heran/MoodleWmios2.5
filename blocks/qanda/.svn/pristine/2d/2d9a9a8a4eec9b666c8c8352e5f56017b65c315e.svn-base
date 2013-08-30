@@ -1,0 +1,53 @@
+<?php
+
+require_once($CFG->dirroot . '/blocks/qanda/backup/moodle2/restore_qanda_stepslib.php'); 
+
+class restore_qanda_block_task extends restore_default_block_task {
+
+    protected function define_my_settings() {
+    }
+
+    protected function define_my_steps() {
+        $this->add_step(new restore_qanda_block_structure_step('qanda_structure', 'qanda.xml'));
+    }
+    
+    /**
+    * Get the plan's setting.
+    * 
+    * @param string $name
+    */
+    public function get_plan_setting_value($name){
+        try{
+            return $this->plan->get_setting($name)->get_value();
+        }catch(Exception $e){
+            return false;
+        }
+    }
+    
+    /**
+    * When a question is about one course module,we need replace the cmid.
+    * 
+    */
+    public function after_restore() {
+        global $DB;
+        
+        //It's the new course's id.
+        $courseid = $this->get_courseid();
+        $questions = $DB->get_records('qanda',array('courseid'=>$courseid));
+        
+        //replace the cmid
+        foreach($questions as $question){
+            if(!$question->cmid){
+                continue;
+            }
+            $mapping = restore_dbops::get_backup_ids_record(
+                $this->get_restoreid(),
+                'course_module',
+                $question->cmid);
+            $question->cmid = $mapping->newitemid;
+            $DB->update_record('qanda',$question);
+        }
+    }
+    
+}
+

@@ -1,0 +1,3 @@
+{include 'view_header.tpl'}
+123
+{include 'view_footer.tpl'}

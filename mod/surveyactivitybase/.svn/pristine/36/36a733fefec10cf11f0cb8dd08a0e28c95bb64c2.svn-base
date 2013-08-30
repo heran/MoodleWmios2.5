@@ -1,0 +1,47 @@
+<?php
+use wmios\survey as survey;
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+/** @var survey\activity_wrapper*/
+$wrapper = survey\activity_wrapper::instance_from_id(required_param('id',PARAM_INT));
+$a = "基本要求";
+$b = "基本管理";
+$c = "组织运作";
+$d = "员工归属";
+$e = "员工发展";
+$f = "愿景和价值观";
+$DataSet = new pData;
+$DataSet->AddPoint(array($a,$b,$c,$d,$e,$f),"Label");
+$DataSet->AddPoint(array(3,4,2,4,4,5),"Serie1");
+// $DataSet->AddPoint(array(2,3,5,2,4),"Serie2");
+$DataSet->AddSerie("Serie1");
+//$DataSet->AddSerie("Serie2");
+$DataSet->SetAbsciseLabelSerie("Label");
+
+
+//$DataSet->SetSerieName("Reference","Serie1");右上角两个标签
+//$DataSet->SetSerieName("Tested computer","Serie2");
+
+// Initialise the graph
+$Test = new pChart(400,400);
+$Test->setFontProperties("Fonts/simhei.ttf",8);
+$Test->drawFilledRoundedRectangle(7,7,393,393,5,240,240,240);
+$Test->drawRoundedRectangle(5,5,395,395,5,230,230,230);
+$Test->setGraphArea(30,30,370,370);
+$Test->drawFilledRoundedRectangle(30,30,370,370,5,255,255,255);
+$Test->drawRoundedRectangle(30,30,370,370,5,220,220,220);
+
+// Draw the radar graph
+//要使用drawRadarAxis()生成雷达效果
+$Test->drawRadarAxis($DataSet->GetData(),$DataSet->GetDataDescription(),TRUE,20,120,120,120,230);
+$Test->drawFilledRadar($DataSet->GetData(),$DataSet->GetDataDescription(),50,20);
+
+// Finish the graph
+//$Test->drawLegend(15,15,$DataSet->GetDataDescription(),255,255,255);图标
+$Test->setFontProperties("Fonts/tahoma.ttf",10);
+//$Test->drawTitle(0,22,"biaoti",50,50,50,400);标题
+
+$imageFile = "radar.png";
+$Test->Render($imageFile);
+echo '<img src="'.$imageFile.'">';

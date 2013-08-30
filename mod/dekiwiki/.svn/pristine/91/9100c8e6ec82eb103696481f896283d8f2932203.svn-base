@@ -1,0 +1,353 @@
+<?php
+
+define('DEKIWIKI_PLUGIN_NAME','mod_dekiwiki');
+
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+require_once ($CFG->dirroot.'/local/wmios/vendor/dreamplug/http_plug.php');
+require_once ($CFG->dirroot.'/local/wmios/vendor/dreamplug/dream_plug.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+/**
+* @property int $id
+* @property int $cmid
+* @property int $course
+* @property int $page_id
+* @property int $sub_page_id
+* @property int $group_id
+* @property string $name
+* @property string $intro
+* @property int $introformat
+* @property int $timemodified
+*/
+class dekiwiki_instance extends wmios_common_object
+{
+    protected static $_table = 'dekiwiki';
+
+    protected $_fields =array(
+        'id'=>0,
+        'cmid'=>0,
+        'course'=>0,
+        'page_id'=>0,
+        'group_id'=>0,
+        'name'=>'',
+        'intro'=>'',
+        'introformat'=>0,
+        'timemodified'=>0,
+    );
+
+    /**
+    * determined by $this->course
+    * @var stdClass
+    */
+    private $_course = null;
+
+    /**
+    *
+    * determined by $this->cmid
+    *
+    * @var stdClass
+    */
+    private $_cm = null;
+
+    /**
+    *
+    *
+    *
+    * @var context_module
+    *
+    */
+    private $_context = null;
+
+
+    /**
+    * set base's course module
+    *
+    * @param mixed $cm
+    * @return self
+    */
+    public function set_cm($cm)
+    {
+        if($cm->instance == $this->id)
+        {
+            $this->_cm = $cm;
+        }
+        return $this;
+    }
+
+    /**
+    * get the course module object
+    *
+    * @return stdClass
+    */
+    public function get_cm()
+    {
+        if($this->_cm === null)
+        {
+            $this->_cm = get_coursemodule_from_instance(SURVEYACTIVITYBASE_PLUGIN_NAME, $this->id, $this->course_id, false, MUST_EXIST);
+        }
+        return $this->_cm;
+    }
+
+    /**
+    * put your comment there...
+    *
+    * @param context_module $context
+    * @return self
+    */
+    public function set_context(\context_module $context)
+    {
+        if($context->instanceid == $this->cmid)
+        {
+            $this->_context = $context;
+        }
+        return $this;
+    }
+
+    /**
+    * @return context_module
+    *
+    */
+    public function get_context()
+    {
+        if($this->_context === null)
+        {
+            $this->_context = context_module::instance($this->cmid);
+        }
+        return $this->_context;
+    }
+
+    /**
+    * set course
+    *
+    * @param stdClass|mixed $course
+    * @return self
+    */
+    public function set_course($course)
+    {
+        if($this->course == $course->id)
+        {
+            $this->_course = $course;
+        }
+        return $this;
+    }
+
+    /**
+    *
+    * @return stdClass|mixed $course refrence by course_id
+    *
+    */
+    public function get_course()
+    {
+        global $DB;
+        if($this->_course === null)
+        {
+            $this->_course =  $DB->get_record('course', array('id'=>$this->course), '*');
+        }
+        return $this->_course;
+    }
+
+    /**
+    * @return DreamPlug
+    *
+    */
+    public function get_plug($login_as_admin = true)
+    {
+        static $plug = array('admin'=>null,'not_admin'=>null);
+        if($login_as_admin)
+        {
+            $k = 'admin';
+        }else{
+            $k = 'not_admin';
+        }
+        if($plug[$k] == null)
+        {
+            $url = get_config(DEKIWIKI_PLUGIN_NAME,'server_url');
+            $apikey = get_config(DEKIWIKI_PLUGIN_NAME,'apikey');
+            $plug[$k] = new DreamPlug($url,DreamPlug::DREAM_FORMAT_PHP);
+            $plug[$k] = $plug[$k]->With('apikey',$apikey)->WithCredentials(
+                get_config(DEKIWIKI_PLUGIN_NAME,'superadmin'),
+                get_config(DEKIWIKI_PLUGIN_NAME,'superpassword'));
+        }
+        return $plug[$k];
+    }
+
+    public function get_root_page_name()
+    {
+        return urlencode( get_string('modulename',DEKIWIKI_PLUGIN_NAME).'/'.$this->cmid.'_'.$this->name);
+    }
+
+    public function get_sub_page_name()
+    {
+        return urlencode( get_string('modulename',DEKIWIKI_PLUGIN_NAME).'/'.$this->cmid.'_'.$this->name.'/'.$this->name);
+    }
+
+    public function create_root_page()
+    {
+        if($this->page_id>0)
+        {
+            return -1;
+        }else{
+            //$users = get_course_
+            $group = array();
+            $group['name'] = $this->cmid.'-moodle-'.$this->name;
+            $group['permissions.group']['role'] = 'Contributor';
+            $group['users'] = array();
+            $r = $this->get_plug()->At('groups')->Post(array('group'=>$group));
+            if($r['status'] == 200)
+            {
+                $this->group_id = intval(simplexml_load_string( $r['body'])->attributes()->id);
+            }else{
+                throw new moodle_exception(print_r($r,true));
+            }
+            $this->put_enroll_user_to_deki_group();
+
+            //root page
+            $r = $this->get_plug()->At('pages', '='.$this->get_root_page_name(), 'contents')
+            ->With('abort', 'exists')->Post();
+            if($r['status']!= 200)
+            {
+
+            }
+            $this->page_id = intval(simplexml_load_string($r['body'])->attributes()->id);
+
+            //root page security
+            $security = array();
+            $security['security'] = array(
+                'grants'=>array(
+                    array(
+                        'grant'=>array(
+                            'permissions'=>array('role'=>'Contributor'),
+                            'user'=>array('@id'=>1)
+                        )
+                    ),
+                    array(
+                        'grant'=>array(
+                            'permissions'=>array('role'=>'Viewer'),
+                            'group'=>array('@id'=>$this->group_id)
+                        )
+                    )
+                )
+            );//only admin can edit this page.
+            $r = $this->get_plug()->At('pages',$this->page_id,'security')->Put($security);
+            if($r['status']!= 200)
+            {
+
+            }
+
+            //sub page
+            $r = $this->get_plug()->At('pages', '='.$this->get_sub_page_name(), 'contents')
+            ->With('abort', 'exists')->Post();
+            if($r['status']!= 200)
+            {
+
+            }
+            $this->sub_page_id = intval(simplexml_load_string($r['body'])->attributes()->id);
+
+            $security = array();
+            $security['security'] = array(
+                'grants'=>array(
+                    array(
+                        'grant'=>array(
+                            'permissions'=>array('role'=>'Contributor'),
+                            'user'=>array('@id'=>1)
+                        )
+                    ),
+                    array(
+                        'grant'=>array(
+                            'permissions'=>array('role'=>'Contributor'),
+                            'group'=>array('@id'=>$this->group_id)
+                        )
+                    )
+                )
+            );//only admin can edit this page.
+            $r = $this->get_plug()->At('pages',$this->sub_page_id,'security')->Put($security);
+            if($r['status']!= 200)
+            {
+
+            }
+        }
+    }
+
+    /**
+    * @return int
+    *
+    */
+    public function update_root_page()
+    {
+        return $this->page_id;
+    }
+
+    public function get_course_enrolled_users($fields = null)
+    {
+        global $DB;
+        if(!$fields)
+        {
+            $fields = 'u.id, u.username, u.firstname, u.lastname, u.email, u.city, u.country, u.picture, u.lang, u.timezone, u.maildisplay, u.imagealt';
+        }
+        $sql  = "SELECT {$fields}
+        FROM mdl_user u JOIN (
+        SELECT DISTINCT eu1_u.id FROM {user} eu1_u
+        JOIN {user_enrolments} eu1_ue ON eu1_ue.userid = eu1_u.id
+        JOIN {enrol} eu1_e ON (eu1_e.id = eu1_ue.enrolid AND eu1_e.courseid = '{$this->course}')
+        WHERE eu1_u.deleted = 0 AND eu1_u.id <> '1' AND eu1_ue.status = '0' AND eu1_e.status = '0'
+        ) e ON e.id = u.id";
+        $userlist = $DB->get_recordset_sql($sql);
+        return $userlist;
+    }
+
+    public function get_course_enrolled_deki_userids()
+    {
+        $users = $this->get_course_enrolled_users();
+        $user_ids = array();
+        if($users)
+        {
+            foreach($users as $user)
+            {
+                $r = $this->get_plug()->At('users','='.$user->username)->Get();
+                if($r['status'] == 200)
+                {
+                    //user exists
+                    $user_ids[] = intval(simplexml_load_string( $r['body'])->attributes()->id);
+                    continue;
+                }
+
+                $new_user = array(
+                    'username'=> $user->username,
+                    'email' => $user->email,
+                    'fullname' => fullname($user),
+                    'password' => time(),
+                    "permissions.user" => array(
+                        'role' => "Contributor"
+                    ),
+                    'status' => "active"
+                );
+                $r = $this->get_plug(false)->At("users")->Post(array('user'=>$new_user));
+                if($r['status'] == 200)
+                {
+                    $user_ids[] = intval(simplexml_load_string( $r['body'])->attributes()->id);
+                    continue;
+
+                }else{
+                    //throw new moodle_exception('can not add user');
+                }
+            }
+        }
+        return $user_ids;
+    }
+
+    public function put_enroll_user_to_deki_group()
+    {
+        $user_ids =$this->get_course_enrolled_deki_userids();
+        $users = array();
+        foreach($user_ids as $id)
+        {
+            $users[] = array('user'=>array('@id'=>$id));
+        }
+        $r = $this->get_plug()->At('groups',$this->group_id,'users')->Put(array('users'=>$users));
+        if($r['status'] != 200)
+        {
+            throw new moodle_exception(print_r($r,true));
+        }
+    }
+
+}

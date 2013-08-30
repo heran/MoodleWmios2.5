@@ -1,0 +1,7 @@
+<?php
+function xmldb_survey_activity_simple_upgrade($oldversion) {
+
+    return true;
+}
+
+

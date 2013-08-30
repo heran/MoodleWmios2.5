@@ -1,0 +1,84 @@
+<?php
+
+defined('MOODLE_INTERNAL') || die();
+
+require_once($CFG->dirroot.'/auth/cas/auth.php');
+require_once($CFG->dirroot.'/auth/cas/CAS/CAS.php');
+
+/**
+ * CAS authentication plugin.
+ */
+class auth_plugin_casw extends auth_plugin_cas {
+
+    /**
+     * Authentication choice (CAS or other)
+     * Redirection to the CAS form or to login/index.php
+     * for other authentication
+     */
+    function loginpage_hook() {
+        global $frm;
+        global $CFG;
+        global $SESSION, $OUTPUT, $PAGE;
+
+        $site = get_site();
+        $CASform = get_string('CASform', 'auth_cas');
+        $username = optional_param('username', '', PARAM_RAW);
+
+        if (!empty($username)) {
+            if (isset($SESSION->wantsurl) && (strstr($SESSION->wantsurl, 'ticket') ||
+                                              strstr($SESSION->wantsurl, 'NOCAS'))) {
+                unset($SESSION->wantsurl);
+            }
+            return;
+        }
+
+        // Return if CAS enabled and settings not specified yet
+        if (empty($this->config->hostname)) {
+            return;
+        }
+
+        // Connection to CAS server
+        $this->connectCAS();
+
+        if (phpCAS::checkAuthentication()) {
+            $frm = new stdClass();
+            $frm->username = phpCAS::getUser();
+            $frm->password = 'passwdCas';
+            return;
+        }
+
+        if (isset($_GET['loginguest']) && ($_GET['loginguest'] == true)) {
+            $frm = new stdClass();
+            $frm->username = 'guest';
+            $frm->password = 'guest';
+            return;
+        }
+
+        if ($this->config->multiauth) {
+            $authCAS = optional_param('authCAS', '', PARAM_RAW);
+            if ($authCAS == 'NOCAS') {
+                return;
+            }
+
+            // Show authentication form for multi-authentication
+            // test pgtIou parameter for proxy mode (https connection
+            // in background from CAS server to the php server)
+            if ($authCAS != 'CAS' && !isset($_GET['pgtIou'])) {
+                $PAGE->set_url('/auth/cas/auth.php');
+                $PAGE->navbar->add($CASform);
+                $PAGE->set_title("$site->fullname: $CASform");
+                $PAGE->set_heading($site->fullname);
+                echo $OUTPUT->header();
+                include($CFG->dirroot.'/auth/cas/cas_form.html');
+                echo $OUTPUT->footer();
+                exit();
+            }
+        }
+
+        // Force CAS authentication (if needed).
+        if (!phpCAS::isAuthenticated()) {
+            phpCAS::setLang($this->config->language);
+            phpCAS::forceAuthentication();
+        }
+    }
+}

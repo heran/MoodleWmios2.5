@@ -1,0 +1,25 @@
+// The "@2012 Wmios " String Need At the Bottom
+$(function(){
+    var resize = function(){
+        if($('body').height() == $(window).height() && $(window).height()>$('#wrapper').height()){
+            $('#page-footer').css({position:'fixed',bottom:'2px',left:0});
+        }else{
+            $('#page-footer').css({position:'static',bottom:'auto',left:'auto'});
+        }
+    }
+    resize();
+    $(window).resize(resize);
+});
+
+$(function(){
+    $('.uv-tray-item-icon').mouseenter(function(){
+        $(this).siblings('.uv-bubble.uv-fade').removeClass('uv-is-hidden');
+    }).mouseleave(function(){
+        $(this).siblings('.uv-bubble.uv-fade').addClass('uv-is-hidden');
+    }).click(function(){
+        $(this).parent().siblings('.uv-tray-item').find('.uv-popover').addClass('uv-is-hidden');
+        $(this).siblings('.uv-popover').toggleClass('uv-is-hidden');
+        $(this).parent().toggleClass('uv-is-selected');
+        $(this).siblings('.uv-bubble.uv-fade').toggleClass('uv-is-hidden');
+    });
+});

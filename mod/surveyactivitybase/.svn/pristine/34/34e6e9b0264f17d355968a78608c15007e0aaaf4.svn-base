@@ -1,0 +1,277 @@
+<?php
+
+//wmios is mine.
+namespace wmios\survey;
+
+use \moodle_page;
+
+/**
+ * Returns instance of page renderer
+ *
+ * When in survey code:activity e.g.
+ * Must use this function for renderer
+ *
+ *
+ * If $component begin with 'mod_surveyactivity_' , it'll return survey renderer
+ * It's a \wmios\survey\plugin_renderer_base.
+ * You can use $render->header() and $reader->footer replace $OUTPUT::header(),$OUTPUT::footer()
+ * Then it will output the survey layout.
+ * Use mod_surveyactivity_core ,mod_surveyactivity_activity_exam , Make they are in survey package
+ *
+ * Every renderer is in global namespace,So theme can override it.
+ *
+ * @param \String $component name such as 'core', 'mod_forum' or 'qtype_multichoice'.
+ * @param \String $subtype optional subtype such as 'news' resulting to 'mod_forum_news'
+ * @param \String $target one of rendering target constants
+ * @return \renderer_base|\wmios\survey\plugin_renderer_base
+ */
+function get_renderer($component, $subtype = null, $target = null) {
+    global $PAGE;
+    static $_renderer_factory = null;
+
+    if(stristr($component,'mod_surveyactivity_') !== false){
+        if($_renderer_factory === null){
+            $_renderer_factory = new theme_overridden_renderer_factory($PAGE->theme);
+        }
+        $renderer = $_renderer_factory->get_renderer(
+                    $PAGE,
+                    str_ireplace('mod_surveyactivity_','',$component),
+                    $subtype,
+                    $target);
+
+    }else{
+        $renderer = $PAGE->get_renderer($component, $subtype, $target);
+    }
+    return $renderer;
+}
+
+/**
+* @ignore
+* Don't use in your code.
+* It will get a renderer class name to support survey's \wmios\survey\plugin_renderer_base
+* If $component is core means mod_surveyactivity_core
+* activity_exam means mod_surveyactivity_activity_exam
+*/
+class theme_overridden_renderer_factory extends \theme_overridden_renderer_factory{
+
+    /**
+    * @inheritdoc
+    * If $component is core means mod_surveyactivity_core
+    * activity_exam means mod_surveyactivity_activity_exam
+    *
+    */
+    protected function standard_renderer_classname($component, $subtype = null) {
+        global $CFG; // needed in included files
+
+
+        list($plugintype, $pluginname) = plugin_manager::instance()->normalize_component($component);
+        if($plugintype != 'core' && $plugintype != 'activity'){
+            throw new \Exception('only supports renderer:activity,core');
+        }
+
+        $component = $plugintype . ($pluginname ? '_' . $pluginname : '');
+
+        $class = null;
+
+        if($plugintype == 'core'){
+            $location = $CFG->dirroot.'/mod/surveyactivitybase/renderer.php';
+            include_once($location);
+        }elseif($plugintype == 'activity'){
+            $plugintypes = plugin_manager::instance()->get_plugin_types(true);
+            if(isset( $plugintypes[$plugintype])){
+                $location = $plugintypes[$plugintype].'/'.$pluginname.'/renderer.php';
+                if (file_exists($location)) {
+                    include_once($location);
+                }
+            }
+        }
+
+        $class = 'mod_surveyactivity_'.$component . '_renderer';
+
+        return $class;
+    }
+}
+
+/**
+* When you need a survey standard layout ,Use this renderer.
+* It's survey base renderer.
+* In activity code,Must extend this.
+* Use static::header and static::footer output layout.
+*
+*/
+abstract class plugin_renderer_base extends \plugin_renderer_base{
+
+    /**
+    * layout header
+    *
+    * @var \String
+    */
+    protected $_layout_header = null;
+
+    /**
+    * layout footer
+    *
+    * @var \String
+    */
+    protected $_layout_footer = null;
+
+    /**
+    * use for smarty file
+    *
+    * @var \Smarty
+    */
+    protected $_smarty = null;
+
+    /**
+    *
+    *
+    * @param \moodle_page $page
+    * @param \String $target
+    * @return self
+    */
+    public function __construct(moodle_page $page, $target) {
+        global $CFG,$PAGE;
+
+        $class_name = get_class($this);
+
+        $template_dir = $CFG->dirroot.'/mod/surveyactivitybase/view';
+        if(substr($class_name,0,strlen('mod_surveyactivity_')) === 'mod_surveyactivity_'){
+            $component = substr($class_name,strlen('mod_surveyactivity_'));
+            $component = substr($component,0,strlen($component)-strlen('_renderer'));
+            if(substr($component,0,strlen('core'))!=='core'){
+                $plugininfo = plugin_manager::instance()->get_plugin_info($component);
+                if($plugininfo){
+                    $template_dir = $plugininfo->rootdir.'/view';
+                }
+            }
+        }
+
+        $this->_smarty = \get_smarty(null,$template_dir);
+        parent::__construct($page, $target);
+    }
+
+    /**
+    * @return Smarty
+    *
+    */
+    public function get_smarty()
+    {
+        return $this->_smarty;
+    }
+
+    /**
+    * Render layout
+    *
+    * the result will be cached.
+    *
+    * @param bool $force
+    */
+    protected function render_layout($force = false){
+        global $PAGE;
+        static $inited = false;
+        if(!$inited || $force){
+
+            $smarty = $this->_smarty;
+            $old_template_dir = $smarty->getTemplateDir();
+            $old_config_dir = $smarty->getConfigDir();
+
+            $smarty->setTemplateDir(dirname(__FILE__).'/../view/scripts/'.$PAGE->theme->name.'/');
+            $smarty->setConfigDir(dirname(__FILE__).'/../view/configs/');
+
+            $placeholder = $this->layout_main_content_placeholder();
+            $smarty->assign('maincontent',$placeholder);
+
+            //navigation
+            $nav = tool::get_nav();
+            $smarty->assign('nav',$nav);
+
+            $smarty->assign('base',tool::get_surveyactivity_base());
+
+            $str = new \stdClass();
+            $str->navigation = get_string('navigation',SURVEYACTIVITYBASE_PLUGIN_NAME);
+            $smarty->assign('str',$str);
+
+            $url = new \stdClass();
+            $url->add_activity = new \moodle_url('/mod/surveyactivitybase/activity_edit.php');
+            $smarty->assign('url',$url);
+
+
+            $rendered = $smarty->fetch('layout.tpl');
+
+            $cutpos = strpos($rendered, $placeholder);
+            if ($cutpos === false) {
+                throw new \coding_exception('survey page layout file ' . $layoutfile . ' does not contain the main content placeholder, please include "<?php echo $OUTPUT->main_content() ?>" in theme layout file.');
+            }
+
+            $this->_layout_header = substr($rendered, 0, $cutpos);
+            $this->_layout_footer = substr($rendered, $cutpos + strlen($placeholder));
+            $inited = true;
+            $smarty->setTemplateDir($old_template_dir);
+            $smarty->setConfigDir($old_config_dir);
+            $smarty->clearAssign('maincontent');
+            $smarty->clearAssign('nav');
+            $smarty->clearAssign('str');
+            $smarty->clearAssign('url');
+        }
+    }
+
+    /**
+    * use for layout's place holder
+    *
+    */
+    protected function layout_main_content_placeholder(){
+        return '[]//?sasiJJJJJJ';
+    }
+
+
+    /**
+    * Output survey layout's header
+    * Can only be called once
+    *
+    *
+    * HTML include:
+    *   <<<this header
+    *   <<<you content
+    *   <<<this footer
+    *
+    */
+    public function header(){
+
+        static $rendered = false;
+        if($rendered){
+            throw new \Exception('Has rendered survey header');
+        }
+
+        $this->page->requires->js('/mod/surveyactivitybase/js/default.js');
+
+        $outputheader = $this->output->header();
+        $this->render_layout();
+        $rendered = true;
+
+        return $outputheader . $this->_layout_header;
+    }
+
+    /**
+    * Output survey layout's footer
+    * Can only be called once
+    *
+    *
+    * HTML include:
+    *   <<<this header
+    *   <<<you content
+    *   <<<this footer
+    *
+    */
+    public function footer(){
+        static $rendered = false;
+        if($rendered){
+            throw new \Exception('Has rendered survey footer');
+        }
+
+        $outputfooter = $this->output->footer();
+        $this->render_layout();
+        $rendered = true;
+
+        return $this->_layout_footer.$outputfooter ;
+    }
+}

@@ -1,0 +1,26 @@
+//path /theme/udemy/javascript/must/block_search_forums
+$(function(){
+
+    var html=$(".block_search_forums.block .content").html();
+
+    var h4t=$('.block_search_forums.block .ud-courseannouncement').text();
+    
+    $('.block_search_forums.block .ud-courseannouncement').html(html);
+
+
+    $(".block_search_forums.block .searchform").find("br").remove();
+
+
+    $(".block_search_forums.block fieldset button").html("");
+    $(".block_search_forums.block fieldset button").addClass("icon-search");
+
+
+    $(".block_search_forums.block input[name='search']").attr("placeholder",h4t);
+
+    
+    
+   
+    $(".block_search_forums.block .content").remove();
+
+});
+

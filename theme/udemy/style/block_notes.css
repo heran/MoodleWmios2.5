@@ -1,0 +1,42 @@
+.block_notes.block .content {
+    padding: 0;        
+    height: 400px;
+}
+.ud-inplaceeditor {
+    position:relative;
+    border:0px solid rgba(0, 0, 0, 0);
+    cursor:text!important;
+}
+.ud-inplaceeditor:hover {
+    background: white;
+}
+.ud-inplaceeditor.active {
+    border:0px solid rgba(0, 0, 0, 0.3);
+}
+.ud-inplaceeditor textarea {
+    color:inherit;
+    font-weight:inherit;
+    font-size:inherit;
+    font-family:inherit;
+    line-height:inherit;
+    letter-spacing:inherit;
+    word-spacing:inherit;
+    word-wrap:inherit;
+    text-transform:inherit;
+    display:inherit!important;
+    text-decoration:none;
+    border:none;
+    margin:0!important;
+    padding:0;
+}
+.ud-inplaceeditor .inplaceeditor-delete {
+    position:absolute;
+    right:4px;
+    top:0px;
+    display:inline-block;
+    cursor:pointer!important;
+    font-size:20px;
+    font-weight:bold;
+    line-height:15px;
+    z-index:100000;
+}

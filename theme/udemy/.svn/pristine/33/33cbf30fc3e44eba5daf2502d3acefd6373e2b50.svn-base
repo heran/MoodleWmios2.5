@@ -1,0 +1,9 @@
+$('.my-courses-nav .gray-nav li').live('click',function(){
+    $('.my-courses-nav .gray-nav li').removeClass('current');
+    $(this).addClass('current');
+
+    var type = $(this).attr('type');
+    $('#my-courses #list ul').hide();
+    $('#my-courses #list ul[type="'+type+'"]').show();
+    return false;
+});

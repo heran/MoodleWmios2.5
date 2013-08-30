@@ -1,0 +1,157 @@
+// 利用插件 AJAX 把图书的页面内容显示在 course/view.php
+
+var M = M || {};
+M.W = M.W || {};
+M.W.modview = M.W.modview || {};
+M.W.modview.modhandler = M.W.modview.modhandler || {};
+
+M.W.modview.modhandler.book =book_mod_view = {
+    support:{goto_and_play:false,get_now_position:false,resume_mod:false},
+    load_modview:function(cmid,content_box,intro_box,callback){
+
+        $.get(M.cfg.wwwroot+'/mod/book/view.php',{id:cmid},function(data){
+
+            data = $(data); 
+            var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+            var modcontent=$(data).find('div[role=main]').html();
+
+            var html='<div class="contents">';
+
+            html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+            html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+            html +='</div>';
+
+            $(content_box).html(html);
+
+            $('.mod-book-content .box.generalbox h2').wrap('<div class="h2title"></div>');
+
+            $('.mod-book-content .box.generalbox p').wrap('<div class="bookcontent"></div>');
+
+            $('.mod-book-content .box.generalbox h2').after("<hr>");
+
+            if($('.mod-book-content .box.generalbox h3').length>0){
+
+                var h3text=$('.mod-book-content .box.generalbox h3').text();
+
+                $('.mod-book-content .box.generalbox h3').remove(); 
+                $('.mod-book-content .box.generalbox p').before('<div class="nav"></div>');
+                $('.mod-book-content .box.generalbox .bookcontent .nav').html(h3text);
+            }
+
+            if(typeof callback != 'undefined'){
+                callback(cmid);
+            }
+        });
+
+        //小节
+        $(document).on('click','.book_toc_numbered li>ul li.clearfix a',jiecallback);
+
+        //章节 
+        $(document).on('click','.book_toc_numbered ul li.clearfix a',jiecallback);
+
+        //图标
+        $(document).on('click','.navtop a',tucallback);
+
+        //图标下
+        $(document).on('click','.navbottom a',tucallback);
+
+        //小节、章节 回掉函数
+        function jiecallback(e){
+            var url=$(this).attr("href");
+
+            $.get(M.cfg.wwwroot+'/mod/book/'+url,function(data){
+                data = $(data); 
+                var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+                var modcontent=$(data).find('div[role=main]').html();
+
+                var html='<div class="contents">';
+
+                html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+                html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+                html +='</div>';
+
+                $(content_box).html(html);
+
+                $('.mod-book-content .box.generalbox h2').wrap('<div class="h2title"></div>');
+
+                $('.mod-book-content .box.generalbox p').wrap('<div class="bookcontent"></div>');
+
+                $('.mod-book-content .box.generalbox h2').after("<hr>");
+
+                if($('.mod-book-content .box.generalbox h3').length>0){
+
+                    var h3text=$('.mod-book-content .box.generalbox h3').text();
+
+                    $('.mod-book-content .box.generalbox h3').remove(); 
+                    $('.mod-book-content .box.generalbox p').before('<div class="nav"></div>');
+                    $('.mod-book-content .box.generalbox .bookcontent .nav').html(h3text);
+                }
+
+                if(typeof callback != 'undefined'){
+                    callback(cmid);
+                }
+
+            });
+            e.preventDefault();
+
+        }
+
+        //图标、下图标回调函数
+        function tucallback(e){
+            var url=$(this).attr("href");
+            var atitle=$(this).attr("title");
+
+            if(atitle !=='退出图书'){
+                $.get(M.cfg.wwwroot+'/mod/book/'+url,function(data){
+                    data = $(data); 
+                    var blockcontent=$(data).find('.block.block_book_toc>.content').html();
+                    var modcontent=$(data).find('div[role=main]').html();
+
+                    var html='<div class="contents">';
+
+                    html +='<div class="block-book-content">'+blockcontent+'</div>';
+
+                    html +='<div class="mod-book-content">'+modcontent+'</div>';
+
+                    html +='</div>';
+
+                    $(content_box).html(html);
+
+                    $('.mod-book-content .box.generalbox h2').wrap('<div class="h2title"></div>');
+
+                    $('.mod-book-content .box.generalbox p').wrap('<div class="bookcontent"></div>');
+
+                    $('.mod-book-content .box.generalbox h2').after("<hr>");
+
+                    if($('.mod-book-content .box.generalbox h3').length>0){
+
+                        var h3text=$('.mod-book-content .box.generalbox h3').text();
+
+                        $('.mod-book-content .box.generalbox h3').remove(); 
+
+                        $('.mod-book-content .box.generalbox p').before('<div class="nav"></div>');
+                        $('.mod-book-content .box.generalbox .bookcontent .nav').html(h3text);
+                    }
+
+                    if(typeof callback != 'undefined'){
+                        callback(cmid);
+                    }
+
+                });
+
+                e.preventDefault();
+
+            }
+
+        }
+
+
+    }  
+
+}
+   
+

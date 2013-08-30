@@ -1,0 +1,77 @@
+<?php
+use wmios\survey as survey;
+require_once(dirname(__FILE__).'/../../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+/** @var survey\activity_wrapper*/
+$wrapper = survey\activity_wrapper::instance_from_id(required_param('id',PARAM_INT));
+
+/**
+* 获取调查报告
+* 
+* @var mixed
+*/
+$url = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'uri');
+$username = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'username');
+$password = get_config(SURVEYACTIVITYBASE_PLUGIN_NAME,'password');
+
+$surveyclient = new \survey_client($url,$username,$password);
+$surveyid = $wrapper->get_activity_instance()->get_instance()->survey_id;
+
+$doctype = "csv";
+$reportstext = $surveyclient->export_results($surveyid,$doctype);
+$surveyr_text = base64_decode($reportstext);
+
+$reports=$wrapper->get_activity_instance()->survey_reports($surveyr_text,true);
+
+/**
+* 获取报告的信息存到数据库 
+*/
+
+/*
+foreach($reports as $data)
+{
+   
+  $bool = $wrapper->get_activity_instance()->activity_instance_updates($data);
+  if(!$bool)
+  {
+      throw new \moodle_exception('wrong');
+  }
+}
+*/
+
+/**
+* 数据库中某个调查的所有记录
+* return array[][]
+*/
+/*
+  $surveyid = $wrapper->get_activity_instance() ->get_instance()->survey_id;    
+  $name = "email";
+  $values ="sky_2046818@126.com" ;
+  $arr = $wrapper->get_activity_instance()->activity_reportsinfo($surveyid,$name,$values);*/
+  
+  /*
+  $rows = array('lehw@wmois.com','sky_2046818@126.com');
+  $name ='email';
+  $surveyid = $wrapper->get_activity_instance() ->get_instance()->survey_id;  
+  $arr = $wrapper->get_activity_instance()->activity_reportsinfos($surveyid,$rows,$name);*/
+/**
+* 计算数据
+* 
+*/
+
+/*
+$a=array();
+foreach($arr as $datas)
+{
+    foreach($datas as $v)
+    {
+        $a[] = $v;
+    }
+}
+$results = $wrapper->get_activity_instance()->reports_results($a);
+
+*/
+ 
+   
+

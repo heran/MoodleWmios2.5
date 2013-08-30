@@ -1,0 +1,46 @@
+<?php
+
+class backup_notes_block_structure_step extends backup_block_structure_step {
+
+    protected function define_structure() {
+        global $DB;
+        
+        //We don't like in mod page.
+        //Only when backup a course, we need back the special notes data.
+        //When no user info,we need not backup.
+        
+        /** @var backup_notes_block_task */
+        $task = $this->get_task();
+        if(!empty($moduleid) || !$task->get_plan_setting_value('users')){
+            return parent::define_structure();
+        }
+        
+        //It's a hack.
+        //We need backup wmios completion info,
+        //But moodle don't have a api to backup course info in other place.
+        //So,we do it here.
+        //TODO 10 -o wmios_heran -c local_wmios_completion :very important, the completion info need backup 
+        $completions = new backup_nested_element('completions');
+        $completion = new backup_nested_element('completion', array('id'), array(
+            'courseid','cmid','userid','completionstate','timemodified'));
+        $completions->add_child($completion);
+        $completion->set_source_table('course_modules_comple_ratio',
+            array('courseid' => backup::VAR_COURSEID));
+        $completion->annotate_ids('user', 'userid');
+        
+        //The notes belong to one course.        
+        $notes = new backup_nested_element('notes');
+        $note = new backup_nested_element('note', array('id'), array(
+            'cmid', 'position', 'userid', 'text', 'modifiedtime'));
+        $notes->add_child($note);
+        
+        $note->set_source_table('notes', array('courseid' => backup::VAR_COURSEID));
+        $note->annotate_ids('user', 'userid');
+        
+        $combos = new backup_nested_element('combos');
+        $combos->add_child($completions);
+        $combos->add_child($notes);
+        
+        return $this->prepare_block_structure($combos);
+    }
+}

@@ -1,0 +1,20 @@
+<?php
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+$mod_name = required_param('component', PARAM_ALPHANUMEXT);
+
+/** @var wmios_organization_cohort*/
+$cohort = wmios_organization_cohort::instance_user_belong_to($USER);
+$special_course = null;
+if(!empty($cohort))
+{
+    $special_course = $cohort->get_special_course(false);
+}else{
+    $special_course = $SITE;
+}
+$a = get_module_metadata($special_course, array($mod_name=>get_string('modulename',$mod_name)));
+$b = get_course_mods($special_course);
+
+
+

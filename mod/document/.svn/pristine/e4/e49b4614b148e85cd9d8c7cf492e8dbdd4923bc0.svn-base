@@ -1,0 +1,115 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+
+$COURSE = $DB->get_record('course', array('id'=>required_param('course_id',PARAM_INT)), '*', MUST_EXIST);
+
+require_course_login($COURSE);
+$course_context = CONTEXT_COURSE::instance($COURSE->id);
+require_capability('mod/document:field_manage', $course_context);//who can manage field? field bind to course.
+
+$PAGE->set_context($course_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_pagelayout('noregion');
+
+$field_type_list_url = '/mod/document/field_manage.php?action=field_type&subaction=list&course_id='.$COURSE->id;
+$field_type_edit_url = '/mod/document/field_manage.php?action=field_type&subaction=edit&course_id='.$COURSE->id;
+$field_dict_edit_url = '/mod/document/field_manage.php?action=field_dict&subaction=edit&course_id='.$COURSE->id;
+switch(required_param('action',PARAM_ACTION))
+{
+    case 'field_type':
+    {
+        switch(required_param('subaction',PARAM_ACTION))
+        {
+            case 'edit':
+            {
+                $mform = new document_form_field_type($FULLME);
+                $type_id = optional_param('type_id',0,PARAM_INT);
+                $field_type = null;
+                if($type_id)
+                {
+                    $field_type = document_field_type::instance_from_id($type_id);
+                }
+                if(!$field_type)
+                {
+                    $field_type = new document_field_type(array());
+                }
+
+                if ($mform->is_cancelled()) {
+                    redirect($url);
+                }
+                else if ($data = $mform->get_data())
+                {
+                    $field_type->name = $data->name;
+                    $field_type->updatetime = time();
+                    $is_new = false;
+                    if($field_type->id>0)
+                    {
+                        if(!$field_type->save())
+                        {
+                            print_error('edit_field_type_error');
+                        }
+                    }else{
+                        $is_new = true;
+                        $field_type->type = $data->type;
+                        $field_type->course_id = $COURSE->id;
+                        $field_type->user_id = $USER->id;
+                        if(!$field_type->save())
+                        {
+                            print_error('add_field_type_error');
+                        }
+                    }
+                    $is_dictionary_type = in_array($field_type->type ,array(document_field_type::TYPE_CHECK_MULTI,document_field_type::TYPE_CHECK_SINGLE));
+                    //create dict
+                    if($is_new && $is_dictionary_type)
+                    {
+                        $field_type_tree = document_field_tree::instance_from_create(
+                            array('content'=>$field_type->id,'level'=>0,'updatetime'=>time()));
+                        if(!$field_type_tree)
+                        {
+                            document_field_type::delete_instance($field_type);
+                            print_error('Cant not create field_type_tree');
+                        }else{
+                            $field_type->dict_root = $field_type_tree->id;
+                            if(!$field_type->save())
+                            {
+                                print_error('Cant not update field_type_tree dict_root');
+                                document_field_tree::delete_instance($field_type_tree);
+                            }
+                        }
+                    }
+
+                    if( $is_dictionary_type)
+                    {
+                        redirect($field_dict_edit_url.'&dict_id=' .$field_type->dict_root, get_string('goto_edit_field_dictionary',MOD_DOCUMENT_PLUGIN_NAME));
+                    }else{
+                        redirect($field_type_list_url,get_string('goto_field_type_list',MOD_DOCUMENT_PLUGIN_NAME));
+                    }
+                }
+                else
+                {
+                    echo $OUTPUT->header();
+                    $mform->set_data((object)$field_type->getFields());
+                    $mform->display();
+                    echo $OUTPUT->footer();
+                }
+            }
+            break;
+
+        }
+    }
+    break;
+    case 'field_dict':
+    {
+        switch(required_param('subaction',PARAM_ACTION))
+        {
+            case 'edit':
+            {
+
+
+            }
+            break;
+        }
+    }
+    break;
+}

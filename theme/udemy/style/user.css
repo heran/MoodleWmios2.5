@@ -1,0 +1,161 @@
+.initialbar.firstinitial,.initialbar.lastinitial{
+    display: none;
+}
+
+.path-user div[role=main] {
+    background: #fbfbfb;
+    border-radius: 5px;
+    border: 1px solid #999;
+    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    background-color: #fbfbfb;
+}
+/*user list start*/
+.path-user .userlist {
+    position: relative;
+    padding: 39px 20px;
+}
+.path-user .userlist>h3.main {
+    position: absolute;
+    top:0;
+    left:0;
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+    width: 100%;
+}
+.path-user .userlist .controls{
+    font-size: 12px;
+    margin-top: 20px;
+}
+.path-user .userlist .controls td{
+    padding: 0;
+}
+.path-user .userlist .singleselect label{
+    width: auto;
+    display: inline;
+    margin: 0 5px 0 0;
+}
+.path-user .userlist .singleselect select{
+    width: auto;
+    display: inline;    
+}
+.path-user .userlist .rolesform{
+    margin-bottom: 20px;
+}
+.path-user .userlist .rolesform label{
+    width: auto;
+    display: inline;
+    margin: 0 5px 0 0;
+}
+.path-user .userlist .rolesform .singleselect{
+    display: inline;
+}
+.path-user .userlist .rolesform .singleselect *{
+    display: inline;
+}
+.path-user .userlist #participants{
+    border: none;
+    width: 100%;
+}
+.path-user .userlist #participants thead tr{
+   background-color: #F0F0F0; 
+}
+.path-user .userlist #participants thead th{
+    line-height: 36px;
+}
+.path-user .userlist .userinfobox{
+    border: 1px solid #ddd;
+}
+.path-user .userlist .paging {
+    margin-bottom: 20px;
+}
+.path-user .userlist .links{
+    width: 150px;
+    padding: .5em;
+    vertical-align: bottom;
+}
+/*user list end*/
+/*user profile start*/
+.path-user .userprofile>h2.main {
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+    width: 100%;
+}
+.path-user .userprofile .userprofilebox {
+    overflow: hidden;
+    padding: 20px;
+}
+.path-user .userprofile .profilepicture {
+    float: left;
+}
+.path-user .userprofile .profilepicture a{
+    display: block;
+    padding: 5px;
+}
+.path-user .userprofile .descriptionbox {
+    float: left;
+}
+.path-user .userprofile .descriptionbox .description{
+    margin-bottom: 0;
+    
+}
+/*user profile end*/
+/*user form start*/
+.path-user .mform{
+    
+}
+.path-user div[role=main]>h2.main {
+    color: #555;
+    text-transform: uppercase;
+    padding: 10px 15px;
+    font-size: 15px;
+    border: none;
+    border-bottom: 1px solid #c9c9c9;
+    margin: 0px;
+    background: #e0e0e0;
+    background: -moz-linear-gradient(#ffffff, #e0e0e0);
+    background: -webkit-linear-gradient(#ffffff, #e0e0e0);
+    background: -o-linear-gradient(#ffffff, #e0e0e0);
+    background: -ms-linear-gradient(#ffffff, #e0e0e0);
+    background: linear-gradient(#ffffff, #e0e0e0);
+    border-radius: 4px 4px 0 0;
+    line-height: 18px;
+}
+.path-user .mform fieldset{
+    border: none;
+}
+/*user form end*/
+/*user files start*/
+#page-user-files{
+    
+}
+#page-user-files div[role=main]>div.box.generalbox{
+    border: none;
+}
+/*user files end*/

@@ -1,0 +1,90 @@
+multimediaCompletion={};
+multimediaCompletion={};
+multimediaCompletion.ratio={
+    counter:0,
+    kdp:null,
+    cmid:0,
+    type:null,
+    kdp:null,
+    current:0,
+    install:function(cmid,now,type){
+        this.current = 0;
+        this.counter = 0;
+        this.kdp = $('#cmid'+cmid).find('object').get(0);
+        if(!this.kdp)return;
+        $(this.kdp).attr('width','100%');
+        $(this.kdp).attr('height','100%');
+        $(this.kdp).parent().css('height','100%');
+        this.cmid = cmid;
+        this.type = type;
+        this.kdp.addJsListener('playerUpdatePlayhead','completionRatioUpdate');
+        this.kdp.addJsListener('playerPlayEnd','completionratioplayend');
+        this.kdp.addJsListener('playerSeekEnd','completionratioseekend');
+        setTimeout(function(){
+            multimediaCompletion.ratio.kdp.sendNotification('doPlay');
+            multimediaCompletion.ratio.kdp.sendNotification('doStop');
+        },2000);
+        $(document).on('resumeMod',function(e){
+            multimediaCompletion.ratio.resume(now);
+        });
+        
+        window.getModPosition = this.getNowPosition;
+        window.gotoAndPlayMod = this.gotoAndPlay;
+    },
+    uninstall:function(){
+        this.cmid = 0;
+        this.type = null;
+    },
+    resume:function(now){
+        this.gotoAndPlay(now,true);
+    },
+    getNowPosition:function(){
+        if(multimediaCompletion.ratio.current<0){
+            result = 0;
+        }else{
+            result = multimediaCompletion.ratio.current;
+        }
+        return result;  
+    },
+    gotoAndPlay:function(gotoNum,play){        
+        if(!multimediaCompletion.ratio.kdp)return;
+        var kdp = multimediaCompletion.ratio.kdp;
+        kdp.sendNotification('doSeek', parseFloat(gotoNum));
+        if(typeof play !='undefined' && play == true){
+            kdp.sendNotification('doPlay');   
+        }
+    }
+};
+
+
+
+window.completionRatioUpdate = function(data,id){
+    
+    var is_end = 'no';
+    if(data == -1){
+        is_end = 'yes';
+        multimediaCompletion.ratio.current =0
+    }else{
+        multimediaCompletion.ratio.current = data;
+    }
+    
+    multimediaCompletion.ratio.counter++;
+    
+    if((multimediaCompletion.ratio.counter<10 || this.cmid==0) && data != -1 ){
+        return;
+    }
+    
+    $.post('/local/wmios/completion/update.php',{cmid:multimediaCompletion.ratio.cmid,now:data,end:is_end},function(data){
+        var result = $.parseJSON(data);
+        modalUpdateCompletionRatio(result.cmid,result.ratio_str);
+    });
+    multimediaCompletion.ratio.counter = 0;
+}
+window.completionratioplayend=function(a,b,c,d,e,f){
+    completionRatioUpdate(-1,null);
+};
+window.completionratioseekend=function(a,b,c,d,e,f){
+    multimediaCompletion.ratio.counter = 0;
+    multimediaCompletion.ratio.kdp.sendNotification('doPlay');
+    multimediaCompletion.ratio.counter = 0;
+};

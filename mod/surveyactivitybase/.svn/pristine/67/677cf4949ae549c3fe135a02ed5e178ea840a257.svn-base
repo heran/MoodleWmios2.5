@@ -1,0 +1,31 @@
+<?php
+if (!defined('MOODLE_INTERNAL')) {
+    die('Direct access to this script is forbidden.');
+}
+
+require_once(dirname(__FILE__) . '/lib.php');
+
+$settings = new admin_settingpage('mod_surveyactivitybase', get_string('pluginname', SURVEY_ACTIVITY_BASE_PLUGIN_NAME));
+$ADMIN->add('localplugins', $settings);
+
+
+$settings->add(new admin_setting_heading('survey', get_string('survey', SURVEY_ACTIVITY_BASE_PLUGIN_NAME),
+    get_string('survey', SURVEY_ACTIVITY_BASE_PLUGIN_NAME)));
+
+$adminsetting = new admin_setting_configtext('uri', get_string('survey_uri', SURVEY_ACTIVITY_BASE_PLUGIN_NAME),
+    get_string('survey_uri_desc', SURVEY_ACTIVITY_BASE_PLUGIN_NAME),'', PARAM_URL);
+$adminsetting->plugin = SURVEY_ACTIVITY_BASE_PLUGIN_NAME;
+$settings->add($adminsetting);
+
+$adminsetting = new admin_setting_configtext(
+    'username',
+    get_string('username', SURVEY_ACTIVITY_BASE_PLUGIN_NAME),
+    get_string('username', SURVEY_ACTIVITY_BASE_PLUGIN_NAME), '', PARAM_USERNAME);
+$adminsetting->plugin = SURVEY_ACTIVITY_BASE_PLUGIN_NAME;
+$settings->add($adminsetting);
+
+$adminsetting = new admin_setting_configpasswordunmask('password',
+    get_string('survey_password', SURVEY_ACTIVITY_BASE_PLUGIN_NAME),
+    get_string('survey_password_desc', SURVEY_ACTIVITY_BASE_PLUGIN_NAME), '');
+$adminsetting->plugin = SURVEY_ACTIVITY_BASE_PLUGIN_NAME;
+$settings->add($adminsetting);

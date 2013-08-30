@@ -1,0 +1,32 @@
+/*   course/view.php   */
+
+
+.path-course-view .mod-page-hcontent {
+
+    background: #fff;
+    padding: 15px;
+    width:100%;
+    height:100%;
+    overflow: scroll; 
+
+}
+
+.path-course-view .mod-page-hcontent .intro{
+    overflow: auto;
+    background: #eee;
+    margin: 15px;
+    padding: 5px;
+    border: dashed 1px #aaa;
+}
+
+.path-course-view .mod-page-hcontent .pageheading{
+
+    text-align: center;
+}
+
+.path-course-view .mod-page-hcontent .htime{
+    color:#999;
+    font-style: italic;
+    text-align: left;
+}
+

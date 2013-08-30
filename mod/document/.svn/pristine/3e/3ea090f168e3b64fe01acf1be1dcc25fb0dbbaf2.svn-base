@@ -1,0 +1,92 @@
+{if not $slice}
+{include 'view_header.tpl'}
+{/if}
+<div class="upload-view">
+
+    <div class="upload-view-crumbs search-crumbs">
+        &nbsp;&nbsp;<a href="{$baseUrl}/">{$base->name}</a>&nbsp;&gt;&nbsp;{get_string('search')}'{$searchwords}' {get_string('get_a_results','document',$total)}，以下是{$page*$perpage}-{if ($page-1)*$perpage gt $total}{$total}{else}{($page-1)*$perpage}{/if}条结果
+    </div>
+
+    <div class="upload-view-body">
+
+        <div class="search-result-wrapper">
+
+            {if false}
+            <div class="spellcheck-box">
+                <p>
+                    <span>你是不是要找：</span>
+                    {foreach $spellCheckResults as $check}
+                    <a target="_self" href="{$baseUrl}/search?words={urlencode($check)}">{$check}</a>
+                    {/foreach}
+                </p>
+            </div>
+            {/if}
+            {if count($des)}
+            <div class="search-result">
+                <div class="search-result-box">
+                    {foreach $des as $document}
+                    <dl class="search-result-item">
+                        <dt class="">
+                            <span title="{$document->file_extension}" class="{$document->file_extension} icon"></span>
+                            <a href="{$url_mod_document}/view.php?base_id={$base->id}&key={$document->key}" target="_blank">{$document->title}</a>
+                            <span class="ml12 gray">{date('Y-m-d',strtotime($document->create_time))}</span>
+                        </dt>
+                        <dd>
+                            <p class="summary">{$document->summary}</p>
+                            <p class="file_extract">{$document->text}</p>
+                            <p class="detail">
+                                上传者:
+                                <a href="" class="Author" target="_blank">{if $document->user_name}{/if}</a>
+
+
+                            </p>
+                        </dd>
+                    </dl>
+
+                    {/foreach}
+
+
+                </div>
+
+                <div class="search-result-paginator">
+
+                    {include '../paginator/001.pc.html'}
+                </div>
+            </div>
+            {/if}
+            {if false}
+            <div class="related-box">
+                <p>相关搜索</p>
+                <ul>
+                    {foreach $relatedSearchResults as $related}
+                    <li><a target="_blank" href="{$baseUrl}/search?words={urlencode($related['key'])}">{$related['key']}({$related['num']})</a></li>
+                    {/foreach}
+
+                </ul>
+            </div>
+            {/if}
+
+
+        </div>
+
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+{if not $slice}
+{include 'view_footer.tpl'}
+{/if}

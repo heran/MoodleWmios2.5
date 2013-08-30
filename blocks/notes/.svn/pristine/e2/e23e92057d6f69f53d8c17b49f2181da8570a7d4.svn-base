@@ -1,0 +1,31 @@
+<?php
+
+
+require_once($CFG->dirroot . '/blocks/notes/backup/moodle2/backup_notes_stepslib.php'); 
+
+class backup_notes_block_task extends backup_default_block_task {
+    
+
+    protected function define_my_settings() {
+        //$this->get
+        
+    }
+
+    protected function define_my_steps() {
+        $this->add_step(new backup_notes_block_structure_step('notes_structure', 'notes.xml'));
+    }
+    
+    /**
+    * Get the plan's setting.
+    * 
+    * @param string $name
+    */
+    public function get_plan_setting_value($name){
+        try{
+            return $this->plan->get_setting($name)->get_value();
+        }catch(Exception $e){
+            return false;
+        }
+    }
+}
+

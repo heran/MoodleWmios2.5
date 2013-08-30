@@ -1,0 +1,28 @@
+<?php
+require_once(dirname(__FILE__).'/../../../config.php');
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+require_once($CFG->dirroot.'/local/wmios/org_cohort/lib.php');
+require_once(dirname(__FILE__).'/lib.php');
+
+$mod_name = required_param('component', PARAM_ALPHANUMEXT);
+
+/** @var wmios_organization_cohort*/
+$cohort = wmios_organization_cohort::instance_user_belong_to($USER);
+$special_course = null;
+if(!empty($cohort))
+{
+    $special_course = $cohort->get_special_course(false);
+}else{
+    $special_course = $SITE;
+}
+$mods = get_coursemodules_in_course($mod_name, $special_course->id);
+if(count($mods))
+{
+    $mod = current($mods);
+    $url = new moodle_url("/mod/{$mod_name}/view.php?id={$mod->id}");
+    header('Location:'.$url->out(false));
+    die();
+}else{
+    print_error('no mod');
+}
+

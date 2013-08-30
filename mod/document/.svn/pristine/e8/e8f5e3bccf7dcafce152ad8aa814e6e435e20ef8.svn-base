@@ -1,0 +1,192 @@
+<?php
+require_once(dirname(__FILE__).'/lib.php');
+
+class field_manage
+{
+
+}
+
+/**
+* @property self $parent
+* @property self[] $children
+* @property int $id
+* @property int $pid
+* @property string $content
+* @property int $level
+* @property int $sort
+* @property string $remark
+* @property int $status
+* @property int $updatetime
+*/
+class field_tree{
+
+    protected static $_table = 'document_field_dict';
+
+    /** status not deleted*/
+    const STATUS_VALID = 0;
+
+    /** status deleted*/
+    const STATUS_UNVALID = 1;
+
+    protected $_fields = array(
+        'id'=>0,
+        'pid'=>0,
+        'content'=>0,
+        'level'=>0,
+        'sort'=>0,
+        'remark'=>0,
+        'status'=>0,
+        'updatetime'=>0,
+    );
+
+    protected $_parent = null;
+
+    protected $_children = null;
+
+    public function __construct($fields){
+        $this->setFields($fields);
+    }
+
+    public function setFields(array $fileds)
+    {
+        foreach($fileds as $k=>$v)
+        {
+            $this->setField($k, $v);
+        }
+        return $this;
+    }
+
+    public function setField($k,$v)
+    {
+        if(key_exists($k, $this->_fields))
+        {
+            $this->_fields[$k] = $v;
+        }
+        return $this;
+    }
+
+    public function getField($k)
+    {
+        return isset($this->_fields[$k]) ? $this->_fields[$k] : null;
+    }
+
+    public function getFields()
+    {
+        return $this->_fields;
+    }
+
+    public function __get($k)
+    {
+        switch($k)
+        {
+            case 'parent':
+                return $this->getParent();
+                break;
+            case 'children':
+                return $this->getChildren();
+                break;
+            default:
+                return $this->getField($k);
+                break;
+        }
+    }
+
+    public function __set($k,$v = null )
+    {
+        if(is_string($k))
+        {
+            $this->setField($k,$v);
+        }elseif(is_array($k)){
+            $this->setFields($k);
+        }
+    }
+
+    public function getChildren()
+    {
+        global $DB;
+
+        if($this->_children === null)
+        {
+            $records = $DB->get_records(static::$_table,array('pid'=>$this->id,'status'=>static::STATUS_VALID));
+            $children = array();
+            if($records)
+            {
+                foreach($records as $row)
+                {
+                    $children[] = new static($row);
+                }
+            }
+            $this->_children = $children;
+        }
+        return (array)$this->_children;
+    }
+
+    public function getParent()
+    {
+        global $DB;
+        if(!$this->pid) return null;
+        if($this->_parent === null)
+        {
+            $record = $DB->get_record(static::$_table,array('id'=>$this->pid,'status'=>static::STATUS_VALID));
+            if($record)
+            {
+                $this->_parent = new static($record);
+            }
+        }
+        return $this->_parent;
+    }
+
+    public function getIdChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->id;
+        do{
+            $chain[] = $parent->id;
+
+        }while($parent = $parent->parent);
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+    }
+
+    public function getContentChain($typeArray = true)
+    {
+        $chain = array();
+        $parent = $this->parent;
+        $chain[] = $this->content;
+        do{
+            $chain[] = $parent->content;
+
+        }while($parent = $parent->parent);
+        $chain = array_reverse($chain);
+        if($typeArray )
+        {
+            return $chain;
+
+        }else{
+            return implode('-',$chain);
+        }
+
+    }
+
+    public function toArray()
+    {
+        $return = $this->getFields();
+        $return['children'] = array();
+        if($this->children)
+        {
+            foreach($this->children as $child)
+            {
+                $return['children']['c'.$child->id] = $child->toArray();
+            }
+
+        }
+        return $return;
+    }
+}

@@ -1,0 +1,50 @@
+<?php
+require(dirname(__FILE__).'/../../config.php');
+require_once(dirname(__FILE__).'/locallib.php');
+require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir.'/conditionlib.php');
+$cmid = optional_param('cmid', 0, PARAM_INT); //course module
+if(!$cmid)
+{
+    $cmid = required_param('id',PARAM_INT);
+}
+$cm = get_coursemodule_from_id('document', $cmid);
+$cm_context = context_module::instance($cmid);
+require_capability('mod/document:view', $cm_context);
+
+$document_base = document_base::instance_from_id($cm->instance);
+$document_base->set_cm($cm);
+
+$PAGE->set_context($cm_context);
+$PAGE->set_url($FULLME);
+$PAGE->set_cm($cm);
+$PAGE->set_pagelayout('noregion');
+
+/** @var mod_document_renderer*/
+$renderer = $PAGE->get_renderer('mod_document');
+
+$url_edit_document_entity = new moodle_url('/mod/document/upload.php',array('cmid'=>$cm->id));
+
+$entity_key = optional_param('key','',PARAM_TEXT);
+$de = new document_entity($document_base);
+
+
+
+echo $OUTPUT->header();
+if($entity_key)
+{
+    $de->init_with_key($entity_key);
+    if($de->permission < document_entity::DOCUMENT_PERMISSION_PUBLIC_READ && !$de->is_mine())
+    {
+        print_error('document is private');
+    }
+    echo $renderer->render_document_entity($de);
+}else{
+    $page         = optional_param('page', 0, PARAM_INT);
+    $perpage      = optional_param('perpage', 30, PARAM_INT);
+    $des = $de->instances_from_query(null,$total, $page, $perpage);
+    echo $renderer->render_document_entity_list($des,$document_base);
+    //echo $OUTPUT->paging_bar($usercount, $page, $perpage, $baseurl);
+
+}
+echo $OUTPUT->footer();

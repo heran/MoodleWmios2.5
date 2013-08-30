@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/wmios/db" VERSION="20130515" COMMENT="XMLDB file for Moodle local/wmios"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+>
+  <TABLES>
+    <TABLE NAME="notes" COMMENT="Default comment for block_notes, please edit me" NEXT="qanda">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="a foreign key that references the course_modules table. When null or zero,It is a note for whole course" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="The user's id" PREVIOUS="cmid" NEXT="position"/>
+        <FIELD NAME="position" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="The place where notes is on. e.g 1s,2slides . When is null or zero ,Means is for The whole mod" PREVIOUS="userid" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="position" NEXT="text"/>
+        <FIELD NAME="text" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The content of notes" PREVIOUS="courseid" NEXT="modifiedtime"/>
+        <FIELD NAME="modifiedtime" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="timeline" PREVIOUS="text"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid" NEXT="userid"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="cmid" NEXT="position"/>
+        <INDEX NAME="position" UNIQUE="false" FIELDS="position" PREVIOUS="userid" NEXT="courseid"/>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" PREVIOUS="position" NEXT="modifiedtime"/>
+        <INDEX NAME="modifiedtime" UNIQUE="false" FIELDS="modifiedtime" PREVIOUS="courseid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="qanda" COMMENT="Question and Answer for course and mod" PREVIOUS="notes" NEXT="qanda_answer">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="courseid"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which course" PREVIOUS="id" NEXT="cmid"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Which mod,If zero, it is about whole course" PREVIOUS="courseid" NEXT="position"/>
+        <FIELD NAME="position" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Where in the mod.If zero ,it's about whole mod" PREVIOUS="cmid" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="who ask?" PREVIOUS="position" NEXT="title"/>
+        <FIELD NAME="title" TYPE="char" LENGTH="250" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="content"/>
+        <FIELD NAME="content" TYPE="text" NOTNULL="false" SEQUENCE="false" PREVIOUS="title" NEXT="modifiedtime"/>
+        <FIELD NAME="modifiedtime" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="content"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="courseid" UNIQUE="false" FIELDS="courseid" NEXT="modifiedtime"/>
+        <INDEX NAME="modifiedtime" UNIQUE="false" FIELDS="modifiedtime" PREVIOUS="courseid" NEXT="position"/>
+        <INDEX NAME="position" UNIQUE="false" FIELDS="position" PREVIOUS="modifiedtime" NEXT="userid"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="position" NEXT="cmid"/>
+        <INDEX NAME="cmid" UNIQUE="false" FIELDS="cmid" PREVIOUS="userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="qanda_answer" COMMENT="The answer of question" PREVIOUS="qanda" NEXT="qanda_follow">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="qandaid"/>
+        <FIELD NAME="qandaid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="qandaid" NEXT="answer"/>
+        <FIELD NAME="answer" TYPE="text" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="modifiedtime"/>
+        <FIELD NAME="modifiedtime" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="answer"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="qandaid" UNIQUE="false" FIELDS="qandaid" NEXT="userid"/>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" PREVIOUS="qandaid" NEXT="modifiedtime"/>
+        <INDEX NAME="modifiedtime" UNIQUE="false" FIELDS="modifiedtime" PREVIOUS="userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="qanda_follow" COMMENT="user follow question" PREVIOUS="qanda_answer" NEXT="course_modules_comple_ratio">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="qandaid"/>
+        <FIELD NAME="qandaid" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="userid" NEXT="modifiedtime"/>
+        <FIELD NAME="modifiedtime" TYPE="int" LENGTH="20" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="qandaid"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="userid_qandaid"/>
+        <KEY NAME="userid_qandaid" TYPE="unique" FIELDS="userid, qandaid" PREVIOUS="primary"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="userid" UNIQUE="false" FIELDS="userid" NEXT="qandaid"/>
+        <INDEX NAME="qandaid" UNIQUE="false" FIELDS="qandaid" PREVIOUS="userid" NEXT="modifiedtime"/>
+        <INDEX NAME="modifiedtime" UNIQUE="false" FIELDS="modifiedtime" PREVIOUS="qandaid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="course_modules_comple_ratio" COMMENT="Default comment for the table, please edit me" PREVIOUS="qanda_follow">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" NEXT="coursemoduleid"/>
+        <FIELD NAME="coursemoduleid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="coursemoduleid" NEXT="completionstate"/>
+        <FIELD NAME="completionstate" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="userid" NEXT="timemodified"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" PREVIOUS="completionstate"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

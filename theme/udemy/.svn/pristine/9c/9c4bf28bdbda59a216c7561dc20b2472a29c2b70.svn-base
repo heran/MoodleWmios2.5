@@ -1,0 +1,72 @@
+<?php
+
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * Strings for component 'theme_binarius', language 'en', branch 'MOODLE_20_STABLE'
+ *
+ * @package   moodlecore
+ * @copyright 2010 Patrick Malley
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
+$string['pluginname'] = 'Udemy';
+$string['region-side-post'] = 'Right';
+$string['region-side-pre'] = 'Left';
+$string['choosereadme'] = '<div class="clearfix"><div class="theme_screenshot"><h2>Binarius</h2><img src="binarius/pix/screenshot.jpg" /><h3>Theme Discussion Forum:</h3><p><a href="http://moodle.org/mod/forum/view.php?id=46">http://moodle.org/mod/forum/view.php?id=46</a></p><h3>Theme Credits</h3><p><a href="http://docs.moodle.org/en/Theme_credits">http://docs.moodle.org/en/Theme_credits</a></p><h3>Theme Documentation:</h3><p><a href="http://docs.moodle.org/en/Themes">http://docs.moodle.org/en/Themes</a></p><h3>Report a bug:</h3><p><a href="http://tracker.moodle.org">http://tracker.moodle.org</a></p></div><div class="theme_description"><h3>About</h3><p>Binarius is a two-column, fluid-width theme for Moodle 2.0. <h3>Tweaks</h3><p>This theme is built upon both Base and Canvas, two parent themes included in the Moodle core. If you want to modify this theme, we recommend that you first duplicate it, then rename it before making your changes. This will prevent your customized theme from being overwritten by future Moodle upgrades, and you\'ll still have the original files if you make a mess. More information on modifying themes can be found in the <a href="http://docs.moodle.org/en/Theme">MoodleDocs</a>.</p><h3>Credits</h3><p>This theme was coded and is maintained by Patrick Malley of NewSchool Learning. He can be contacted by email at contact@newschoollearning.com.</p><h3>License</h3><p>This, and all other themes included in the Moodle core, are licensed under the <a href="http://www.gnu.org/licenses/gpl.html">GNU General Public License</a>.</div></div>';
+
+$string['gohome'] = '首页';
+$string['aboutus'] = '关于我们';
+$string['helpme'] = 'FAQ';
+$string['contactus'] = '联系我们';
+$string['set-completion-manual-y'] = '标记为未完成';
+$string['set-completion-manual-n'] = '标记为已完成';
+$string['course-type-nostart'] = '未学习的课程';
+$string['course-type-completed'] = '已完成的课程';
+$string['course-type-inprogress'] = '进行中的课程';
+$string['view_this_course'] = '学习课程';
+$string['next_lecture'] = '下一节';
+$string['you_completed_course'] = '你已经完成了本门课程<b>{$a->total}</b>个活动中的<b>{$a->my}</b>项';
+$string['continue_course'] = '继续下一项活动: {$a}';
+$string['curriculum'] = '课程表';
+$string['section'] = 'SECTION';
+$string['currentcourse'] = '当前课程';
+$string['continue_with_course_mod'] = '继续学习:{$a}';
+$string['start_with_course_mod'] = '开始学习:{$a}';
+$string['course_has_no_mod'] = '课程还没有可学习的内容';
+$string['revisit_lecture'] = '继续学习';
+$string['start_lecture'] = '开始学习';
+$string['back_to_course'] = '回到课程';
+$string['auto_play'] = '自动播放';
+$string['prev_lecture'] = '上一节';
+$string['resume_mod'] = '继续上次的学习';
+$string['type_your_note'] = '输入笔记，按Ctrl+Enter保存';
+$string['down_load_notes'] = '下载你的笔记';
+$string['mod_intro'] = '简介';
+$string['type_your_question'] = '请输入问题标题（必须输入）';
+$string['follow'] = '关注';
+$string['global_navigation'] = '全局导航';
+$string['start_the_course'] = '开始学习';
+$string['discover_us'] = '发现谋势';
+$string['get_help'] = '寻求帮助';
+$string['course-type-completed'] = '已完成的课程';
+$string['course-type-nostart'] = '未学习的课程';
+$string['course-type-inprogress'] = '进行中的课程';
+$string['allcategories'] = '所有类别';
+$string['all_a_category'] = '所有{$a}';
+$string['search_keywords'] = '搜索关键字';

@@ -1,0 +1,34 @@
+<?php
+require_once dirname ( __FILE__ ) . '/survey_client.php';
+header("Content-type:text/html;charset=utf-8");
+
+//判断是否递交
+if(isset($_POST['sub'])){
+    //表单POST数据赋值 
+    $firstname=trim($_POST['firstname']);
+    $lastname=trim($_POST['lastname']);
+    $email=trim($_POST['email']);    
+
+    //把用户信息添加到 survey
+    //给添加用户方法的参数赋值  
+    $url='http://survey.wmios.com/index.php/admin/remotecontrol';
+    $username='admin';
+    $password='Admin1234!';
+    
+    $userinfo=array(array("email"=>$email,"lastname"=>$lastname,"firstname"=>$firstname));
+    $surveyid=568;
+    
+    //实例化对象$surveys
+    $surveys=new survey_client($url,$username,$password);
+    
+    //判断添加是否成功 
+    if($surveys->add_usersurvey($surveyid,$userinfo)){
+        echo '<script>alert("添加成功！");location.href="http://u3.wmios.com/mod/surveyactivity/activity/simple/view.php" </script>';
+    }else{
+        echo '<script>alert("添加失败请与管理员联系！");location.href="http://u3.wmios.com/mod/surveyactivity/activity/simple/view.php" </script>';
+    }
+    
+    
+    
+}
+

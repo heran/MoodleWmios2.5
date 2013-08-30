@@ -1,0 +1,31 @@
+.path-course-view .mod-resource-content .mod-resource-title{
+
+    text-align: center;
+}
+
+.path-course-view .mod-resource-content .resource-stype{
+    color:#999;
+    font-style: italic;
+    text-align: left;
+}
+
+.path-course-view .mod-resource-content .resource-intro{
+    overflow: auto;
+    background: #eee;
+    margin: 15px;
+    padding: 5px;
+    border: dashed 1px #aaa;
+}
+
+.path-course-view .mod-resource-content {
+
+    background: #fff;
+    padding: 15px;
+    width:100%;
+    height:100%;
+    overflow: scroll; 
+
+}
+.path-course-view .resource-content iframe{
+    width:100%;
+}

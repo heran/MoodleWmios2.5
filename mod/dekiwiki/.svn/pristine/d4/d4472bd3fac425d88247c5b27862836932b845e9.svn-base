@@ -1,0 +1,6 @@
+<?php
+
+define('DEKIWIKI_PLUGIN_NAME','mod_dekiwiki');
+
+require_once($CFG->dirroot.'/local/wmios/lib.php');
+require_once(dirname(__FILE__).'/lib.php');
